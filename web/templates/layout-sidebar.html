@@ -6,16 +6,20 @@
     <div class="overlay" style="background:#fff;padding-top: 8px;padding-bottom: 3px;">
         <div class="container" style="background:#fff;" >
             <div class="row">
-
         <div class="col-md-8 wow fadeIn"  data-wow-delay="0.3s">
             {% block form %}
             {% endblock %}
+
+            {% block reference %}
+            {% endblock %}
         </div>
 <!-- first end-->
-
+        
         <div class="col-md-4 wow fadeIn"  align="center" data-wow-delay="0.3s" >
+            
             {% block sidebar %}
         <br>
+        
         <h4 align="left"><b> SERVER STATUS</b></h4>
 
         <table id="jobtable" style="width:94%;line-height:1.5;">
@@ -45,7 +49,59 @@
             </tr>
             </tbody>
         </table>
+<!--results_div-->
+        <h4 align="left"><b> SHOW PDB</b></h4>
+        <div id ="results_div" class="sponsors" style="margin:0; list-style-type:none;background-color: #F7F7F7;;">
+            
+            <div id ="pdb_div" style="float: top; height:280px; width: 280px; position: relative;">
+            <script>
+                 $(document).ready(function(){
+                    $(".field").change(function(){
+                        $(function() {
+                  glviewer = $3Dmol.createViewer("pdb_div", {});
+                  data=document.getElementById("sequence_input").value;
+                  if(data==""){
+                    //console.log("textarea是空的");//objFile.files[0].size
+                    data2=document.getElementById("sequence_file");
+                    //console.log(data2.files[0]);
+                    var files = $('#sequence_file').prop('files');//获取到文件列表
+                    
+                    var reader = new FileReader();//新建一个FileReader
+                    reader.readAsText(files[0], "UTF-8");//读取文件 
+                    reader.onload = function(evt){ //读取完文件之后会回来这里
+                    var fileString = evt.target.result; // 读取文件内容
+                    //console.log(fileString)
+                    data=fileString;
+                    //console.log(data);
+                    glviewer.setBackgroundColor(0xf8f8f8);
+                      glviewer.addModel(data, 'pdb');
+                      glviewer.setStyle({cartoon:{color:'spectrum'}})
+                      glviewer.zoomTo();
+                      glviewer.render();
+                    }
+                  }
+                  else
+                  {
+                  //  console.log(data);
+                  //  console.log("yoriko");
+                    glviewer.setBackgroundColor(0xf8f8f8);
+                    glviewer.addModel(data, 'pdb');
+                    glviewer.setStyle({cartoon:{color:'spectrum'}})
+                    glviewer.zoomTo();
+                    glviewer.render();
+                  }
+                  
+                });
+                    });
+                });
+
+                
+            </script>
+            </div>
+
+        </div>
         <br>
+
         <h4 align="left"><b>COOPERATIVE PARTNERS</b></h4>
         <ul class="sponsors" style="margin:0; list-style-type:none">
             <a href="http://www.itp.cas.cn/"><img src="{{ module }}/images/lw.jpeg" style="margin-top:5px" lt="img" width="250px" height="34" /></a>
@@ -67,12 +123,24 @@
             <a href="http://www.973.gov.cn/AreaAppl.aspx"><img src="{{ module }}/images/973.jpeg" style="margin-top:5px"  alt="img" width="80" height="40" align="middle" /></a>
             <li class="sponsors"><a href="http://www.973.gov.cn/AreaAppl.aspx" title="973">The National Basic Research Program (973 Program) </a></li>
         </ul>
+        <br>
+       
+        
+        
+        
+
     </div>
+    
+
             {% endblock %}
 
             </div>
         </div>
+        
     </div>
-</section>
-</div></div>
+        </section>
+    </div>
+</div>
 {% endblock %}
+
+
