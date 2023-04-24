@@ -219,10 +219,13 @@ def submit(job_id):
                              app_list=db.app_list(),
                              job_status=job_status,
                              errors=errors)
-    job_id = db.job_new(form.var_get(('sequences', 'sequence_file'),
+    job_id = db.job_new(app_id,
+                        form.var_get(('sequences', 'sequence_file'),
                                      request.values,
                                      files=request.files),
-                        app_id,
+                        form.var_match('job_params_(.*)',
+                                       request.values,
+                                       files=request.files),
                         job_id=form.var_get('job_id', request.values),
                         email=form.var_get('email', request.values))
     return redirect(f'{module}/checking/{job_id}/?app={app_id}')

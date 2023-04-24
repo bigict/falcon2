@@ -76,7 +76,7 @@ def _validate_pdb(erros, args, files=None):
 
   return erros
 
-APP_VALIDATE_INPUT = {'profold2': _validate_fasta, 'prodesign': _validate_pdb}
+APP_VALIDATE_INPUT = {'profold2': _validate_fasta, 'prodesign': _validate_pdb, 'proaffinity': _validate_pdb}
 
 def bytes_to_string(byte_values):
   t = io.TextIOWrapper(io.BytesIO(byte_values))
@@ -98,6 +98,19 @@ def var_get(var, args, files=None, defval=None, func=lambda x: x.strip()):
   if val and func:
     val = func(val)
   return val
+
+def var_match(var, args, files=None, func=lambda x: x.strip()):
+  val_list = {}
+  for k in args:
+    m = re.match(var, k)
+    if m:
+      val_list[m.group(1)] = var_get(k, args, func=func)
+  if files:
+    for k in files:
+      m = re.match(var, k)
+      if m:
+        val_list[m.group(1)] = var_get(k, {}, files=files, func=func)
+  return val_list
 
 def validate(args, files=None):
   erros = []

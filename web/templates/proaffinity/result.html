@@ -1,0 +1,83 @@
+{% extends "layout.html" %}
+
+{% block title %}server - {{ app.name }} result {% endblock %}
+{% block javascript %}
+{{ super() }}
+<script src="{{ module }}/js/3Dmol-min.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="zerif_full_site_wrap"><div class="fadein-slider"><div class="slide-item" style="background:#fff"></div></div><div class="zerif_full_site">
+<section id="home"  style="color:rgba(0,0,0,0.8); text-align:justify">
+    <div class="overlay" style="background:#fff;padding-top: 8px;padding-bottom: 3px;">
+        <div class="container" style="background:#fff;" >
+            <div class="row">
+                <div class="col-md-14 wow fadeIn" data-wow-delay="0.3s" >
+
+
+        <div class="bargraph"> <!-- bar start -->
+                <h2>FALCON<big>2</big>/{{ app.name }} - Results</h2>
+                    <table>
+                        <tr><th bgcolor="#33ccff"><h4><font color="white">&nbsp Job information</font></h4></th></tr>
+                    </table>
+                    <table border=0>
+                        <tr><td>Job ID: </td>
+                            <td>
+                            <div id="job_list" style="display:inline"></div>
+{% if job.status == "Done" %}
+                            &nbsp;&nbsp;<a href="{{ module }}/resource/{{ job.job_id }}/zip">Download Zip</a>
+{% endif %}
+                            &nbsp;&nbsp;<a href="{{ module }}/submit/{{ job.job_id }}/?app={{ app.id }}">Resubmit</a>
+                        </td></tr>
+                        <tr><td>#Proteins: </td>
+                            <td>{{ job.tasks | length }}</td></tr>
+                        <tr><td>Task ID: </td>
+                            <td><select id="task_select" style="font-size:100%">
+{% for t in job.tasks %}
+                                <option {% if t.id == task.id %}selected{%endif%} {% if t.status != "Done" %}disabled{% endif %} value="{{ t.id }}">{{ t.task_id }}</option>
+{% endfor %}
+                            </select>
+{% if task.status == "Done" %}
+                            &nbsp;&nbsp;<a href="{{ module }}/resource/{{ task.job_id }}/{{ task.id }}/zip">Download</a>
+{% endif %}
+                            </td><tr>
+                        <tr><td>Submission time: </td>
+                            <td>{{ task.time_create }}</td></tr>
+                        <tr><td>Finished time: </td>
+                            <td>{{ task.time_done }}</td></tr>
+{% if task.metrics %}
+    {% if task.metrics.pLDDT %}
+                        <tr><td>pLDDT: </td>
+                            <td>{{ task.metrics.pLDDT | join(',') | float | round(3)}}</td></tr>
+    {% endif %}
+{% endif %}
+                </table>
+                <table>
+                    <tr><th bgcolor="#33ccff"><h4><font color="white">&nbsp Designed Sequences</font></h4></th></tr> 
+                </table>
+
+                <div id ="results_div">
+                <table> <tr style="height:15px"><td>
+                    <textarea id="sequences"></textarea>
+                    <script>
+                    $(function() {
+                      $.ajax({
+                        url: "{{ module }}/resource/{{ task.job_id }}/{{ task.task_id }}/fasta",
+                        dataType: 'text',
+                        success: function(data) {
+                          $("#sequences").val(data);
+                        }
+                      });
+                    });
+                    </script>
+                </td></tr>
+                </table>
+        </div> <!-- bar end -->
+
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+</div></div>
+{% endblock %}

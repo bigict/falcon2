@@ -49,10 +49,14 @@ STATUS_QUEUING = 'Queuing'
 STATUS_DONE = 'Done'
 STATUS_ERROR = 'Error'
 
-APP_LIST = {'profold2': 'ProFOLD-single', 'prodesign': 'ProDESIGN-LEFT'}
+APP_LIST = {'profold2': 'ProFOLD-single', 'prodesign': 'ProDESIGN-LEFT', 'proaffinity': 'ProAffinity'}
 _cnx = None
 
-def _task_preprocess_fasta(job_id, content):
+def _task_preprocess_fasta(job_id, content, params):
+  if params:
+    with open(os.path.join(serving_data(job_id), f'input.params'), 'w') as f:
+      f.write(json.dumps(params))
+
   sequences, descriptions = parse_fasta(content)
   assert len(sequences) >= 1 and len(sequences) == len(descriptions)
   for i, (sequence, description) in enumerate(zip(sequences, descriptions)):
@@ -62,7 +66,11 @@ def _task_preprocess_fasta(job_id, content):
     params.append((description, STATUS_QUEUING, job_id, i))
   return params
 
-def _task_preprocess_pdb(job_id, content):
+def _task_preprocess_pdb(job_id, content, params):
+  if params:
+    with open(os.path.join(serving_data(job_id), f'input.params'), 'w') as f:
+      f.write(json.dumps(params))
+
   with open(os.path.join(serving_data(job_id), f'input_0.task'), 'w') as f:
     f.write(content)
   params = [('pdb', STATUS_QUEUING, job_id, 0)]
@@ -76,7 +84,7 @@ def _task_postprocess(task):
     task['content'] = f.read()
   return task
 
-APP_TASK_PREPROCESS = {'profold2': _task_postprocess, 'prodesign': _task_preprocess_pdb}
+APP_TASK_PREPROCESS = {'profold2': _task_postprocess, 'prodesign': _task_preprocess_pdb, 'proaffinity': _task_preprocess_pdb}
 
 def db_get():
   # global _cnx
@@ -171,7 +179,7 @@ def job_set(job_id, task_id=None, **kwargs):
 
   return job_id, task_id
 
-def job_new(content, app, job_id=None, email=None):
+def job_new(app, content, params, job_id=None, email=None):
   cnx = db_get()
 
   try:
@@ -189,7 +197,7 @@ def job_new(content, app, job_id=None, email=None):
         f.write(content)
 
       query = 'insert into tasks (`description`,`status`,`job_id`,`task_id`) values (%s,%s,%s,%s)'  # pylint: disable=line-too-long
-      params = APP_TASK_PREPROCESS[app](job_id, content)
+      params = APP_TASK_PREPROCESS[app](job_id, content, params)
       cursor.executemany(query, params)
 
     cnx.commit()
