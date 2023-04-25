@@ -36,6 +36,8 @@ PDB = {
 
     // 记录形状
     BODY_STYLE: [],
+    // 存储更正的Ca结构
+    CA_COORDS:{},
 
 
 
