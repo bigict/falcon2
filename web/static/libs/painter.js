@@ -214,27 +214,50 @@ PDB.painter = {
         var pos = [];
         switch (type) {
             case PDB.MENU_TYPE_FIRST:
+                // var mainMenu = [
+                //     ["Vis Mode", PDB.MENU_TYPE_VIS],
+                //     ["Main Structure", PDB.MENU_TYPE_MAIN],
+                //     ["Ligand", PDB.MENU_TYPE_LIGAND],
+                //     ["Show Others", PDB.MENU_TYPE_EX_HET],
+                //     ["Surface", PDB.MENU_TYPE_SURFACE],
+                //     ["Label", PDB.MENU_TYPE_LABEL],
+                //     ["Color", PDB.MENU_TYPE_COLOR],
+                //     ["Measure", PDB.MENU_TYPE_MEASURE],
+                //     ["Drag", PDB.MENU_TYPE_DRAG],
+                //     ["Fragment", PDB.MENU_TYPE_FRAGMENT],
+                //     ["Editing", PDB.MENU_TYPE_EDITING],
+                //     ["Mutation", PDB.MENU_TYPE_MUTATION],
+                //     ["Transition", PDB.MENU_TYPE_DIRECTION],
+                //     ["Rotation", PDB.MENU_TYPE_ROTATION],
+                //     // ["Bond", PDB.MENU_TYPE_HBOND],
+                //     // ["Conservation",              PDB.MENU_TYPE_CONSERVATION],
+                //     //["Density Map", PDB.MENU_TYPE_DENSITYMAP],
+                //     ["Drugs & Docking", PDB.MENU_TYPE_DRUG],
+                //     ["Export", PDB.MENU_TYPE_EXPORT],
+                //     ["Speech", PDB.MENU_TYPE_SPEECH],
+                //     //["Spherical View", PDB.MENU_TYPE_OUTBALL]
+                // ];
                 var mainMenu = [
-                    ["Vis Mode", PDB.MENU_TYPE_VIS],
-                    ["Main Structure", PDB.MENU_TYPE_MAIN],
-                    ["Ligand", PDB.MENU_TYPE_LIGAND],
-                    ["Show Others", PDB.MENU_TYPE_EX_HET],
+                    ["VR模式", PDB.MENU_TYPE_VIS],
+                    ["蛋白质结构", PDB.MENU_TYPE_MAIN],
+                    ["配体结构", PDB.MENU_TYPE_LIGAND],
+                    ["其他展示", PDB.MENU_TYPE_EX_HET],
                     ["Surface", PDB.MENU_TYPE_SURFACE],
                     ["Label", PDB.MENU_TYPE_LABEL],
-                    ["Color", PDB.MENU_TYPE_COLOR],
-                    ["Measure", PDB.MENU_TYPE_MEASURE],
-                    ["Drag", PDB.MENU_TYPE_DRAG],
-                    ["Fragment", PDB.MENU_TYPE_FRAGMENT],
-                    ["Editing", PDB.MENU_TYPE_EDITING],
-                    ["Mutation", PDB.MENU_TYPE_MUTATION],
-                    ["Transition", PDB.MENU_TYPE_DIRECTION],
-                    ["Rotation", PDB.MENU_TYPE_ROTATION],
+                    ["颜色", PDB.MENU_TYPE_COLOR],
+                    ["测量", PDB.MENU_TYPE_MEASURE],
+                    ["修改蛋白质", PDB.MENU_TYPE_DRAG],
+                    ["裁剪蛋白", PDB.MENU_TYPE_FRAGMENT],
+                    ["替换氨基酸", PDB.MENU_TYPE_EDITING],
+                    ["突变", PDB.MENU_TYPE_MUTATION],
+                    ["转换", PDB.MENU_TYPE_DIRECTION],
+                    ["旋转", PDB.MENU_TYPE_ROTATION],
                     // ["Bond", PDB.MENU_TYPE_HBOND],
                     // ["Conservation",              PDB.MENU_TYPE_CONSERVATION],
                     //["Density Map", PDB.MENU_TYPE_DENSITYMAP],
-                    ["Drugs & Docking", PDB.MENU_TYPE_DRUG],
-                    ["Export", PDB.MENU_TYPE_EXPORT],
-                    ["Speech", PDB.MENU_TYPE_SPEECH],
+                    ["药物对接", PDB.MENU_TYPE_DRUG],
+                    ["导出蛋白", PDB.MENU_TYPE_EXPORT],
+                    ["语音", PDB.MENU_TYPE_SPEECH],
                     //["Spherical View", PDB.MENU_TYPE_OUTBALL]
                 ];
                 for (var i = 0; i < mainMenu.length; i++) {
@@ -329,13 +352,22 @@ PDB.painter = {
                 }
                 break;
             case PDB.MENU_TYPE_DRAG:
+                // var dragMenu = [
+                //     ["Exit this mode", "exit"],
+                //     ["Reset Position", 0],
+                //     ["Drag Ligand", PDB.SELECTION_HET],
+                //     ["Drag Chain", PDB.SELECTION_CHAIN],
+                //     ["Drag Residue", PDB.SELECTION_RESIDUE],
+                //     ["Drag Drug", PDB.SELECTION_DRUG]
+                // ];
                 var dragMenu = [
-                    ["Exit this mode", "exit"],
-                    ["Reset Position", 0],
-                    ["Drag Ligand", PDB.SELECTION_HET],
-                    ["Drag Chain", PDB.SELECTION_CHAIN],
-                    ["Drag Residue", PDB.SELECTION_RESIDUE],
-                    ["Drag Drug", PDB.SELECTION_DRUG]
+                    ["退出模式", "exit"],
+                    ["重置", 0],
+                    ["拖拽配体", PDB.SELECTION_HET],
+                    ["拖拽链", PDB.SELECTION_CHAIN],
+                    ["拖拽氨基酸", PDB.SELECTION_RESIDUE],
+                    ["拖拽二级结构", PDB.SELECTION_HELIX_SHEET],
+                    ["拖拽药物", PDB.SELECTION_DRUG]
                 ];
                 for (var i = 0; i < dragMenu.length; i++) {
                     PDB.drawer.drawTextKB(PDB.GROUP_MENU_DRAG, new THREE.Vector3(x, y - i * 0.2, z), dragMenu[i][0], dragMenu[i][1], color, 135);

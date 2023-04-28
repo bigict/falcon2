@@ -294,7 +294,6 @@ def main():
 
 if __name__ == '__main__':
     app.config['DEBUG'] = True
-
     # app.run(host='172.16.10.22', port=9098, threaded=True,
     #         ssl_context=("/home/ysbgs/prodesign/web/server/server.crt", "/home/ysbgs/prodesign/web/server/server.key"))
     app.run(host='0.0.0.0', port=9098, threaded=True)

@@ -54,16 +54,6 @@ var DOING = 0;
 var STATE = {};
 
 function process_button(type, component) {
-    // if (component.values.state === Constants.ComponentState.PRESSED) {
-    //     switch (type) {
-    //         case Constants.ComponentType.BUTTON:
-    //             // 弹窗TODO
-    //             revocation();
-    //             DOING = 0;
-    //             STATE[type] = 0;
-    //             break;
-    //     }
-    // }
     if (component.values.state === Constants.ComponentState.PRESSED && DOING === 0) {
         switch (type) {
             case Constants.ComponentType.TRIGGER:
@@ -1679,11 +1669,11 @@ function getIntersections(controller) {
 
 function intersectObjects(controller) {
 
-    // if (PDB.GAMEPAD.length > 0) {
-    //     if (PDB.GAMEPAD[4].pressed) {
-    //         onMenuDown(PDB.GAMEPAD_EVENT[0]);
-    //     }
-    // }
+    if (PDB.GAMEPAD.length > 0) {
+        if (PDB.GAMEPAD[4].pressed) {
+            onMenuDown(PDB.GAMEPAD_EVENT[0]);
+        }
+    }
 
     // revocation
     if (PDB.GAMEPAD.length > 0) {
@@ -2006,42 +1996,6 @@ function intersectObjects(controller) {
             PDB.tool.colorIntersectObjectRed(object, 1);
         }
 
-        // PDB.myInterval = setInterval(function (object_1) {
-        //
-        //         var object_1 = object_1["object_1"]
-        //
-        //         atom = object_1.userData.presentAtom;
-        //         var pos = atom.pos;
-        //         select_res = w3m.mol[PDB.pdbId].residueData[atom.chainname][atom.resid]
-        //         console.log(select_res)
-        //         console.log(object)
-        //         // binormals, normals, path, tangents
-        //         for (select_data in select_res["binormals"]) {
-        //             if (select_data !== 0 && select_data !== select_res["binormals"].length -1) {
-        //                 select_res["binormals"][select_data].x = (select_res["binormals"][select_data].x + pos.x) / 2;
-        //                 select_res["binormals"][select_data].y = (select_res["binormals"][select_data].y + pos.y) / 2;
-        //                 select_res["binormals"][select_data].z = (select_res["binormals"][select_data].z + pos.z) / 2;
-        //                 select_res["normals"][select_data].x = (select_res["normals"][select_data].x + pos.x) / 2;
-        //                 select_res["normals"][select_data].y = (select_res["normals"][select_data].y + pos.y) / 2;
-        //                 select_res["normals"][select_data].z = (select_res["normals"][select_data].z + pos.z) / 2;
-        //                 select_res["path"][select_data].x = (select_res["path"][select_data].x + pos.x) / 2;
-        //                 select_res["path"][select_data].y = (select_res["path"][select_data].y + pos.y) / 2;
-        //                 select_res["path"][select_data].z = (select_res["path"][select_data].z + pos.z) / 2;
-        //                 select_res["tangents"][select_data].x = (select_res["tangents"][select_data].x + pos.x) / 2;
-        //                 select_res["tangents"][select_data].y = (select_res["tangents"][select_data].y + pos.y) / 2;
-        //                 select_res["tangents"][select_data].z = (select_res["tangents"][select_data].z + pos.z) / 2;
-        //             }
-        //         }
-        //         // PDB.render.clearMain();
-        //         var high_r = (PDB.structureSizeLevel >= 3 && Math.floor(select_res.path.length / 4) >= 2) ? Math.floor(select_res.path.length / 4) : (select_res.path.length - 1);
-        //         var low_h = PDB.structureSizeLevel <= 1 ? high_r : 3;
-        //         PDB.painter.showTubeByResdue(atom.chainname, atom.resid, atom.color, false, true);
-        //         // PDB.painter.showResidue(atom.chainname, atom.resid, "type", w3m.mol[PDB.pdbId].residueData[chain][resid].issel);
-        //         // PDB.controller.drawGeometry(PDB.config.mainMode);
-        //     }, 1000, {object_1:object_i})
-
-        // setTimeout(change_res(object_i, pos), 100)
-
     } else {
         line.scale.z = 10;
     }
@@ -2145,6 +2099,8 @@ PDB.render = {
         scene.add(camera);
         //controls
         controls = new THREE.OrbitControls(camera, container);
+        // 控制相机位移
+        controls.panSpeed = 50;
         controls.target.set(0, 1.6, 0);
         controls.update();
 
@@ -2186,8 +2142,7 @@ PDB.render = {
         if (XR_VERSION == 1) {
 
             // controller1 手柄
-            controller1 = renderer.xr.getController(1);
-
+            controller1 = renderer.xr.getController(0);
 
             controller1.addEventListener('connected', function (event) {
                 PDB.GAMEPAD_EVENT[0] = event;
@@ -2198,25 +2153,12 @@ PDB.render = {
 
             controller1.addEventListener('selectend', onTriggerUp);
 
-            // controller1.addEventListener('squeezestart', onMenuDown);
-            // controller1.addEventListener('squeezeend', onMenuUp);
-
-            // controller2 手柄
-            controller2 = renderer.xr.getController(0);
-            controller2.addEventListener('selectstart', onRotationDown);
-            // controller2.addEventListener('selectend', onTriggerUp);
-
-
             scene.add(controller1);
-            scene.add(controller2);
 
             var controllerModelFactory = new THREE.XRControllerModelFactory();
-            controllerGrip1 = renderer.xr.getControllerGrip(1);
+            controllerGrip1 = renderer.xr.getControllerGrip(0);
             controllerGrip1.add(controllerModelFactory.createControllerModel(controllerGrip1));
-            controllerGrip2 = renderer.xr.getControllerGrip(0);
-            controllerGrip2.add(controllerModelFactory.createControllerModel(controllerGrip2));
             scene.add(controllerGrip1);
-            scene.add(controllerGrip2);
 
             // helpers
             var geometry = new THREE.BufferGeometry();
@@ -2950,7 +2892,7 @@ PDB.render = {
         var movenlength = Math.sqrt(Math.pow(offset.x - PDB.offset.x, 2) + Math.pow(offset.y - PDB.offset.y, 2) + Math.pow(offset.z - PDB.offset.z, 2));
         if (movenlength > 0.01) { //0.01, speci
             var vec = {
-                x: offset.x - PDB.offset.x,
+                x: offset.x - PDB.offset.x * 10,
                 y: offset.y - PDB.offset.y,
                 z: offset.z - PDB.offset.z
             }
@@ -2959,7 +2901,7 @@ PDB.render = {
         PDB.offset = offset.clone();
         //====add the random  migration path and scope of drug
         if (PDB.DRUGMOVE) {
-            var now = new Date();
+            let now = new Date();
             //console.log(PDB.drugMoveTime - now);
             if (PDB.drugMoveTime - now < -2000) {
                 PDB.tool.migrationDrug();

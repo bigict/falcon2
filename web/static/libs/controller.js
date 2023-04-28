@@ -669,7 +669,8 @@ PDB.controller = {
 
         b_hide.addEventListener('click', function (e) {
             //console.log(e.target.innerText);
-            if (e.target.innerText == 'Hide') {
+            // if (e.target.innerText == 'Hide') {
+            if (e.target.innerText == '隐藏') {
                 var residueData = w3m.mol[PDB.pdbId].residueData;
                 for (var chain in residueData) {
                     PDB.GROUP['chain_' + chain].visible = false;
@@ -682,8 +683,10 @@ PDB.controller = {
                 if (PDB.GROUP[PDB.GROUP_MAP].children.length > 0) {
                     PDB.GROUP[PDB.GROUP_MAP].visible = true;
                 }
-                e.target.innerText = 'Show';
-            } else if (e.target.innerText == 'Show') {
+                // e.target.innerText = 'Show';
+                e.target.innerText = '展示';
+            // } else if (e.target.innerText == 'Show') {
+            } else if (e.target.innerText == '展示') {
                 var residueData = w3m.mol[PDB.pdbId].residueData;
                 for (var chain in residueData) {
                     PDB.GROUP['chain_' + chain].visible = true;
@@ -693,7 +696,8 @@ PDB.controller = {
                 }
                 PDB.GROUP[PDB.GROUP_HET].visible = true;
                 PDB.render.showStructure();
-                e.target.innerText = 'Hide';
+                // e.target.innerText = 'Hide';
+                e.target.innerText = '隐藏';
             }
         });
         b_line.addEventListener('click', function () {
@@ -769,13 +773,22 @@ PDB.controller = {
         var h_ballrod = document.getElementById("h_ballrod");
         h_hide.addEventListener('click', function (e) {
             //console.log(e.target.innerText);
-            if (e.target.innerText == 'Hide') {
+            // if (e.target.innerText == 'Hide') {
+            //     PDB.GROUP[PDB.GROUP_HET].visible = false;
+            //     e.target.innerText = 'Show';
+            // } else if (e.target.innerText == 'Show') {
+            //     PDB.GROUP[PDB.GROUP_HET].visible = true;
+            //     e.target.innerText = 'Hide';
+            // }
+
+            if (e.target.innerText == '隐藏') {
                 PDB.GROUP[PDB.GROUP_HET].visible = false;
-                e.target.innerText = 'Show';
-            } else if (e.target.innerText == 'Show') {
+                e.target.innerText = '展示';
+            } else if (e.target.innerText == '展示') {
                 PDB.GROUP[PDB.GROUP_HET].visible = true;
-                e.target.innerText = 'Hide';
+                e.target.innerText = '隐藏';
             }
+
         });
         h_line.addEventListener('click', function () {
             PDB.render.clear(5);
