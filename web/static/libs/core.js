@@ -30,15 +30,19 @@ PDB = {
     DFIRE_INFO: "",
     GAMEPAD: [],
     GAMEPAD_LOCK: false,
-    GAMEPAD_EVENT:[0],
+    GAMEPAD_EVENT: [0],
     KEYLIST: [],
-    NEWOBJ:"",
+    NEWOBJ: "",
 
     // 记录形状
     BODY_STYLE: [],
     // 存储更正的Ca结构
-    CA_COORDS:{},
-
+    CA_COORDS: {},
+    // CAMERA POSITION
+    CAMERAPOSITIONX: 0,
+    // Operating Instructions
+    OPERAINS: 0,
+    OITYPE: 0,
 
 
     DOCKING_POS_START: {

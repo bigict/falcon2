@@ -1,7 +1,3 @@
-/**
- * Created by Kui XU on 2017/07/08.
- * mail: xukui.cs@gmail.com
- */
 var container;
 var camera, scene, renderer, statsVR;
 var splineCamera, parent, group;
@@ -54,6 +50,7 @@ var DOING = 0;
 var STATE = {};
 
 function process_button(type, component) {
+
     if (component.values.state === Constants.ComponentState.PRESSED && DOING === 0) {
         switch (type) {
             case Constants.ComponentType.TRIGGER:
@@ -173,20 +170,12 @@ function onThumbpadUp(event) {
 function onThumbpadDown(event) {
     x = ThumbpadAxes[0];
     y = ThumbpadAxes[1];
-    // if ((y <= -0.5 && x >= -0.5 && x <= 0) || (y <= -0.5 && x <= 0.5 && x >= 0)) {
-    // if (y > 0.7) {
     if (y > 0.1) {
         action = 1;
-        // } else if ((y >= 0.5 && x >= -0.5 && x <= 0) || (y >= 0.5 && x <= 0.5 && x >= 0)) {
-        // } else if (y <-0.7) {
     } else if (y < -0.1) {
         action = 2;
-        // } else if ((x <= -0.5 && y >= -0.5 && y <= 0) || (x <= -0.5 && y <= 0.5 && y >= 0)) {
-        // } else if (x < -0.7) {
     } else if (x < -0.1) {
         action = 3;
-        // } else if ((x >= 0.5 && y >= -0.5 && y <= 0) || (x >= 0.5 && y <= 0.5 && y >= 0)) {
-        // } else if (x > 0.7 ) {
     } else if (x > 0.1) {
         action = 4;
     }
@@ -535,10 +524,6 @@ function dealwithMenu(object) {
         case PDB.GROUP_MENU_DRUG:
             switch (curr_reptype) {
                 case 1:
-                    // PDB.GROUP[PDB.GROUP_DRUG].visible = false;
-                    // if(PDB.GROUP[PDB.GROUP_DRUG].visible === false){
-                    // PDB.DRUGMOVE = false;
-                    // }
                     PDB.DRUGMOVE = false;
                     PDB.render.clearGroupIndex(PDB.GROUP_DRUG);
                     PDB.render.clearGroupIndex(PDB.GROUP_VR_MENU_DOCKING);
@@ -674,43 +659,7 @@ function dealwithMenu(object) {
                         })
                     }
                 })
-                // EmMapParser.loadMap('3298','map-local',function (emmap) {
-
-                // PDB.EMMAP = emmap;
-
-                // PDB.MAP_SCOPE={x:emmap.header.NC,y:emmap.header.NR,z:emmap.header.NS};
-                // PDB.THRESHOLD=(emmap.header.max-emmap.header.mean)/2;
-                // PDB.SLICE = Math.floor(emmap.header.NS/2);
-                // PDB.painter.showMapSolid(emmap,PDB.THRESHOLD);
-                // // PDB.painter.showMapSlices(emmap,PDB.THRESHOLD,PDB.SLICE,PDB.DIMENSION);
-                // var showThreshold = document.getElementById("showThreshold");
-                // var showSlice = document.getElementById("showSlice");
-                // showThreshold.max = Number(emmap.header.max);
-                // showThreshold.min = Number(emmap.header.min);
-                // //showSlice.max = Number(emmap.header.NS);
-                // showSlice.min = 1;
-                // switch(PDB.DIMENSION){
-                // case PDB.DIMENSION_X:
-                // showSlice.max = Number(emmap.header.NC);
-                // break;
-                // case PDB.DIMENSION_Y:
-                // showSlice.max = Number(emmap.header.NR);
-                // break;
-                // case PDB.DIMENSION_Z:
-                // showSlice.max = Number(emmap.header.NS);
-                // break;
-                // }
-                // });
             }
-            // if(event.target.checked){
-
-            // }else{
-            // PDB.SHOWSOLID = false;
-            // if(PDB.SHOWSILICE){
-            // PDB.painter.showMapSlices(PDB.EMMAP,PDB.THRESHOLD,PDB.SLICE,PDB.DIMENSION);
-            // }
-            // onMenuDown();
-            // }
             break;
         case PDB.GROUP_MENU_CONSERVATION:
             var type = object.userData.reptype;
@@ -794,23 +743,13 @@ function PDBFormatEr(coords, resid) {
             switch (w3m_sub(line, 0, 6)) {
                 case 'atom':
                     const residue_id = parseInt(w3m_sub(line, 23, 26)) || 0;
-                    // const atom_name = w3m_sub(s, 13, 16);
+                    const atom_name = w3m_sub(s, 13, 16);
 
-                    // 改变Ca侧链
-                    if (coords[residue_id]) {
-                        const xyz = [parseFloat(w3m_sub(line, 31, 38)),
-                            parseFloat(w3m_sub(line, 39, 46)),
-                            parseFloat(w3m_sub(line, 47, 54))]
-
-                        xyz[0] = xyz[0] + coords[residue_id].x;
-                        xyz[1] = xyz[1] + coords[residue_id].y;
-                        xyz[2] = xyz[2] + coords[residue_id].z;
-                        // 将ca的pdb坐标存储在coords中
-                        PDB.CA_COORDS[residue_id] = xyz;
-
-                        line = line.replace(w3m_sub(line, 31, 38), Math.floor(xyz[0] * 1000) / 1000);
-                        line = line.replace(w3m_sub(line, 39, 46), Math.floor(xyz[1] * 1000) / 1000);
-                        line = line.replace(w3m_sub(line, 47, 54), Math.floor(xyz[2] * 1000) / 1000);
+                    // // 只改变Ca坐标
+                    if (coords[residue_id] && atom_name === "ca") {
+                        line = line.replace(w3m_sub(line, 31, 38), Math.floor(coords[residue_id].x * 1000) / 1000);
+                        line = line.replace(w3m_sub(line, 39, 46), Math.floor(coords[residue_id].y * 1000) / 1000);
+                        line = line.replace(w3m_sub(line, 47, 54), Math.floor(coords[residue_id].z * 1000) / 1000);
                     }
 
                     line = line.toUpperCase();
@@ -832,14 +771,11 @@ function PDBFormatEr(coords, resid) {
 
 
 function onTriggerDown(event) {
-    // init
-    PDB.CA_COORDS = {};
-    PDB.HELIX_SHEET_ARRAY = [];
-    PDB.HELIX_SHEET_index = [];
 
 
     var controller = event.target;
-
+    PDB.HELIX_SHEET_ARRAY = [];
+    PDB.HELIX_SHEET_index = [];
     var intersections = getIntersections(controller);
     if (intersections.length <= 0) {
         return;
@@ -894,8 +830,6 @@ function onTriggerDown(event) {
                 if (object.userData.presentAtom !== undefined) {
 
                     console.log("object", object);
-                    //PDB.painter.showResidueInfo(object.userData.presentAtom);
-                    //PDB.painter.showResidueInfoPos(object.userData.presentAtom, pos);
                     atom = object.userData.presentAtom;
                     atom["pos_curr"] = pos;
                     PDB.painter.showAtomInfo(atom);
@@ -1041,9 +975,6 @@ function onTriggerUp(event) {
             if (PDB.distanceArray.length === 2) {
                 var locationStart = PDB.distanceArray[0];
                 var locationEnd = PDB.distanceArray[1];
-                // PDB.render.clearGroupIndex(PDB.GROUP_INFO);
-                // PDB.GROUP[PDB.GROUP_INFO].position.copy(new THREE.Vector3(0,0,0));
-                // PDB.GROUP[PDB.GROUP_INFO].rotation.set(0,0,0);
                 PDB.painter.showDistance(locationStart, locationEnd);
                 PDB.distanceArray = [];
             }
@@ -1051,9 +982,6 @@ function onTriggerUp(event) {
         case PDB.TRIGGER_EVENT_ANGLE:
 
             if (PDB.distanceArray.length === 1) {
-                // PDB.render.clearGroupIndex(PDB.GROUP_INFO);
-                // PDB.GROUP[PDB.GROUP_INFO].position.copy(new THREE.Vector3(0,0,0));
-                // PDB.GROUP[PDB.GROUP_INFO].rotation.set(0,0,0);
             } else if (PDB.distanceArray.length === 2) {
                 var locationStart = PDB.distanceArray[0];
                 var locationEnd = PDB.distanceArray[1];
@@ -1070,9 +998,6 @@ function onTriggerUp(event) {
                 var edgePoint2Pos = [edgePoint2.pos_curr.x, edgePoint2.pos_curr.y, edgePoint2.pos_curr.z];
                 var ms = PDB.tool.getAngleMeasurement(anglePointPos, edgePoint1Pos, edgePoint2Pos);
 
-                // var anglePos = new THREE.Vector3(anglePoint.pos_curr.x, anglePoint.pos_curr.y, anglePoint.pos_curr.z)
-                // var labelPos = anglePos.applyMatrix4(PDB.GROUP[PDB.GROUP_MAIN].matrix);
-                // var pos = PDB.tool.getAtomInfoPosition(anglePos,camera.position);
 
                 var limit = w3m.global.limit;
                 var x = limit.x[1] + PDB.GeoCenterOffset.x;
@@ -1164,15 +1089,6 @@ function objectTrans(controller, object, event) {
 
 
                 PDB.DFMATRIX1 = controller.matrixWorld.clone();
-                // var atom_id = object.userData.presentAtom.resid;
-                //
-                // for (var num = atom_id - 5; num < atom_id + 5; num++) {
-                //     PDB.firstTimeNum.push(num);
-                //     if (PDB.FFDPosition.indexOf(num) < 0) {
-                //         PDB.FFDPosition.push(num);
-                //     }
-                // }
-
             } else {
 
                 var mtx = new THREE.Vector3()
@@ -1561,50 +1477,6 @@ function getIntersections(controller) {
                 }
 
                 break;
-            // case PDB.SELECTION_RESIDUE:
-            //     var gIndexies = PDB.GROUP_STRUCTURE_INDEX;
-            //     for (var i = gIndexies.length - 1; i >= 0; i--) {
-            //         if (!PDB.GROUP[gIndexies[i]].visible) continue;
-            //
-            //         // 鼠标射线，选择器
-            //         var tmp_inters = raycaster.intersectObjects(PDB.GROUP[gIndexies[i]].children);
-            //
-            //         if (tmp_inters.length <= 0) continue;
-            //         object = tmp_inters[0].object;
-            //         point = tmp_inters[0].point;
-            //         if (object.name != undefined && object.name != "" && object.userData.presentAtom !== undefined) {
-            //             if (object.userData.reptype === "tube") {
-            //                 //if (object.userData.realtype !== undefined && object.userData.realtype === "arrow") {
-            //                 //console.log(object.userData);
-            //                 //}
-            //
-            //                 // atomObjects: mesh, gIndexies[i]: chain_a, object.userData.presentAtom: res_message, point: xyz
-            //                 var atomObjects = PDB.GROUP[gIndexies[i]].getChildrenByName(object.userData.presentAtom.id);
-            //                 // console.log(atomObjects)
-            //                 // console.log(object.userData.presentAtom)
-            //                 // console.log(point)
-            //                 for (var a = 0; a < atomObjects.length; a++) {
-            //                     inters.push({
-            //                         "object": atomObjects[a],
-            //                         "pos": point
-            //                     });
-            //                 }
-            //             } else {
-            //
-            //                 var resAtoms = PDB.tool.getMainResAtomsByAtom(object.userData.presentAtom);
-            //                 for (var k = 0; k < resAtoms.length; k++) {
-            //                     var atomObjects = PDB.GROUP[gIndexies[i]].getChildrenByName(resAtoms[k].id);
-            //                     for (var a = 0; a < atomObjects.length; a++) {
-            //                         inters.push({
-            //                             "object": atomObjects[a],
-            //                             "pos": point
-            //                         });
-            //                     }
-            //                 }
-            //             }
-            //         }
-            //     }
-            //     break;
             case PDB.SELECTION_ATOM:
                 var gIndexies = PDB.GROUP_STRUCTURE_INDEX;
                 for (var i = gIndexies.length - 1; i >= 0; i--) {
@@ -1669,17 +1541,13 @@ function getIntersections(controller) {
 
 function intersectObjects(controller) {
 
-    if (PDB.GAMEPAD.length > 0) {
-        if (PDB.GAMEPAD[4].pressed) {
-            onMenuDown(PDB.GAMEPAD_EVENT[0]);
-        }
-    }
-
     // revocation
     if (PDB.GAMEPAD.length > 0) {
         if (PDB.GAMEPAD[5].pressed) {
             // 弹窗提示撤销
             revocation();
+            // 旋转完后将PDB文件重新生成一遍
+
         }
     }
 
@@ -1691,82 +1559,57 @@ function intersectObjects(controller) {
                 PDB.DFMATRIX1 = controller.matrixWorld.clone();
                 var pdb_info = "";
 
+                // 坐标存储字典
+                let coords = {};
+                let resIdList = [];
+
                 for (var number in controller.children) {
-                    var object_child = controller.children[number];
-                    if (object_child.type === "Mesh") {
-                        PDB.HS_ATOM = object_child.userData;
+
+                    var ob_selected = controller.children[number];
+
+                    if (ob_selected.type === "Mesh") {
+                        PDB.HS_ATOM = ob_selected.userData;
                         groupindex = PDB.HS_ATOM.group
 
-                        if (PDB.HS_FIRSTTIMENUMBER.indexOf(object_child.userData.presentAtom.resid) < 0) {
-                            PDB.HS_FIRSTTIMENUMBER.push(object_child.userData.presentAtom.resid)
+                        if (PDB.HS_FIRSTTIMENUMBER.indexOf(ob_selected.userData.presentAtom.resid) < 0) {
+                            PDB.HS_FIRSTTIMENUMBER.push(ob_selected.userData.presentAtom.resid)
                         }
 
                         // console.log("HS_FIRSTTIMENUMBER", PDB.HS_FIRSTTIMENUMBER)
 
+                        const ob_residue = ob_selected.userData.presentAtom;
+                        const ob_pos_center = ob_residue.pos_centered.clone();
 
-                        // currentPoint 有问题 需改正
+                        const ob_resid = ob_residue.resid;
+                        const groupIndex = ob_selected.userData["group"];
 
+                        ob_pos_center.applyMatrix4(ob_selected.matrixWorld);
 
-                        var geometry = object_child.geometry;
-                        geometry.computeBoundingBox();
-                        var currentPoint = geometry.boundingBox.getCenter();
-                        console.log(number, "currentPoint", currentPoint);
+                        let residue_x = (ob_pos_center.x - PDB.GeoCenterOffset.x).toFixed(3);
+                        let residue_y = (ob_pos_center.y - PDB.GeoCenterOffset.y).toFixed(3);
+                        let residue_z = (ob_pos_center.z - PDB.GeoCenterOffset.z).toFixed(3);
 
+                        let coord = new THREE.Vector3(
+                            residue_x,
+                            residue_y,
+                            residue_z);
 
-                        object_child.localToWorld(currentPoint);
-
-                        var atom_cd = object_child.userData.presentAtom;
-                        // console.log(atom_cd)
-
-                        var posX = (atom_cd.pos.x).toString()
-                        var posY = (atom_cd.pos.y).toString()
-                        var posZ = (atom_cd.pos.z).toString()
-
-                        if (posX.split(".")[1].length < 3) {
-                            posX = posX + "0"
+                        if (resIdList.includes(ob_resid) === false) {
+                            coords[ob_resid] = coord;
+                            resIdList.push(parseInt(ob_resid))
+                            ob_selected.visible = false;
                         }
-                        if (posY.split(".")[1].length < 3) {
-                            posY = posY + "0"
-                        }
-                        if (posZ.split(".")[1].length < 3) {
-                            posZ = posZ + "0"
-                        }
-
-
-                        // changeData有问题 需改正
-
-                        if (PDB.CHANGE_DICT[number] === undefined) {
-                            var changeData = atom_cd.name.toUpperCase().padEnd(4) + (atom_cd.resname).toString().toUpperCase().padEnd(4)
-                                + atom_cd.chainname.toUpperCase() + atom_cd.resid.toString().padStart(4)
-                                + posX.padStart(12) + posY.padStart(8) + posZ.padStart(8);
-                            PDB.CHANGE_DICT[number] = changeData;
-                        }
-
-                        var newX = (currentPoint.x - PDB.GeoCenterOffset.x).toFixed(3)
-                        var newY = (currentPoint.y - PDB.GeoCenterOffset.y).toFixed(3)
-                        var newZ = (currentPoint.z - PDB.GeoCenterOffset.z).toFixed(3)
-                        console.log("new", newX, newY, newZ)
-                        var newTableData = "ATOM         " + atom_cd.name.toUpperCase().padEnd(4) + (atom_cd.resname).toString().toUpperCase().padEnd(4)
-                            + atom_cd.chainname.toUpperCase() + atom_cd.resid.toString().padStart(4)
-                            + newX.toString().padStart(12) +
-                            newY.toString().padStart(8) +
-                            newZ.toString().padStart(8) + "\n";
-
-                        pdb_info = pdb_info + newTableData;
-                        //
-                        // console.log("tableData", newTableData)
-                        // console.log("PDB.changeData", PDB.CHANGE_DICT[number])
-                        //
-                        // PDB.textData = (PDB.textData).replace(PDB.CHANGE_DICT[number], newTableData);
-                        // PDB.CHANGE_DICT[number] = newTableData;
-
-                        object_child.visible = false;
-
-                        // 修改为io 做一个python的io接口
-
-
                     }
                 }
+
+
+                // 重新加载PDB结构数据
+                const PDBText = PDBFormatEr(coords, resIdList);
+                if (PDBText !== "") {
+                    PDB.textData = PDBText;
+                }
+
+                // 修改为io 做一个python的io接口
 
                 console.log("HS_FIRSTTIMENUMBER", PDB.HS_FIRSTTIMENUMBER)
 
@@ -1776,24 +1619,6 @@ function intersectObjects(controller) {
                 if (PDB.HS_FIRSTTIMENUMBER.indexOf(PDB.HS_FIRSTTIMENUMBER[0] - 1) < 0) {
                     PDB.HS_FIRSTTIMENUMBER.push(PDB.HS_FIRSTTIMENUMBER[0] - 1)
                 }
-
-                if (PDB.CHANGE_PDB !== pdb_info) {
-                    $.ajax({
-                        url: "changeCoord",
-                        type: "POST",
-                        dataType: "json",
-                        data: {
-                            "pdb_file": PDB.textData,
-                            "pdb_position": pdb_info,
-                        },
-                        success: function (data) {
-                            PDB.textData = data["result"];
-                            PDB.CHANGE_PDB = pdb_info;
-                            // console.log(PDB.GROUP)
-                        }
-                    })
-                }
-
 
                 if (PDB.HS_ATOM.group != undefined && PDB.HS_ATOM.presentAtom.chainname != undefined) {
                     groupindex = PDB.HS_ATOM.group
@@ -1818,7 +1643,6 @@ function intersectObjects(controller) {
 
 
                     PDB.loader.loadData(PDB.textData);
-                    // var residueData = w3m.mol[PDB.pdbId].residueData;
 
                     for (var number in PDB.HS_FIRSTTIMENUMBER) {
                         var resid = PDB.HS_FIRSTTIMENUMBER[number];
@@ -1845,12 +1669,10 @@ function intersectObjects(controller) {
         }
         // 拖拽单体
         if ((PDB.selection_mode === PDB.SELECTION_RESIDUE) && (PDB.trigger === PDB.TRIGGER_EVENT_DRAG)) {
-
             var ob_selected = controller.children[1];
             if (!PDB.DFMATRIX1.equals(controller.matrixWorld)) {
                 PDB.DFMATRIX1 = controller.matrixWorld.clone();
 
-                // TODO
                 // 求出当前氨基酸的三维坐标
                 const ob_residue = ob_selected.userData.presentAtom;
                 const ob_pos_center = ob_residue.pos_centered.clone();
@@ -1864,26 +1686,16 @@ function intersectObjects(controller) {
                 let residue_y = (ob_pos_center.y - PDB.GeoCenterOffset.y).toFixed(3);
                 let residue_z = (ob_pos_center.z - PDB.GeoCenterOffset.z).toFixed(3);
 
-                let mseCoord = new THREE.Vector3(
+                let coord = new THREE.Vector3(
                     residue_x,
                     residue_y,
                     residue_z);
 
-                if (PDB.CA_COORDS[ob_resid].length === 3) {
-                    let xyz = PDB.CA_COORDS[ob_resid];
-                    mseCoord.x = mseCoord.x - xyz.x;
-                    mseCoord.y = mseCoord.y - xyz.y;
-                    mseCoord.z = mseCoord.z - xyz.z;
-                } else {
-                    mseCoord.x = residue_x - ob_residue.pos.x;
-                    mseCoord.y = residue_y - ob_residue.pos.y;
-                    mseCoord.z = residue_z - ob_residue.pos.z;
-                }
 
                 // 坐标存储字典
                 let coords = {};
                 let resIdList = [];
-                coords[ob_resid] = mseCoord;
+                coords[ob_resid] = coord;
                 resIdList.push(parseInt(ob_resid))
 
                 // 重新加载PDB结构数据
@@ -1933,7 +1745,6 @@ function intersectObjects(controller) {
                             scene.remove(scene.children[i])
                         }
                     }
-
                 }
 
                 for (let i = 0; i < newChildren.length; i++) {
@@ -1944,23 +1755,36 @@ function intersectObjects(controller) {
 
             // 接口
             // 防止多次触发
-            if (PDB.DFIRE_INFO !== PDB.textData) {
-                $.ajax({
-                    url: "dfire",
-                    type: "POST",
-                    dataType: "json",
-                    data: {
-                        "pdb_file": PDB.textData,
-                        "pdb_position": PDB.FFDPosition
-                    },
-                    success: function (data) {
-                        var atom_0 = ob_selected.userData.presentAtom
-                        PDB.painter.showDFIREInfo(atom_0,
-                            data["result"]);
-                        PDB.DFIRE_INFO = PDB.textData;
-                    }
-                })
-            }
+            // if (PDB.DFIRE_INFO !== PDB.textData) {
+            //     $.ajax({
+            //         url: "dfire",
+            //         type: "POST",
+            //         dataType: "json",
+            //         data: {
+            //             "pdb_file": PDB.textData,
+            //             "pdb_position": PDB.FFDPosition
+            //         },
+            //         success: function (data) {
+            //             var atom_0 = ob_selected.userData.presentAtom
+            //
+            //             // if (PDB.DFIRE_SCORE != data["result"]) {
+            //             // 删除原有的mesh
+            //             var groupindex = ob_selected.userData["group"];
+            //             var children2 = PDB.GROUP[groupindex].children;
+            //             // console.log("children1", children1);
+            //             // console.log("PDB.GROUP_INFO", PDB.GROUP_INFO);
+            //
+            //
+            //             PDB.painter.showDFIREInfo(atom_0,
+            //                 data["result"]);
+            //
+            //             PDB.DFIRE_INFO = PDB.textData;
+            //
+            //             // console.log(PDB.GROUP)
+            //         }
+            //     })
+            // }
+
             return;
         }
 
@@ -1995,6 +1819,42 @@ function intersectObjects(controller) {
             intersected.push(object);
             PDB.tool.colorIntersectObjectRed(object, 1);
         }
+
+        // PDB.myInterval = setInterval(function (object_1) {
+        //
+        //         var object_1 = object_1["object_1"]
+        //
+        //         atom = object_1.userData.presentAtom;
+        //         var pos = atom.pos;
+        //         select_res = w3m.mol[PDB.pdbId].residueData[atom.chainname][atom.resid]
+        //         console.log(select_res)
+        //         console.log(object)
+        //         // binormals, normals, path, tangents
+        //         for (select_data in select_res["binormals"]) {
+        //             if (select_data !== 0 && select_data !== select_res["binormals"].length -1) {
+        //                 select_res["binormals"][select_data].x = (select_res["binormals"][select_data].x + pos.x) / 2;
+        //                 select_res["binormals"][select_data].y = (select_res["binormals"][select_data].y + pos.y) / 2;
+        //                 select_res["binormals"][select_data].z = (select_res["binormals"][select_data].z + pos.z) / 2;
+        //                 select_res["normals"][select_data].x = (select_res["normals"][select_data].x + pos.x) / 2;
+        //                 select_res["normals"][select_data].y = (select_res["normals"][select_data].y + pos.y) / 2;
+        //                 select_res["normals"][select_data].z = (select_res["normals"][select_data].z + pos.z) / 2;
+        //                 select_res["path"][select_data].x = (select_res["path"][select_data].x + pos.x) / 2;
+        //                 select_res["path"][select_data].y = (select_res["path"][select_data].y + pos.y) / 2;
+        //                 select_res["path"][select_data].z = (select_res["path"][select_data].z + pos.z) / 2;
+        //                 select_res["tangents"][select_data].x = (select_res["tangents"][select_data].x + pos.x) / 2;
+        //                 select_res["tangents"][select_data].y = (select_res["tangents"][select_data].y + pos.y) / 2;
+        //                 select_res["tangents"][select_data].z = (select_res["tangents"][select_data].z + pos.z) / 2;
+        //             }
+        //         }
+        //         // PDB.render.clearMain();
+        //         var high_r = (PDB.structureSizeLevel >= 3 && Math.floor(select_res.path.length / 4) >= 2) ? Math.floor(select_res.path.length / 4) : (select_res.path.length - 1);
+        //         var low_h = PDB.structureSizeLevel <= 1 ? high_r : 3;
+        //         PDB.painter.showTubeByResdue(atom.chainname, atom.resid, atom.color, false, true);
+        //         // PDB.painter.showResidue(atom.chainname, atom.resid, "type", w3m.mol[PDB.pdbId].residueData[chain][resid].issel);
+        //         // PDB.controller.drawGeometry(PDB.config.mainMode);
+        //     }, 1000, {object_1:object_i})
+
+        // setTimeout(change_res(object_i, pos), 100)
 
     } else {
         line.scale.z = 10;
@@ -2099,12 +1959,9 @@ PDB.render = {
         scene.add(camera);
         //controls
         controls = new THREE.OrbitControls(camera, container);
-        // 控制相机位移
-        controls.panSpeed = 50;
+
         controls.target.set(0, 1.6, 0);
         controls.update();
-
-        //transformer controls
 
         // Group
         for (var i = 0; i < PDB.GROUP_COUNT; i++) {
@@ -2144,21 +2001,29 @@ PDB.render = {
             // controller1 手柄
             controller1 = renderer.xr.getController(0);
 
-            controller1.addEventListener('connected', function (event) {
-                PDB.GAMEPAD_EVENT[0] = event;
-                PDB.GAMEPAD = event.data.gamepad.buttons;
-            })
+            // controller1.addEventListener('connected', function (event) {
+            //     PDB.GAMEPAD_EVENT[0] = event;
+            //     PDB.GAMEPAD = event.data.gamepad.buttons;
+            // })
 
             controller1.addEventListener('selectstart', onTriggerDown);
 
             controller1.addEventListener('selectend', onTriggerUp);
 
+            // controller1.addEventListener('primary press', function (event) {
+            //         onMenuDown(event);
+            // })
+
             scene.add(controller1);
+            // scene.add(controller2);
 
             var controllerModelFactory = new THREE.XRControllerModelFactory();
             controllerGrip1 = renderer.xr.getControllerGrip(0);
             controllerGrip1.add(controllerModelFactory.createControllerModel(controllerGrip1));
+            // controllerGrip2 = renderer.xr.getControllerGrip(0);
+            // controllerGrip2.add(controllerModelFactory.createControllerModel(controllerGrip2));
             scene.add(controllerGrip1);
+            // scene.add(controllerGrip2);
 
             // helpers
             var geometry = new THREE.BufferGeometry();
@@ -2173,7 +2038,7 @@ PDB.render = {
             line.name = 'line';
             line.scale.z = 5;
             controller1.add(line.clone());
-            controller2.add(line.clone());
+            // controller2.add(line.clone());
         } else {
             window.addEventListener('vr controller connected', function (event) {
                 controller1 = event.detail;
@@ -2893,15 +2758,15 @@ PDB.render = {
         if (movenlength > 0.01) { //0.01, speci
             var vec = {
                 x: offset.x - PDB.offset.x * 10,
-                y: offset.y - PDB.offset.y,
-                z: offset.z - PDB.offset.z
+                y: offset.y - PDB.offset.y * 10,
+                z: offset.z - PDB.offset.z * 10
             }
             PDB.tool.getRealVectorForRepeatPainter(vec);
         }
         PDB.offset = offset.clone();
         //====add the random  migration path and scope of drug
         if (PDB.DRUGMOVE) {
-            let now = new Date();
+            var now = new Date();
             //console.log(PDB.drugMoveTime - now);
             if (PDB.drugMoveTime - now < -2000) {
                 PDB.tool.migrationDrug();
