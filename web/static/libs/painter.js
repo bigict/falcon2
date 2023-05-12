@@ -239,29 +239,29 @@ PDB.painter = {
                 // ];
                 var mainMenu = [
                     ["VR模式", PDB.MENU_TYPE_VIS],
-                    ["蛋白质结构", PDB.MENU_TYPE_MAIN],
-                    ["配体结构", PDB.MENU_TYPE_LIGAND],
-                    ["其他展示", PDB.MENU_TYPE_EX_HET],
-                    ["Surface", PDB.MENU_TYPE_SURFACE],
-                    ["Label", PDB.MENU_TYPE_LABEL],
-                    ["颜色", PDB.MENU_TYPE_COLOR],
-                    ["测量", PDB.MENU_TYPE_MEASURE],
-                    ["修改蛋白质", PDB.MENU_TYPE_DRAG],
-                    ["裁剪蛋白", PDB.MENU_TYPE_FRAGMENT],
+                    // ["蛋白质结构", PDB.MENU_TYPE_MAIN],
+                    // ["配体结构", PDB.MENU_TYPE_LIGAND],
+                    // ["其他展示", PDB.MENU_TYPE_EX_HET],
+                    // ["Surface", PDB.MENU_TYPE_SURFACE],
+                    // ["Label", PDB.MENU_TYPE_LABEL],
+                    // ["颜色", PDB.MENU_TYPE_COLOR],
+                    // ["测量", PDB.MENU_TYPE_MEASURE],
+                    ["设计蛋白质 <— 请选择", PDB.MENU_TYPE_DRAG],
+                    // ["裁剪蛋白", PDB.MENU_TYPE_FRAGMENT],
                     ["替换氨基酸", PDB.MENU_TYPE_EDITING],
-                    ["突变", PDB.MENU_TYPE_MUTATION],
-                    ["转换", PDB.MENU_TYPE_DIRECTION],
-                    ["旋转", PDB.MENU_TYPE_ROTATION],
+                    // ["突变", PDB.MENU_TYPE_MUTATION],
+                    // ["转换", PDB.MENU_TYPE_DIRECTION],
+                    // ["旋转", PDB.MENU_TYPE_ROTATION],
                     // ["Bond", PDB.MENU_TYPE_HBOND],
                     // ["Conservation",              PDB.MENU_TYPE_CONSERVATION],
                     //["Density Map", PDB.MENU_TYPE_DENSITYMAP],
-                    ["药物对接", PDB.MENU_TYPE_DRUG],
-                    ["导出蛋白", PDB.MENU_TYPE_EXPORT],
-                    ["语音", PDB.MENU_TYPE_SPEECH],
+                    // ["药物对接", PDB.MENU_TYPE_DRUG],
+                    ["保存蛋白质", PDB.MENU_TYPE_EXPORT],
+                    // ["语音", PDB.MENU_TYPE_SPEECH],
                     //["Spherical View", PDB.MENU_TYPE_OUTBALL]
                 ];
                 for (var i = 0; i < mainMenu.length; i++) {
-                    PDB.drawer.drawTextKB(PDB.GROUP_MENU, new THREE.Vector3(x - 2, y - i * 0.22, z), mainMenu[i][0], mainMenu[i][1], titleColor, 135);
+                    PDB.drawer.drawTextKB(PDB.GROUP_MENU, new THREE.Vector3(x - 4, y - i * 0.22, z), mainMenu[i][0], mainMenu[i][1], titleColor, 135);
                 }
                 var info = w3m.mol[PDB.pdbId].info;
                 var infoMenu = [
@@ -275,7 +275,7 @@ PDB.painter = {
                     ["Doi : " + info.doi],
                 ];
                 for (var i = 0; i < infoMenu.length; i++) {
-                    PDB.drawer.drawTextKB(PDB.GROUP_MENU, new THREE.Vector3(x + 3, y - i * 0.2, z), infoMenu[i][0], "", infoColor, 135);
+                    PDB.drawer.drawTextKB(PDB.GROUP_MENU, new THREE.Vector3(x + 5, y - i * 0.2, z), infoMenu[i][0], "", infoColor, 135);
                 }
                 break;
             case PDB.MENU_TYPE_MAIN:
@@ -345,7 +345,6 @@ PDB.painter = {
                     ["By ChainSpectrum", 608],
                     ["By Hydrophobicity", 609],
                     ["By Conservation", 'Conservation'],
-
                 ];
                 for (var i = 0; i < colorMenu.length; i++) {
                     PDB.drawer.drawTextKB(PDB.GROUP_MENU_COLOR, new THREE.Vector3(x, y - i * 0.2, z), colorMenu[i][0], colorMenu[i][1], color, 135);
@@ -363,10 +362,10 @@ PDB.painter = {
                 var dragMenu = [
                     ["退出模式", "exit"],
                     ["重置", 0],
-                    ["拖拽配体", PDB.SELECTION_HET],
-                    ["拖拽链", PDB.SELECTION_CHAIN],
-                    ["拖拽氨基酸", PDB.SELECTION_RESIDUE],
-                    ["拖拽二级结构", PDB.SELECTION_HELIX_SHEET],
+                    ["修改配体", PDB.SELECTION_HET],
+                    ["修改链", PDB.SELECTION_CHAIN],
+                    ["修改氨基酸 <- 请选择", PDB.SELECTION_RESIDUE],
+                    ["修改二级结构", PDB.SELECTION_HELIX_SHEET],
                     ["拖拽药物", PDB.SELECTION_DRUG]
                 ];
                 for (var i = 0; i < dragMenu.length; i++) {

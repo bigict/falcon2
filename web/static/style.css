@@ -4,7 +4,7 @@ Released for free under a Creative Commons Attribution 3.0 License
 */
 
 @charset "utf-8";
-body { margin:0; padding:0; width:100%;  background: url(/serving/images/main_bg.gif) top center; }
+body { margin:0; padding:0; width:100%;  background: url(/images/main_bg.gif) top center; }
 html { padding:0; margin:0;}
 li.bg, .bg { clear:both; border-bottom:1px  solid #cccccc;   border-top:1px  solid #cccccc; padding:0; margin:10px 0; background:#fff; list-style:none; height:1px;}
 li.bg2, .bg2 { clear:both; border-bottom:1px dashed #dfdfdf;   padding:0; margin:10px 0; background:none; list-style:none;}
@@ -62,10 +62,12 @@ h1 small { display:block; margin:-4px 0; padding:0 0 0 176px; font:normal 13px/1
 .FBG .blok { width:270px; float:left; padding:10px 5px; margin:0;}
 .FBG .blok2 { width:328px; float:left; padding:10px 5px; margin:0;}
 /* footer */
+/*
 .footer_resize { margin:0 auto; padding:10px 35px; width:900px;  background:#1a68a0;}
 .footer {padding:0; margin:0 auto; background:#6d7c83;}
 .footer p { color:#fff; font: normal 12px Arial, Helvetica, sans-serif; padding:0 0 0 5px; margin:0; line-height:1.8em;}
 .footer a { color:#fff; text-decoration:none; font-weight:bold;}
+*/
 /********** contact form **********/
 #contactform { margin:0; padding:5px; }
 #contactform * { color:#F00; }

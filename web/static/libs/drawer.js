@@ -4,8 +4,11 @@
  */
 var font;
 var loader = new THREE.FontLoader();
-loader.load('js/fonts/helvetiker_bold.typeface.json', function (font0) {
-    font = font0;
+// loader.load('js/fonts/helvetiker_bold.typeface.json', function (font0) {
+//     font = font0;
+// });
+loader.load('js/fonts/Alibaba PuHuiTi Medium_Regular.json', function(font0) {
+  font = font0;
 });
 var fontloader =
     PDB.drawer = {

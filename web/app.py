@@ -4,8 +4,8 @@ import os
 from typing import Union, Any
 
 from flask import Flask, jsonify, send_file, redirect, request, render_template, url_for
-import web_utils.db as db, web_utils.form as form, web_utils.utils as utils
-from web_utils.utils import serving_pdb
+# import web_utils.db as db, web_utils.form as form, web_utils.utils as utils
+# from web_utils.utils import serving_pdb
 from FFD.ffd_ppl import get_ffd, get_ffd_short
 from Bio.PDB.PDBParser import PDBParser
 from dfire.calene import read_lib, calc_energy
@@ -294,6 +294,7 @@ def main():
 
 if __name__ == '__main__':
     app.config['DEBUG'] = True
-    # app.run(host='172.16.10.22', port=9098, threaded=True,
-    #         ssl_context=("/home/ysbgs/prodesign/web/server/server.crt", "/home/ysbgs/prodesign/web/server/server.key"))
-    app.run(host='0.0.0.0', port=9098, threaded=True)
+
+    app.run(host='0.0.0.0', port=9098, threaded=True,
+            ssl_context=("server/server.crt", "server/server.key"))
+    # app.run(host='0.0.0.0', port=9098, threaded=True)

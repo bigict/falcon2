@@ -1,3 +1,7 @@
+/**
+ * Created by Kui XU on 2017/07/08.
+ * mail: xukui.cs@gmail.com
+ */
 var container;
 var camera, scene, renderer, statsVR;
 var splineCamera, parent, group;
@@ -49,8 +53,81 @@ let isImmersive = false;
 var DOING = 0;
 var STATE = {};
 
-function process_button(type, component) {
+// function process_button(type, component) {
+//
+//     if (component.values.state === Constants.ComponentState.PRESSED && DOING === 0) {
+//         switch (type) {
+//             case Constants.ComponentType.TRIGGER:
+//                 break;
+//             case Constants.ComponentType.SQUEEZE:
+//                 onMenuDown(event);
+//                 DOING = 1;
+//                 STATE[type] = 1;
+//                 break;
+//             case Constants.ComponentType.TOUCHPAD:
+//                 // ThumbpadAxes = [component.values.xAxis, component.values.yAxis]
+//                 // onThumbpadDown(event);
+//                 DOING = 1;
+//                 STATE[type] = 1;
+//                 break;
+//             case Constants.ComponentType.THUMBSTICK:
+//                 // ThumbpadAxes = [component.values.xAxis, component.values.yAxis]
+//                 // onThumbpadDown(event);
+//                 DOING = 1;
+//                 STATE[type] = 1;
+//                 break;
+//             case Constants.ComponentType.BUTTON:
+//                 DOING = 1;
+//                 STATE[type] = 1;
+//                 break;
+//             default:
+//                 throw new Error(`Unexpected ComponentType ${type}`);
+//         }
+//
+//     } else if (component.values.state === Constants.ComponentState.TOUCHED && DOING === 0) {
+//         switch (type) {
+//             case Constants.ComponentType.THUMBSTICK:
+//                 // ThumbpadAxes = [component.values.xAxis, component.values.yAxis]
+//                 // onThumbpadDown(event);
+//                 DOING = 1;
+//                 STATE[type] = 1;
+//                 break;
+//         }
+//         console.log(ThumbpadAxes);
+//     } else if (component.values.state === Constants.ComponentState.DEFAULT && DOING === 1) {
+//
+//         switch (type) {
+//             case Constants.ComponentType.TRIGGER:
+//                 break;
+//             case Constants.ComponentType.SQUEEZE:
+//                 if (STATE[type] === 1) {
+//                     DOING = 0;
+//                     STATE[type] = 0;
+//                 }
+//                 break;
+//             case Constants.ComponentType.TOUCHPAD:
+//                 if (STATE[type] === 1) {
+//                     onThumbpadUp(event);
+//                     DOING = 0;
+//                     STATE[type] = 0;
+//                 }
+//                 break;
+//             case Constants.ComponentType.THUMBSTICK:
+//                 if (STATE[type] === 1) {
+//                     onThumbpadUp(event);
+//                     DOING = 0;
+//                     STATE[type] = 0;
+//                 }
+//                 break;
+//             case Constants.ComponentType.BUTTON:
+//                 break;
+//             default:
+//                 throw new Error(`Unexpected ComponentType ${type}`);
+//         }
+//     }
+// }
 
+function process_button(type, component) {
     if (component.values.state === Constants.ComponentState.PRESSED && DOING === 0) {
         switch (type) {
             case Constants.ComponentType.TRIGGER:
@@ -72,11 +149,19 @@ function process_button(type, component) {
                 DOING = 1;
                 STATE[type] = 1;
                 break;
-            // case Constants.ComponentType.BUTTON:
-            //     onMenuDown(event)
-            //     DOING = 1;
-            //     STATE[type] = 1;
-            //     break;
+            case Constants.ComponentType.BUTTON:
+                switch (component.gamepadIndices.button) {
+                    case 4:
+                        OperatingInstructions()
+                        PDB.render.hideStructure();
+                        DOING = 1;
+                        STATE[type] = 1;
+                        break;
+                    case 5:
+                        revocation();
+                        break;
+                }
+                break;
             default:
                 throw new Error(`Unexpected ComponentType ${type}`);
         }
@@ -117,12 +202,24 @@ function process_button(type, component) {
                 }
                 break;
             case Constants.ComponentType.BUTTON:
+                switch (component.gamepadIndices.button) {
+                    case 4:
+                        if (STATE[type] === 1) {
+                            PDB.render.showStructure();
+                            scene.remove(PDB.OPERAINS);
+                            DOING = 0;
+                            STATE[type] = 0;
+                        }
+                }
+
+
                 break;
             default:
                 throw new Error(`Unexpected ComponentType ${type}`);
         }
     }
 }
+
 
 function listen_button() {
     if (controllerGrip1 !== null && controllerGrip1.children.length > 0 && controllerGrip1.children[0].motionController !== null) {
@@ -168,15 +265,24 @@ function onThumbpadUp(event) {
 }
 
 function onThumbpadDown(event) {
+    // window.clearInterval(id);
     x = ThumbpadAxes[0];
     y = ThumbpadAxes[1];
-    if (y > 0.1) {
+    // if ((y <= -0.5 && x >= -0.5 && x <= 0) || (y <= -0.5 && x <= 0.5 && x >= 0)) {
+    // if (y > 0.7) {
+    if (y > 1) {
         action = 1;
-    } else if (y < -0.1) {
+        // } else if ((y >= 0.5 && x >= -0.5 && x <= 0) || (y >= 0.5 && x <= 0.5 && x >= 0)) {
+        // } else if (y <-0.7) {
+    } else if (y < -1) {
         action = 2;
-    } else if (x < -0.1) {
+        // } else if ((x <= -0.5 && y >= -0.5 && y <= 0) || (x <= -0.5 && y <= 0.5 && y >= 0)) {
+        // } else if (x < -0.7) {
+    } else if (x < -1) {
         action = 3;
-    } else if (x > 0.1) {
+        // } else if ((x >= 0.5 && y >= -0.5 && y <= 0) || (x >= 0.5 && y <= 0.5 && y >= 0)) {
+        // } else if (x > 0.7 ) {
+    } else if (x > 1) {
         action = 4;
     }
 
@@ -184,20 +290,21 @@ function onThumbpadDown(event) {
         case 0:
             break;
         case 1:
-            id = self.setInterval("PDB.painter.near()", 20);
+            id = self.setInterval("PDB.painter.near()", 50);
             break;
         case 2:
-            id = self.setInterval("PDB.painter.far()", 20);
+            id = self.setInterval("PDB.painter.far()", 50);
             break;
         case 3:
             PDB.ROTATION_DIRECTION = 0;
-            id = self.setInterval("PDB.painter.rotate()", 20);
+            id = self.setInterval("PDB.painter.rotate()", 50);
             break;
         case 4:
             PDB.ROTATION_DIRECTION = 1;
-            id = self.setInterval("PDB.painter.rotate()", 20);
+            id = self.setInterval("PDB.painter.rotate()", 50);
             break;
     }
+
 
 }
 
@@ -524,6 +631,10 @@ function dealwithMenu(object) {
         case PDB.GROUP_MENU_DRUG:
             switch (curr_reptype) {
                 case 1:
+                    // PDB.GROUP[PDB.GROUP_DRUG].visible = false;
+                    // if(PDB.GROUP[PDB.GROUP_DRUG].visible === false){
+                    // PDB.DRUGMOVE = false;
+                    // }
                     PDB.DRUGMOVE = false;
                     PDB.render.clearGroupIndex(PDB.GROUP_DRUG);
                     PDB.render.clearGroupIndex(PDB.GROUP_VR_MENU_DOCKING);
@@ -659,7 +770,43 @@ function dealwithMenu(object) {
                         })
                     }
                 })
+                // EmMapParser.loadMap('3298','map-local',function (emmap) {
+
+                // PDB.EMMAP = emmap;
+
+                // PDB.MAP_SCOPE={x:emmap.header.NC,y:emmap.header.NR,z:emmap.header.NS};
+                // PDB.THRESHOLD=(emmap.header.max-emmap.header.mean)/2;
+                // PDB.SLICE = Math.floor(emmap.header.NS/2);
+                // PDB.painter.showMapSolid(emmap,PDB.THRESHOLD);
+                // // PDB.painter.showMapSlices(emmap,PDB.THRESHOLD,PDB.SLICE,PDB.DIMENSION);
+                // var showThreshold = document.getElementById("showThreshold");
+                // var showSlice = document.getElementById("showSlice");
+                // showThreshold.max = Number(emmap.header.max);
+                // showThreshold.min = Number(emmap.header.min);
+                // //showSlice.max = Number(emmap.header.NS);
+                // showSlice.min = 1;
+                // switch(PDB.DIMENSION){
+                // case PDB.DIMENSION_X:
+                // showSlice.max = Number(emmap.header.NC);
+                // break;
+                // case PDB.DIMENSION_Y:
+                // showSlice.max = Number(emmap.header.NR);
+                // break;
+                // case PDB.DIMENSION_Z:
+                // showSlice.max = Number(emmap.header.NS);
+                // break;
+                // }
+                // });
             }
+            // if(event.target.checked){
+
+            // }else{
+            // PDB.SHOWSOLID = false;
+            // if(PDB.SHOWSILICE){
+            // PDB.painter.showMapSlices(PDB.EMMAP,PDB.THRESHOLD,PDB.SLICE,PDB.DIMENSION);
+            // }
+            // onMenuDown();
+            // }
             break;
         case PDB.GROUP_MENU_CONSERVATION:
             var type = object.userData.reptype;
@@ -703,10 +850,10 @@ function onRotationDown(event) {
     for (const pobject in PDB.GROUP["chain_a"]) {
         controller.add(PDB.GROUP["chain_a"].children[pobject]);
     }
-    console.log(controller);
+
 }
 
-//
+
 // function onRotationUp(event) {
 //     var controller = event.target;
 //     for (const pmesh in controller.children) {
@@ -731,9 +878,24 @@ function revocation() {
     }
 }
 
+function OperatingInstructions() {
+    if (PDB.OPERAINS === 0) {
+        var geometry = new THREE.PlaneGeometry(16, 9);
+        // geometry.scale(-1, 1, 1);
+        var url = "data/oculusquest.png"
+        var material = new THREE.MeshBasicMaterial({
+            map: THREE.ImageUtils.loadTexture(url)
+        })
+        PDB.OPERAINS = new THREE.Mesh(geometry, material);
+    }
+
+    scene.add(PDB.OPERAINS);
+    PDB.OPERAINS.position.set(0, 0, -5);
+}
+
 
 // DINGWEI
-function PDBFormatEr(coords, resid) {
+function PDBFormatEr(coords) {
     // 修改PDB坐标
     let PDBFormat = "";
     if (PDB.textData.length > 0) {
@@ -743,14 +905,33 @@ function PDBFormatEr(coords, resid) {
             switch (w3m_sub(line, 0, 6)) {
                 case 'atom':
                     const residue_id = parseInt(w3m_sub(line, 23, 26)) || 0;
-                    const atom_name = w3m_sub(s, 13, 16);
+                    const atom_name = w3m_sub(line, 13, 16);
+                    const atom_chain = w3m_sub(line, 22) || 'x';
+                    const residueKey = "chain" + "_" + atom_chain + "_" + residue_id;
 
-                    // // 只改变Ca坐标
-                    if (coords[residue_id] && atom_name === "ca") {
-                        line = line.replace(w3m_sub(line, 31, 38), Math.floor(coords[residue_id].x * 1000) / 1000);
-                        line = line.replace(w3m_sub(line, 39, 46), Math.floor(coords[residue_id].y * 1000) / 1000);
-                        line = line.replace(w3m_sub(line, 47, 54), Math.floor(coords[residue_id].z * 1000) / 1000);
+                    // 只改变Ca坐标
+                    if (coords[residueKey] && atom_name === "ca") {
+                        line = line.replace(w3m_sub(line, 31, 38), coords[residueKey].x);
+                        line = line.replace(w3m_sub(line, 39, 46), coords[residueKey].y);
+                        line = line.replace(w3m_sub(line, 47, 54), coords[residueKey].z);
                     }
+                    // // 改变Ca侧链
+                    // if (coords[residue_id]) {
+                    //     const xyz = [parseFloat(w3m_sub(line, 31, 38)),
+                    //         parseFloat(w3m_sub(line, 39, 46)),
+                    //         parseFloat(w3m_sub(line, 47, 54))]
+                    //
+                    //     xyz[0] = xyz[0] + coords[residue_id].x;
+                    //     xyz[1] = xyz[1] + coords[residue_id].y;
+                    //     xyz[2] = xyz[2] + coords[residue_id].z;
+                    //
+                    //     // 将ca的pdb坐标存储在coords中
+                    //     PDB.CA_COORDS[residue_id] = xyz;
+                    //
+                    //     line = line.replace(w3m_sub(line, 31, 38), Math.floor(xyz[0] * 1000) / 1000);
+                    //     line = line.replace(w3m_sub(line, 39, 46), Math.floor(xyz[1] * 1000) / 1000);
+                    //     line = line.replace(w3m_sub(line, 47, 54), Math.floor(xyz[2] * 1000) / 1000);
+                    // }
 
                     line = line.toUpperCase();
                     PDBFormat = PDBFormat + line + "\n";
@@ -771,7 +952,6 @@ function PDBFormatEr(coords, resid) {
 
 
 function onTriggerDown(event) {
-
 
     var controller = event.target;
     PDB.HELIX_SHEET_ARRAY = [];
@@ -816,7 +996,7 @@ function onTriggerDown(event) {
                 break;
             case PDB.SELECTION_CHAIN:
                 if (object.userData.presentAtom !== undefined) {
-                    object.userData.presentAtom.pos = pos;
+                    object.userData.presentAtom["pos_curr"] = pos;
                     // console.log(object.userData.presentAtom);
                     PDB.painter.showChainInfo(object.userData.presentAtom);
                 }
@@ -830,6 +1010,8 @@ function onTriggerDown(event) {
                 if (object.userData.presentAtom !== undefined) {
 
                     console.log("object", object);
+                    //PDB.painter.showResidueInfo(object.userData.presentAtom);
+                    //PDB.painter.showResidueInfoPos(object.userData.presentAtom, pos);
                     atom = object.userData.presentAtom;
                     atom["pos_curr"] = pos;
                     PDB.painter.showAtomInfo(atom);
@@ -843,7 +1025,7 @@ function onTriggerDown(event) {
                 break;
             case PDB.SELECTION_HELIX_SHEET:
                 if (object.userData.presentAtom !== undefined) {
-                    object.userData.presentAtom.pos = pos;
+                    object.userData.presentAtom["pos_curr"] = pos;
                     // console.log(object.userData.presentAtom);
                     PDB.painter.showChainInfo(object.userData.presentAtom);
                 }
@@ -962,11 +1144,18 @@ function onTriggerUp(event) {
         var intersections = controller.userData.selected;
         var object = intersections;
 
-        objectDeTrans(controller, object);
 
+        //var aaa = getIntersections( controller );
+        //console.log(aaa[0].pos);
+        // var pos = undefined;
+        // if ( intersections.length > 0 ) {
+        // var intersection = intersections[ 0 ];
+        // var pos = intersection.pos;
+        // }
+
+        objectDeTrans(controller, object);
         controller.userData.selected = undefined;
     }
-
 
     switch (PDB.trigger) {
         case PDB.GROUP_MENU_DRAG:
@@ -975,6 +1164,9 @@ function onTriggerUp(event) {
             if (PDB.distanceArray.length === 2) {
                 var locationStart = PDB.distanceArray[0];
                 var locationEnd = PDB.distanceArray[1];
+                // PDB.render.clearGroupIndex(PDB.GROUP_INFO);
+                // PDB.GROUP[PDB.GROUP_INFO].position.copy(new THREE.Vector3(0,0,0));
+                // PDB.GROUP[PDB.GROUP_INFO].rotation.set(0,0,0);
                 PDB.painter.showDistance(locationStart, locationEnd);
                 PDB.distanceArray = [];
             }
@@ -982,6 +1174,9 @@ function onTriggerUp(event) {
         case PDB.TRIGGER_EVENT_ANGLE:
 
             if (PDB.distanceArray.length === 1) {
+                // PDB.render.clearGroupIndex(PDB.GROUP_INFO);
+                // PDB.GROUP[PDB.GROUP_INFO].position.copy(new THREE.Vector3(0,0,0));
+                // PDB.GROUP[PDB.GROUP_INFO].rotation.set(0,0,0);
             } else if (PDB.distanceArray.length === 2) {
                 var locationStart = PDB.distanceArray[0];
                 var locationEnd = PDB.distanceArray[1];
@@ -998,6 +1193,9 @@ function onTriggerUp(event) {
                 var edgePoint2Pos = [edgePoint2.pos_curr.x, edgePoint2.pos_curr.y, edgePoint2.pos_curr.z];
                 var ms = PDB.tool.getAngleMeasurement(anglePointPos, edgePoint1Pos, edgePoint2Pos);
 
+                // var anglePos = new THREE.Vector3(anglePoint.pos_curr.x, anglePoint.pos_curr.y, anglePoint.pos_curr.z)
+                // var labelPos = anglePos.applyMatrix4(PDB.GROUP[PDB.GROUP_MAIN].matrix);
+                // var pos = PDB.tool.getAtomInfoPosition(anglePos,camera.position);
 
                 var limit = w3m.global.limit;
                 var x = limit.x[1] + PDB.GeoCenterOffset.x;
@@ -1089,6 +1287,7 @@ function objectTrans(controller, object, event) {
 
 
                 PDB.DFMATRIX1 = controller.matrixWorld.clone();
+
             } else {
 
                 var mtx = new THREE.Vector3()
@@ -1173,31 +1372,70 @@ function objectTrans(controller, object, event) {
 }
 
 function objectDeTrans(controller, object) {
-
+    // let new_array = object.clone();
     if (object != undefined && (object.material != undefined || object.type === "Group")) {
         var groupindex = object.userData["group"];
-        if (PDB.selection_mode === PDB.SELECTION_HELIX_SHEET) {
 
-            for (var per_object in object) {
-                if (object[per_object].type === "Mesh") {
-                    PDB.tool.colorIntersectObjectBlue(object[per_object], 0);
-                    // 拖拽代码 ---费了好大劲
-                    // object[per_object].matrix.premultiply(tempMatrix);
-                    object[per_object].matrix.premultiply(controller.matrixWorld);
-                    object[per_object].matrix.decompose(object[per_object].position, object[per_object].quaternion, object[per_object].scale);
+        switch (PDB.selection_mode) {
+            case PDB.SELECTION_HELIX_SHEET:
+                break;
+            case PDB.SELECTION_RESIDUE:
+                break;
+            default:
+                object.matrix.premultiply(controller.matrixWorld);
+                object.matrix.decompose(object.position, object.quaternion, object.scale);
+                PDB.tool.colorIntersectObjectBlue(object, 0);
 
-                    PDB.GROUP[groupindex].add(object[per_object]);
+                // console.log(new_array);
+
+                let coords = {};
+
+                for (let i = 0; i < object.children.length; i++) {
+                    var ob_selected = object.children[i];
+                    const ob_residue = ob_selected.userData.presentAtom;
+                    const ob_pos_center = new THREE.Vector3(
+                        ob_residue.pos_centered.x,
+                        ob_residue.pos_centered.y,
+                        ob_residue.pos_centered.z,
+                    )
+
+                    const ob_resid = ob_residue.resid;
+                    const groupindex = ob_selected.userData["group"];
+
+                    ob_pos_center.applyMatrix4(object.matrixWorld);
+
+                    let residue_x = (ob_pos_center.x - PDB.GeoCenterOffset.x).toFixed(3);
+                    let residue_y = (ob_pos_center.y - PDB.GeoCenterOffset.y).toFixed(3);
+                    let residue_z = (ob_pos_center.z - PDB.GeoCenterOffset.z).toFixed(3);
+
+                    let coord = new THREE.Vector3(
+                        residue_x,
+                        residue_y,
+                        residue_z);
+
+                    // 坐标存储字典
+                    let chainName = groupindex;
+                    if (chainName.search('_low') > 0) {
+                        chainName = chainName.split('_low')[0].toLowerCase();
+                    }
+
+                    let cdKey = chainName + "_" + ob_resid;
+                    console.log(cdKey);
+                    coords[cdKey] = coord;
 
                 }
-            }
-
-        } else {
-
-            object.matrix.premultiply(controller.matrixWorld);
-            object.matrix.decompose(object.position, object.quaternion, object.scale);
-
-            PDB.tool.colorIntersectObjectBlue(object, 0);
-
+                // 重新加载PDB结构数据
+                const PDBText = PDBFormatEr(coords);
+                if (PDBText !== "") {
+                    PDB.textData = PDBText;
+                }
+                // 重新加载模型
+                // PDB.render.clear(0);
+                for (var i in PDB.GROUP_MAIN_INDEX) {
+                    PDB.render.clearGroupIndex(PDB.GROUP_MAIN_INDEX[i]);
+                }
+                PDB.loader.loadData(PDB.textData);
+                PDB.controller.drawGeometry(PDB.config.mainMode);
         }
 
 
@@ -1258,8 +1496,11 @@ function objectDeTrans(controller, object) {
                 PDB.tool.colorIntersectObjectBlue(PDB.GROUP[ot_index], 0);
                 scene.add(PDB.GROUP[ot_index]);
             }
-            scene.add(object);
+            // scene.add(object);
+            controller.remove(object);
         }
+
+
     }
 }
 
@@ -1477,6 +1718,50 @@ function getIntersections(controller) {
                 }
 
                 break;
+            // case PDB.SELECTION_RESIDUE:
+            //     var gIndexies = PDB.GROUP_STRUCTURE_INDEX;
+            //     for (var i = gIndexies.length - 1; i >= 0; i--) {
+            //         if (!PDB.GROUP[gIndexies[i]].visible) continue;
+            //
+            //         // 鼠标射线，选择器
+            //         var tmp_inters = raycaster.intersectObjects(PDB.GROUP[gIndexies[i]].children);
+            //
+            //         if (tmp_inters.length <= 0) continue;
+            //         object = tmp_inters[0].object;
+            //         point = tmp_inters[0].point;
+            //         if (object.name != undefined && object.name != "" && object.userData.presentAtom !== undefined) {
+            //             if (object.userData.reptype === "tube") {
+            //                 //if (object.userData.realtype !== undefined && object.userData.realtype === "arrow") {
+            //                 //console.log(object.userData);
+            //                 //}
+            //
+            //                 // atomObjects: mesh, gIndexies[i]: chain_a, object.userData.presentAtom: res_message, point: xyz
+            //                 var atomObjects = PDB.GROUP[gIndexies[i]].getChildrenByName(object.userData.presentAtom.id);
+            //                 // console.log(atomObjects)
+            //                 // console.log(object.userData.presentAtom)
+            //                 // console.log(point)
+            //                 for (var a = 0; a < atomObjects.length; a++) {
+            //                     inters.push({
+            //                         "object": atomObjects[a],
+            //                         "pos": point
+            //                     });
+            //                 }
+            //             } else {
+            //
+            //                 var resAtoms = PDB.tool.getMainResAtomsByAtom(object.userData.presentAtom);
+            //                 for (var k = 0; k < resAtoms.length; k++) {
+            //                     var atomObjects = PDB.GROUP[gIndexies[i]].getChildrenByName(resAtoms[k].id);
+            //                     for (var a = 0; a < atomObjects.length; a++) {
+            //                         inters.push({
+            //                             "object": atomObjects[a],
+            //                             "pos": point
+            //                         });
+            //                     }
+            //                 }
+            //             }
+            //         }
+            //     }
+            //     break;
             case PDB.SELECTION_ATOM:
                 var gIndexies = PDB.GROUP_STRUCTURE_INDEX;
                 for (var i = gIndexies.length - 1; i >= 0; i--) {
@@ -1542,14 +1827,65 @@ function getIntersections(controller) {
 function intersectObjects(controller) {
 
     // revocation
-    if (PDB.GAMEPAD.length > 0) {
-        if (PDB.GAMEPAD[5].pressed) {
-            // 弹窗提示撤销
-            revocation();
-            // 旋转完后将PDB文件重新生成一遍
+    // if (PDB.GAMEPAD.length > 0) {
+    //     if (PDB.GAMEPAD[5].pressed) {
+    //         // 弹窗提示撤销
+    //         revocation();
+    //     }
+    // }
+    //
+    //
+    // if (PDB.GAMEPAD.length > 0) {
+    //     if (PDB.GAMEPAD[4].pressed) {
+    //         // 弹窗提示撤销
+    //
+    //     }
+    // }
 
-        }
-    }
+
+    //     if (!PDB.DFMATRIX1.equals(controller.matrixWorld)) {
+    //         PDB.DFMATRIX1 = controller.matrixWorld.clone();
+    //         var groupindex = object_1.userData["group"];
+    //         // var localPosition = object_1.position;
+    //
+    //         var new_point = object_1.geometry.boundingSphere.center.clone()
+    //         new_point.applyMatrix4(object_1.matrixWorld)
+    //
+    //         var new_1 = object_1.userData.presentAtom.pos_centered.clone()
+    //         new_1.applyMatrix4(object_1.matrixWorld)
+    //
+    //         var newX1 = (new_1.x - PDB.GeoCenterOffset.x).toFixed(3)
+    //         var newY1 = (new_1.y - PDB.GeoCenterOffset.y).toFixed(3)
+    //         var newZ1 = (new_1.z - PDB.GeoCenterOffset.z).toFixed(3)
+    //         console.log("new1", newX1, newY1, newZ1)
+    //
+    //
+    //         // console.log("point", new_point)
+    //         // console.log("point——1", new_1)
+    //
+    //
+    //         PDB.GROUP[groupindex].children.push(object_1);
+    //         var intersections = getIntersections(controller);
+    //         // PDB.GROUP[groupindex].add(object_1);
+    //         if (intersections != undefined && intersections.length > 0) {
+    //             var currentPoint = intersections[0].pos.clone();
+    //             console.log("currentPoint", currentPoint);
+    //
+    //             var newX = (currentPoint.x - PDB.GeoCenterOffset.x).toFixed(3)
+    //             var newY = (currentPoint.y - PDB.GeoCenterOffset.y).toFixed(3)
+    //             var newZ = (currentPoint.z - PDB.GeoCenterOffset.z).toFixed(3)
+    //             console.log("new", newX, newY, newZ)
+    //
+    //
+    //             // const points = object_1.geometry.parameters.path.getPoints();
+    //
+    //             // console.log("points", points[0])
+    //             // console.log("pointerPosition", pointerPosition);
+    //         }
+    //         //
+    //     }
+    //
+    // }
 
     if (controller.userData.selected !== undefined) {
 
@@ -1557,57 +1893,128 @@ function intersectObjects(controller) {
         if (PDB.selection_mode === PDB.SELECTION_HELIX_SHEET) {
             if (!PDB.DFMATRIX1.equals(controller.matrixWorld)) {
                 PDB.DFMATRIX1 = controller.matrixWorld.clone();
-                var pdb_info = "";
 
                 // 坐标存储字典
                 let coords = {};
-                let resIdList = [];
+                let chain_list = {};
 
                 for (var number in controller.children) {
-
                     var ob_selected = controller.children[number];
 
+
                     if (ob_selected.type === "Mesh") {
-                        PDB.HS_ATOM = ob_selected.userData;
-                        groupindex = PDB.HS_ATOM.group
+                        if (ob_selected.geometry.type !== "TubeGeometry") {
+                            PDB.HS_ATOM = ob_selected.userData;
 
-                        if (PDB.HS_FIRSTTIMENUMBER.indexOf(ob_selected.userData.presentAtom.resid) < 0) {
-                            PDB.HS_FIRSTTIMENUMBER.push(ob_selected.userData.presentAtom.resid)
+                            if (PDB.HS_FIRSTTIMENUMBER.indexOf(ob_selected.userData.presentAtom.resid) < 0) {
+                                PDB.HS_FIRSTTIMENUMBER.push(ob_selected.userData.presentAtom.resid)
+                            }
+
+                            const ob_residue = ob_selected.userData.presentAtom;
+                            const ob_pos_center = ob_residue.pos_centered.clone();
+
+                            const ob_resid = ob_residue.resid;
+
+                            const groupIndex = ob_selected.userData["group"];
+
+
+                            ob_pos_center.applyMatrix4(ob_selected.matrixWorld);
+
+                            let residue_x = (ob_pos_center.x - PDB.GeoCenterOffset.x).toFixed(3);
+                            let residue_y = (ob_pos_center.y - PDB.GeoCenterOffset.y).toFixed(3);
+                            let residue_z = (ob_pos_center.z - PDB.GeoCenterOffset.z).toFixed(3);
+
+                            // if (PDB.CA_COORDS.hasOwnProperty(ob_resid)) {
+                            //     coord.x = residue_x - PDB.CA_COORDS[ob_resid][0];
+                            //     coord.y = residue_y - PDB.CA_COORDS[ob_resid][1];
+                            //     coord.z = residue_z - PDB.CA_COORDS[ob_resid][2];
+                            // } else {
+                            //     coord.x = residue_x - ob_residue.pos.x;
+                            //     coord.y = residue_y - ob_residue.pos.y;
+                            //     coord.z = residue_z - ob_residue.pos.z;
+                            // }
+
+                            let coord = new THREE.Vector3(residue_x, residue_y, residue_z);
+
+                            let chainName = groupIndex;
+                            if (chainName.search('_low') > 0) {
+                                chainName = chainName[0].toLowerCase();
+                            }
+
+                            if (chain_list.includes(ob_resid) === false) {
+                                coords[chainName + "_" + ob_resid] = coord;
+                            }
                         }
-
-                        // console.log("HS_FIRSTTIMENUMBER", PDB.HS_FIRSTTIMENUMBER)
-
-                        const ob_residue = ob_selected.userData.presentAtom;
-                        const ob_pos_center = ob_residue.pos_centered.clone();
-
-                        const ob_resid = ob_residue.resid;
-                        const groupIndex = ob_selected.userData["group"];
-
-                        ob_pos_center.applyMatrix4(ob_selected.matrixWorld);
-
-                        let residue_x = (ob_pos_center.x - PDB.GeoCenterOffset.x).toFixed(3);
-                        let residue_y = (ob_pos_center.y - PDB.GeoCenterOffset.y).toFixed(3);
-                        let residue_z = (ob_pos_center.z - PDB.GeoCenterOffset.z).toFixed(3);
-
-                        let coord = new THREE.Vector3(
-                            residue_x,
-                            residue_y,
-                            residue_z);
-
-                        if (resIdList.includes(ob_resid) === false) {
-                            coords[ob_resid] = coord;
-                            resIdList.push(parseInt(ob_resid))
-                            ob_selected.visible = false;
-                        }
+                        ob_selected.visible = false;
                     }
                 }
 
-
                 // 重新加载PDB结构数据
-                const PDBText = PDBFormatEr(coords, resIdList);
+                const PDBText = PDBFormatEr(coords);
                 if (PDBText !== "") {
                     PDB.textData = PDBText;
                 }
+
+
+                // // currentPoint 有问题 需改正
+                // var geometry = object_child.geometry;
+                // geometry.computeBoundingBox();
+                // var currentPoint = geometry.boundingBox.getCenter();
+                // console.log(number, "currentPoint", currentPoint);
+                //
+                //
+                // object_child.localToWorld(currentPoint);
+                //
+                // var atom_cd = object_child.userData.presentAtom;
+                // // console.log(atom_cd)
+                //
+                // var posX = (atom_cd.pos.x).toString()
+                // var posY = (atom_cd.pos.y).toString()
+                // var posZ = (atom_cd.pos.z).toString()
+                //
+                // if (posX.split(".")[1].length < 3) {
+                //     posX = posX + "0"
+                // }
+                // if (posY.split(".")[1].length < 3) {
+                //     posY = posY + "0"
+                // }
+                // if (posZ.split(".")[1].length < 3) {
+                //     posZ = posZ + "0"
+                // }
+                //
+                //
+                // // changeData有问题 需改正
+                //
+                // if (PDB.CHANGE_DICT[number] === undefined) {
+                //     var changeData = atom_cd.name.toUpperCase().padEnd(4) + (atom_cd.resname).toString().toUpperCase().padEnd(4)
+                //         + atom_cd.chainname.toUpperCase() + atom_cd.resid.toString().padStart(4)
+                //         + posX.padStart(12) + posY.padStart(8) + posZ.padStart(8);
+                //     PDB.CHANGE_DICT[number] = changeData;
+                // }
+                //
+                // var newX = (currentPoint.x - PDB.GeoCenterOffset.x).toFixed(3)
+                // var newY = (currentPoint.y - PDB.GeoCenterOffset.y).toFixed(3)
+                // var newZ = (currentPoint.z - PDB.GeoCenterOffset.z).toFixed(3)
+                // console.log("new", newX, newY, newZ)
+                // var newTableData = "ATOM         " + atom_cd.name.toUpperCase().padEnd(4) + (atom_cd.resname).toString().toUpperCase().padEnd(4)
+                //     + atom_cd.chainname.toUpperCase() + atom_cd.resid.toString().padStart(4)
+                //     + newX.toString().padStart(12) +
+                //     newY.toString().padStart(8) +
+                //     newZ.toString().padStart(8) + "\n";
+                //
+                // pdb_info = pdb_info + newTableData;
+                //
+                // console.log("tableData", newTableData)
+                // console.log("PDB.changeData", PDB.CHANGE_DICT[number])
+                //
+                // PDB.textData = (PDB.textData).replace(PDB.CHANGE_DICT[number], newTableData);
+                // PDB.CHANGE_DICT[number] = newTableData;
+                //                         object_child.visible = false;
+                //
+                //
+                //     }
+                // }
+
 
                 // 修改为io 做一个python的io接口
 
@@ -1619,6 +2026,24 @@ function intersectObjects(controller) {
                 if (PDB.HS_FIRSTTIMENUMBER.indexOf(PDB.HS_FIRSTTIMENUMBER[0] - 1) < 0) {
                     PDB.HS_FIRSTTIMENUMBER.push(PDB.HS_FIRSTTIMENUMBER[0] - 1)
                 }
+
+                // if (PDB.CHANGE_PDB !== pdb_info) {
+                //     $.ajax({
+                //         url: "changeCoord",
+                //         type: "POST",
+                //         dataType: "json",
+                //         data: {
+                //             "pdb_file": PDB.textData,
+                //             "pdb_position": pdb_info,
+                //         },
+                //         success: function (data) {
+                //             PDB.textData = data["result"];
+                //             PDB.CHANGE_PDB = pdb_info;
+                //             // console.log(PDB.GROUP)
+                //         }
+                //     })
+                // }
+
 
                 if (PDB.HS_ATOM.group != undefined && PDB.HS_ATOM.presentAtom.chainname != undefined) {
                     groupindex = PDB.HS_ATOM.group
@@ -1643,6 +2068,8 @@ function intersectObjects(controller) {
 
 
                     PDB.loader.loadData(PDB.textData);
+                    var residueData = w3m.mol[PDB.pdbId].residueData;
+                    console.log(residueData);
 
                     for (var number in PDB.HS_FIRSTTIMENUMBER) {
                         var resid = PDB.HS_FIRSTTIMENUMBER[number];
@@ -1669,13 +2096,159 @@ function intersectObjects(controller) {
         }
         // 拖拽单体
         if ((PDB.selection_mode === PDB.SELECTION_RESIDUE) && (PDB.trigger === PDB.TRIGGER_EVENT_DRAG)) {
+            // var object_1 = controller.children[1]
+            // if (!PDB.DFMATRIX1.equals(controller.matrixWorld)) {
+            //
+            //     // 求出当前氨基酸的三维坐标
+            //     const ob_pos_center = object_1.userData.presentAtom.pos_centered.clone();
+            //     ob_pos_center.applyMatrix4(object_1.matrixWorld);
+            //
+            //     var residue_x = (ob_pos_center.x - PDB.GeoCenterOffset.x).toFixed(3)
+            //     var residue_y = (ob_pos_center.y - PDB.GeoCenterOffset.y).toFixed(3)
+            //     var residue_z = (ob_pos_center.z - PDB.GeoCenterOffset.z).toFixed(3)
+            //
+            //
+            //
+            //
+            //     // PDB.DFMATRIX1 = controller.matrixWorld.clone();
+            //     var groupindex = object_1.userData["group"];
+            //
+            //     PDB.GROUP[groupindex].children.push(object_1);
+            //     var intersections = getIntersections(controller);
+            //     // PDB.GROUP[groupindex].add(object_1);
+            //     if (intersections != undefined && intersections.length > 0) {
+            //         var currentPoint = intersections[0].pos.clone();
+            //         var atom_re = object_1.userData.presentAtom;
+            //         // console.log(atom)
+            //
+            //         var posX = (atom_re.pos.x).toString();
+            //         var posY = (atom_re.pos.y).toString();
+            //         var posZ = (atom_re.pos.z).toString();
+            //         if (posX.split(".")[1].length < 3) {
+            //             posX = posX + "0"
+            //         }
+            //         if (posY.split(".")[1].length < 3) {
+            //             posY = posY + "0"
+            //         }
+            //         if (posZ.split(".")[1].length < 3) {
+            //             posZ = posZ + "0"
+            //         }
+            //         if (PDB.changeData === "") {
+            //             PDB.changeData = (atom_re.resname).toString().toUpperCase().padEnd(4)
+            //                 + atom_re.chainname.toUpperCase() + atom_re.resid.toString().padStart(4)
+            //                 + posX.padStart(12) + posY.padStart(8) + posZ.padStart(8);
+            //         }
+            //         var newX = (currentPoint.x - PDB.GeoCenterOffset.x).toFixed(3)
+            //         var newY = (currentPoint.y - PDB.GeoCenterOffset.y).toFixed(3)
+            //         var newZ = (currentPoint.z - PDB.GeoCenterOffset.z).toFixed(3)
+            //
+            //         var newTableData = (atom_re.resname).toString().toUpperCase().padEnd(4)
+            //             + atom_re.chainname.toUpperCase() + atom_re.resid.toString().padStart(4)
+            //             + newX.toString().padStart(12) + newY.toString().padStart(8) +
+            //             newZ.toString().padStart(8);
+            //
+            //
+            //         // var newTableData = "ATOM         " + atom_re.name.toUpperCase().padEnd(4) + (atom_re.resname).toString().toUpperCase().padEnd(4)
+            //         //     + atom_re.chainname.toUpperCase() + atom_re.resid.toString().padStart(4)
+            //         //     + newX.toString().padStart(12) + newY.toString().padStart(8) +
+            //         //     newZ.toString().padStart(8) + "\n";
+            //
+            //         // console.log("newTableData", newTableData);
+            //         // console.log("PDB.changeData", PDB.changeData);
+            //
+            //         PDB.textData = (PDB.textData).replace(PDB.changeData, newTableData);
+            //         PDB.changeData = newTableData;
+            //
+            //         // if (PDB.CHANGE_PDB !== newTableData) {
+            //         //     $.ajax({
+            //         //         url: "changeCoord",
+            //         //         type: "POST",
+            //         //         dataType: "json",
+            //         //         data: {
+            //         //             "pdb_file": PDB.textData,
+            //         //             "pdb_position": pdb_info,
+            //         //         },
+            //         //         success: function (data) {
+            //         //             PDB.textData = data["result"];
+            //         //             PDB.CHANGE_PDB = newTableData;
+            //         //
+            //         //             // console.log(PDB.GROUP)
+            //         //         }
+            //         //     })
+            //         // }
+            //
+            //         // PDB.GROUP[object_1.userData.group].children = []
+            //
+            //
+            //         var children1 = PDB.GROUP[groupindex].children;
+            //         // console.log("children1", children1);
+            //         var newChildren = []
+            //         for (var i = 0; i < children1.length; i++) {
+            //             if (children1[i] instanceof THREE.Mesh) {
+            //                 var meshObj = children1[i];
+            //                 if (PDB.firstTimeNum.indexOf(meshObj.userData.presentAtom.resid) < 0) {
+            //                     // children1.remove(children1[i]);
+            //                     if (newChildren.indexOf(meshObj) < 0) {
+            //                         newChildren.push(meshObj);
+            //                     }
+            //                 }
+            //             }
+            //         }
+            //
+            //         // console.log("newChildren", newChildren)
+            //
+            //         // console.log(PDB.GROUP[groupindex].children)
+            //         PDB.loader.loadData(PDB.textData);
+            //         var residueData = w3m.mol[PDB.pdbId].residueData;
+            //
+            //         var rs_showLow = 0;
+            //         if (groupindex.search('_low') > 0) {
+            //             rs_showLow = 1;
+            //         }
+            //
+            //         for (var number in PDB.firstTimeNum) {
+            //             var resid = PDB.firstTimeNum[number];
+            //             PDB.painter.showResidue(atom_re.chainname, resid, PDB.CARTOON_SSE, atom_re.color, rs_showLow);
+            //             // PDB.painter.showResidue(PDB.HS_ATOM.presentAtom.chainname, resid, PDB.config.mainMode, PDB.HS_ATOM.presentAtom.color, rs_showLow);
+            //
+            //         }
+            //
+            //         // console.log("showLow", 0?'0':'1')
+            //
+            //         object_1.visible = false;
+            //
+            //         // 问题所在
+            //         for (let i = 0; i < scene.children.length; i++) {
+            //             if (scene.children[i].name === atom_re.chainname) {
+            //                 if (scene.children[i].children.length !== PDB.GROUP[groupindex].children.length) {
+            //                     scene.remove(scene.children[i]);
+            //                 }
+            //             }
+            //         }
+            //
+            //         // console.log("groupindex", groupindex)
+            //         for (var i = 0; i < newChildren.length; i++) {
+            //
+            //             var meshObjPdb = newChildren[i];
+            //             PDB.GROUP[groupindex].children.push(meshObjPdb);
+            //         }
+            //     }
+            // }
             var ob_selected = controller.children[1];
+
             if (!PDB.DFMATRIX1.equals(controller.matrixWorld)) {
                 PDB.DFMATRIX1 = controller.matrixWorld.clone();
 
+                // TODO
                 // 求出当前氨基酸的三维坐标
                 const ob_residue = ob_selected.userData.presentAtom;
-                const ob_pos_center = ob_residue.pos_centered.clone();
+
+                const ob_pos_center = new THREE.Vector3(
+                    ob_residue.pos_centered.x,
+                    ob_residue.pos_centered.y,
+                    ob_residue.pos_centered.z,
+                )
+
 
                 const ob_resid = ob_residue.resid;
                 const groupIndex = ob_selected.userData["group"];
@@ -1691,15 +2264,18 @@ function intersectObjects(controller) {
                     residue_y,
                     residue_z);
 
-
                 // 坐标存储字典
+                let chainName = groupIndex;
+                if (chainName.search('_low') > 0) {
+                    chainName = chainName[0].toLowerCase();
+                }
+
                 let coords = {};
-                let resIdList = [];
-                coords[ob_resid] = coord;
-                resIdList.push(parseInt(ob_resid))
+                let cdKey = chainName + "_" + ob_resid;
+                coords[cdKey] = coord;
 
                 // 重新加载PDB结构数据
-                const PDBText = PDBFormatEr(coords, resIdList);
+                const PDBText = PDBFormatEr(coords);
                 if (PDBText !== "") {
                     PDB.textData = PDBText;
                 }
@@ -1716,7 +2292,6 @@ function intersectObjects(controller) {
                             }
                         }
                     }
-
                 }
 
                 // reload PDB
@@ -1755,35 +2330,30 @@ function intersectObjects(controller) {
 
             // 接口
             // 防止多次触发
-            // if (PDB.DFIRE_INFO !== PDB.textData) {
-            //     $.ajax({
-            //         url: "dfire",
-            //         type: "POST",
-            //         dataType: "json",
-            //         data: {
-            //             "pdb_file": PDB.textData,
-            //             "pdb_position": PDB.FFDPosition
-            //         },
-            //         success: function (data) {
-            //             var atom_0 = ob_selected.userData.presentAtom
-            //
-            //             // if (PDB.DFIRE_SCORE != data["result"]) {
-            //             // 删除原有的mesh
-            //             var groupindex = ob_selected.userData["group"];
-            //             var children2 = PDB.GROUP[groupindex].children;
-            //             // console.log("children1", children1);
-            //             // console.log("PDB.GROUP_INFO", PDB.GROUP_INFO);
-            //
-            //
-            //             PDB.painter.showDFIREInfo(atom_0,
-            //                 data["result"]);
-            //
-            //             PDB.DFIRE_INFO = PDB.textData;
-            //
-            //             // console.log(PDB.GROUP)
-            //         }
-            //     })
-            // }
+            if (PDB.DFIRE_INFO !== PDB.textData) {
+                $.ajax({
+                    url: "dfire",
+                    type: "POST",
+                    dataType: "json",
+                    data: {
+                        "pdb_file": PDB.textData,
+                        "pdb_position": PDB.FFDPosition
+                    },
+                    success: function (data) {
+                        var atom_0 = ob_selected.userData.presentAtom
+
+                        // if (PDB.DFIRE_SCORE != data["result"]) {
+                        // 删除原有的mesh
+                        var groupindex = ob_selected.userData["group"];
+                        var children2 = PDB.GROUP[groupindex].children;
+
+                        PDB.painter.showDFIREInfo(atom_0,
+                            data["result"]);
+
+                        PDB.DFIRE_INFO = PDB.textData;
+                    }
+                })
+            }
 
             return;
         }
@@ -2009,6 +2579,7 @@ PDB.render = {
             controller1.addEventListener('selectstart', onTriggerDown);
 
             controller1.addEventListener('selectend', onTriggerUp);
+
 
             // controller1.addEventListener('primary press', function (event) {
             //         onMenuDown(event);
@@ -2843,6 +3414,7 @@ PDB.render = {
         PDB.painter.showMenu(PDB.MENU_TYPE_FIRST);
         menu_panel = new THREE.Object3D();
         scene.add(menu_panel);
+
         menu_panel.add(PDB.GROUP[PDB.GROUP_MENU]);
         menu_panel.add(PDB.GROUP[PDB.GROUP_KEYBOARD]);
         menu_panel.add(PDB.GROUP[PDB.GROUP_MENU_VIS]);
@@ -2868,8 +3440,8 @@ PDB.render = {
         menu_panel.add(PDB.GROUP[PDB.GROUP_MENU_DRAG]);
         menu_panel.add(PDB.GROUP[PDB.GROUP_MENU_FRAGMENT]);
         menu_panel.add(PDB.GROUP[PDB.GROUP_INPUT]);
-
         menu_panel.position.set(0, 0, -3);
+
         showMenu = true;
         PDB.render.hideStructure();
     },

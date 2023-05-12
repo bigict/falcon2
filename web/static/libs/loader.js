@@ -22,6 +22,8 @@ PDB.loader = {
         PDB.GROUP_STRUCTURE_INDEX = [];
         PDB.GROUP_MAIN_INDEX = [];
         PDB.GROUP_HET_INDEX = [];
+        PDB.GROUP_SURFACE_INDEX = [];
+        PDB.GROUP_MUTATION_INDEX = [];
 
         for (var chain in w3m.mol[PDB.pdbId].chain) {
             var gindex = "chain_" + chain;

@@ -355,7 +355,6 @@ def get_ffd_short(pdb, nums, outdir, n_structs, pool_size, device, snapshot):
                                result_dt[10],result_dt[11]])
             pdb_af_data.append(axis)
 
-
     axis1 = torch.tensor(pdb_bf_data, dtype=torch.float)
     axis2 = torch.tensor(pdb_af_data, dtype=torch.float)
 
