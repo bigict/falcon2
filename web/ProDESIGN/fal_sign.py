@@ -135,4 +135,4 @@ def falcon2_design(pdb_file,
                             fasta_str += f'{chain.id }> \n{str_seq}\n'
                             print(f'num {i} step {step + 1} identity {identity}\n', str_seq)
     str_to_fasta(fasta_str, fasta_name)
-    return 1
+    return fasta_str

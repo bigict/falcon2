@@ -18,6 +18,7 @@ module = os.environ.get('Falcon_MODULE', '')
 
 app = Flask(__name__, static_url_path='')
 
+
 # icon
 
 
@@ -338,69 +339,56 @@ def pro_design_v1():
     res_id = collections.defaultdict(list)
     for i in res_dict:
         if i[0] == pdb_id:
-            res_id[i[1].upper()].append(int(i[2]))
+            res_id[i[1].upper()].append(str(i[2]))
     print("res_id", res_id)
 
     # 获取所有res number链长
     residue_numbers = {}
     # 遍历每一行数据
+
     for line in pdb_str.split("\n"):
         if line.startswith("ATOM"):
-            # 使用正则表达式提取残基编号
-            match = re.search(r"ATOM\s+\d+\s+\w+\s+\w+\s+(\w+)\s+(\d+.)", line)
-            if match:
-                chain_number = match.group(1)
-                residue_number = match.group(2)
-                residue_number = residue_number.strip()
-                if chain_number in residue_numbers.keys():
-                    residue_numbers[chain_number].add(int(residue_number)-1)
-                else:
-                    residue_numbers[chain_number] = set()
-                    residue_numbers[chain_number].add(int(residue_number)-1)
-
-    for k, v in residue_numbers.items():
-        residue_numbers[k] = list(residue_numbers[k])
-        residue_numbers[k].sort()
+            chain_number = line[21].upper()
+            residue_number = line[22:26].strip()
+            if chain_number in residue_numbers.keys():
+                if residue_number not in residue_numbers[chain_number]:
+                    residue_numbers[chain_number].append(residue_number)
+            else:
+                residue_numbers[chain_number] = list()
+                residue_numbers[chain_number].append(residue_number)
 
     # 将两条链合并成一条链
-    print("residue_numbers", residue_numbers)
     # config
     fasta_name = 'DFProDESIGN'
     fixed_dict = collections.defaultdict(list)
 
-    if len(res_id.keys()) == 0:
-        res_id = residue_numbers
-
-    for i in residue_numbers.keys():
-        values = residue_numbers[i]
-        for j in values:
-            index_id = values.index(j)
-            if i in res_id.keys():
-                if j + 1 not in res_id[i]:
-                    fixed_dict[i].append(index_id)
+    for key, values in residue_numbers.items():
+        for num, j in enumerate(values):
+            if key in res_id.keys():
+                if j not in res_id[key]:
+                    fixed_dict[key].append(num)
                 else:
                     continue
-            if i not in res_id.keys():
-                fixed_dict[i].append(index_id)
+            if key not in res_id.keys():
+                fixed_dict[key].append(num)
     if len(res_id.keys()) == 0:
         # fixed_len = len(residue_numbers[[i for i in residue_numbers.keys()][0]])
-        falcon2_design(pdb_str,
-                       fasta_name,
-                       num=2,
-                       fixed_dict=fixed_dict,
-                       total_step=3,
-                       save_step=3, )
+        data = falcon2_design(pdb_str,
+                              fasta_name,
+                              num=2,
+                              fixed_dict=fixed_dict,
+                              total_step=3,
+                              save_step=3, )
 
     else:
-        falcon2_design(pdb_str,
-                       fasta_name,
-                       num=1,
-                       fixed_dict=fixed_dict,
-                       total_step=3,
-                       save_step=3, )
-        with open('DFProDESIGN.fasta', 'r') as fr:
-            data = fr.readlines()
-        design_result = {"result": data}
+        data = falcon2_design(pdb_str,
+                              fasta_name,
+                              num=1,
+                              fixed_dict=fixed_dict,
+                              total_step=3,
+                              save_step=3, )
+    design_result = {"result": data}
+    print(data)
     return jsonify(design_result)
 
 

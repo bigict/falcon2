@@ -955,7 +955,7 @@ PDB.controller = {
                     "pdb_id": PDB.pdbId,
                 },
                 success: function (data) {
-                    let Prodesign_data = data["result"].join("");
+                    let Prodesign_data = data["result"]
                     let blob = new Blob([Prodesign_data], {type: 'text/plain;charset=UTF-8'});
                     let url = URL.createObjectURL(blob);
 

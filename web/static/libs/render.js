@@ -873,9 +873,9 @@ function PDBFormatEr(coords) {
 
                     // 只改变Ca坐标
                     if (coords[residueKey] && atom_name === "ca") {
-                        line = line.replace(w3m_sub(line, 31, 38), coords[residueKey].x);
-                        line = line.replace(w3m_sub(line, 39, 46), coords[residueKey].y);
-                        line = line.replace(w3m_sub(line, 47, 54), coords[residueKey].z);
+                        line = line.replace(w3m_sub(line, 31, 38).padStart(8, ' '), coords[residueKey].x.padStart(8, ' '));
+                        line = line.replace(w3m_sub(line, 39, 46).padStart(8, ' '), coords[residueKey].y.padStart(8, ' '));
+                        line = line.replace(w3m_sub(line, 47, 54).padStart(8, ' '), coords[residueKey].z.padStart(8, ' '));
                     }
 
                     line = line.toUpperCase();
