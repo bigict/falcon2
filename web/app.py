@@ -358,8 +358,12 @@ def pro_design_v1():
                     residue_numbers[chain_number] = set()
                     residue_numbers[chain_number].add(int(residue_number)-1)
 
-    # 将两条链合并成一条链
+    for k, v in residue_numbers.items():
+        residue_numbers[k] = list(residue_numbers[k])
+        residue_numbers[k].sort()
 
+    # 将两条链合并成一条链
+    print("residue_numbers", residue_numbers)
     # config
     fasta_name = 'DFProDESIGN'
     fixed_dict = collections.defaultdict(list)
@@ -370,15 +374,14 @@ def pro_design_v1():
     for i in residue_numbers.keys():
         values = residue_numbers[i]
         for j in values:
+            index_id = values.index(j)
             if i in res_id.keys():
                 if j + 1 not in res_id[i]:
-                    fixed_dict[i].append(j)
+                    fixed_dict[i].append(index_id)
                 else:
-                    print(1111111111)
                     continue
             if i not in res_id.keys():
-                fixed_dict[i].append(j)
-    print(fixed_dict)
+                fixed_dict[i].append(index_id)
     if len(res_id.keys()) == 0:
         # fixed_len = len(residue_numbers[[i for i in residue_numbers.keys()][0]])
         falcon2_design(pdb_str,
