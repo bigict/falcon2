@@ -300,7 +300,8 @@ function onThumbpadDown(event) {
 
     train.position.x += moveX;
     train.position.z += moveZ;
-    controller1.lookAt(train);
+
+
 
 
     // if ((y <= -0.5 && x >= -0.5 && x <= 0) || (y <= -0.5 && x <= 0.5 && x >= 0)) {
@@ -2179,14 +2180,15 @@ PDB.render = {
             controller1.addEventListener('selectstart', onTriggerDown);
             controller1.addEventListener('selectend', onTriggerUp);
 
-
-            scene.add(controller1);
+            train.add(controller1);
+            // scene.add();
             // scene.add(controller2);
 
             var controllerModelFactory = new THREE.XRControllerModelFactory();
             controllerGrip1 = renderer.xr.getControllerGrip(0);
             controllerGrip1.add(controllerModelFactory.createControllerModel(controllerGrip1));
-            scene.add(controllerGrip1);
+            // scene.add(controllerGrip1);
+            train.add(controllerGrip1);
 
             // helpers
             var geometry = new THREE.BufferGeometry();
@@ -2986,7 +2988,8 @@ PDB.render = {
         PDB.painter.showKeyboard();
         PDB.painter.showMenu(PDB.MENU_TYPE_FIRST);
         menu_panel = new THREE.Object3D();
-        scene.add(menu_panel);
+        // scene.add(menu_panel);
+        train.add(menu_panel);
         menu_panel.add(PDB.GROUP[PDB.GROUP_MENU]);
         menu_panel.add(PDB.GROUP[PDB.GROUP_KEYBOARD]);
         menu_panel.add(PDB.GROUP[PDB.GROUP_MENU_VIS]);
