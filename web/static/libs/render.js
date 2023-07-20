@@ -295,14 +295,11 @@ function onThumbpadDown(event) {
 
     const speed = 1;
 
-    const moveX = -x * speed;
-    const moveZ = -y * speed;
+    const moveX = x * speed;
+    const moveZ = y * speed;
 
     train.position.x += moveX;
     train.position.z += moveZ;
-
-
-
 
     // if ((y <= -0.5 && x >= -0.5 && x <= 0) || (y <= -0.5 && x <= 0.5 && x >= 0)) {
     // if (y > 0.7) {
