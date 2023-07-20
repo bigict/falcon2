@@ -300,6 +300,8 @@ function onThumbpadDown(event) {
 
     train.position.x += moveX;
     train.position.z += moveZ;
+    controller1.lookAt(train);
+
 
     // if ((y <= -0.5 && x >= -0.5 && x <= 0) || (y <= -0.5 && x <= 0.5 && x >= 0)) {
     // if (y > 0.7) {
@@ -2026,8 +2028,10 @@ function intersectObjects(controller) {
             var object = intersection.object;
             intersected.push(object);
             PDB.tool.colorIntersectObjectRed(object, 1);
-            PDB.painter.showDFIREInfo(object.userData.presentAtom,
+            if (!PDB.isShowMenu && object.userData.presentAtom) {
+                PDB.painter.showDFIREInfo(object.userData.presentAtom,
                 "chain: " + object.userData.presentAtom.chainname.toUpperCase() + " " + "Residue ID: " + object.userData.presentAtom.resid);
+            }
         }
 
     } else {
