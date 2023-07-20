@@ -15,6 +15,8 @@ var API_URL = "https://vrmol.life.tsinghua.edu.cn";
 var API_URL_EMMAP = "server/api_em.php?pdbid=";
 var API_SPEECH = "server/speech/service.php"
 PDB = {
+    // rotation
+    HANDLER_ROTATION: 0,
 
     // ProDESIGN
     CHANGERESID: [],
@@ -76,8 +78,8 @@ PDB = {
     residueGroup_hide: 2,
     residueGroup_low: 3,
     residueGroupObject: {},
-    initVRShowThreshold: 35,//VR init distance
-    initDesktopShowThreshold: 1000,//Desktop distance
+    initVRShowThreshold: 35,// VR init distance
+    initDesktopShowThreshold: 1000,// Desktop distance
     cameraPosition: {//camera position
         x: 0,
         y: 0,
@@ -353,7 +355,7 @@ PDB = {
         retangle_width: 1,
         ellipse_radius: 0.21,
         ellipse_radius_multiple: 5,
-        lat_HIGH: 0.001,
+        flat_HIGH: 0.001,
         flat_width: 1,
         strip_radius: 0.2,
         strip_ex: 9,

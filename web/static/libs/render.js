@@ -46,6 +46,9 @@ var ThumbpadAxes = [];
 var id = 0;
 
 
+const train = new THREE.Object3D();
+
+
 //=======webxr=====
 
 let isImmersive = false;
@@ -141,6 +144,15 @@ var STATE = {};
 // }
 
 function process_button(type, component) {
+    if (component.values.state === Constants.ComponentState.DEFAULT && PDB.HANDLER_ROTATION !== 0) {
+        switch (component.gamepadIndices.button) {
+            case 4:
+                if (component.values.state === "default") {
+                    PDB.HANDLER_ROTATION = 0;
+                }
+                break;
+        }
+    }
     if (component.values.state === Constants.ComponentState.PRESSED && DOING === 0) {
         switch (type) {
             case Constants.ComponentType.TRIGGER:
@@ -150,39 +162,39 @@ function process_button(type, component) {
                 DOING = 1;
                 STATE[type] = 1;
                 break;
-            case Constants.ComponentType.TOUCHPAD:
-                ThumbpadAxes = [component.values.xAxis, component.values.yAxis]
-                onThumbpadDown(event);
-                DOING = 1;
-                STATE[type] = 1;
+            case Constants.ComponentType.BUTTON:
+                switch (component.gamepadIndices.button) {
+                    case 4:
+                        onRotationDown();
+                        DOING = 1;
+                        STATE[type] = 1;
+                        break;
+                }
                 break;
-            case Constants.ComponentType.THUMBSTICK:
-                ThumbpadAxes = [component.values.xAxis, component.values.yAxis]
-                onThumbpadDown(event);
-                DOING = 1;
-                STATE[type] = 1;
-                break;
-            // case Constants.ComponentType.BUTTON:
-            //     onMenuDown(event)
-            //     DOING = 1;
-            //     STATE[type] = 1;
-            //     break;
-            default:
-                throw new Error(`Unexpected ComponentType ${type}`);
+            // default:
+            //     throw new Error(`Unexpected ComponentType ${type}`);
         }
 
-    } else if (component.values.state === Constants.ComponentState.TOUCHED && DOING === 0) {
+    } else if (component.values.state === Constants.ComponentState.TOUCHED) {
         switch (type) {
             case Constants.ComponentType.THUMBSTICK:
                 ThumbpadAxes = [component.values.xAxis, component.values.yAxis]
                 onThumbpadDown(event);
-                DOING = 1;
-                STATE[type] = 1;
+                // DOING = 1;
+                // STATE[type] = 1;
                 break;
         }
-        console.log(ThumbpadAxes);
+        // else if (component.values.state === Constants.ComponentState.TOUCHED && DOING === 0) {
+        //     switch (type) {
+        //         case Constants.ComponentType.THUMBSTICK:
+        //             ThumbpadAxes = [component.values.xAxis, component.values.yAxis]
+        //             onThumbpadDown(event);
+        //             // DOING = 1;
+        //             // STATE[type] = 1;
+        //             break;
+        //     }
+        //     console.log(ThumbpadAxes);
     } else if (component.values.state === Constants.ComponentState.DEFAULT && DOING === 1) {
-
         switch (type) {
             case Constants.ComponentType.TRIGGER:
                 break;
@@ -192,24 +204,29 @@ function process_button(type, component) {
                     STATE[type] = 0;
                 }
                 break;
-            case Constants.ComponentType.TOUCHPAD:
-                if (STATE[type] === 1) {
-                    onThumbpadUp(event);
-                    DOING = 0;
-                    STATE[type] = 0;
-                }
-                break;
-            case Constants.ComponentType.THUMBSTICK:
-                if (STATE[type] === 1) {
-                    onThumbpadUp(event);
-                    DOING = 0;
-                    STATE[type] = 0;
-                }
-                break;
+            // case Constants.ComponentType.TOUCHPAD:
+            //     if (STATE[type] === 1) {
+            //         onThumbpadUp(event);
+            //         DOING = 0;
+            //         STATE[type] = 0;
+            //     }
+            //     break;
+            // case Constants.ComponentType.THUMBSTICK:
+            //     if (STATE[type] === 1) {
+            //         onThumbpadUp(event);
+            //         DOING = 0;
+            //         STATE[type] = 0;
+            //     }
+            //     break;
             case Constants.ComponentType.BUTTON:
+                if (STATE[type] === 1) {
+                    DOING = 0;
+                    STATE[type] = 0;
+                }
                 break;
-            default:
-                throw new Error(`Unexpected ComponentType ${type}`);
+
+            // default:
+            //     throw new Error(`Unexpected ComponentType ${type}`);
         }
     }
 }
@@ -273,44 +290,53 @@ function onXDown(event) {
 
 function onThumbpadDown(event) {
     // window.clearInterval(id);
-    x = ThumbpadAxes[0];
-    y = ThumbpadAxes[1];
+    let x = ThumbpadAxes[0];
+    let y = ThumbpadAxes[1];
+
+    const speed = 1;
+
+    const moveX = -x * speed;
+    const moveZ = -y * speed;
+
+    train.position.x += moveX;
+    train.position.z += moveZ;
+
     // if ((y <= -0.5 && x >= -0.5 && x <= 0) || (y <= -0.5 && x <= 0.5 && x >= 0)) {
     // if (y > 0.7) {
-    if (y > 1) {
-        action = 1;
-        // } else if ((y >= 0.5 && x >= -0.5 && x <= 0) || (y >= 0.5 && x <= 0.5 && x >= 0)) {
-        // } else if (y <-0.7) {
-    } else if (y < -1) {
-        action = 2;
-        // } else if ((x <= -0.5 && y >= -0.5 && y <= 0) || (x <= -0.5 && y <= 0.5 && y >= 0)) {
-        // } else if (x < -0.7) {
-    } else if (x < -1) {
-        action = 3;
-        // } else if ((x >= 0.5 && y >= -0.5 && y <= 0) || (x >= 0.5 && y <= 0.5 && y >= 0)) {
-        // } else if (x > 0.7 ) {
-    } else if (x > 1) {
-        action = 4;
-    }
+    // if (y > 1) {
+    //     action = 1;
+    //     // } else if ((y >= 0.5 && x >= -0.5 && x <= 0) || (y >= 0.5 && x <= 0.5 && x >= 0)) {
+    //     // } else if (y <-0.7) {
+    // } else if (y < -1) {
+    //     action = 2;
+    //     // } else if ((x <= -0.5 && y >= -0.5 && y <= 0) || (x <= -0.5 && y <= 0.5 && y >= 0)) {
+    //     // } else if (x < -0.7) {
+    // } else if (x < -1) {
+    //     action = 3;
+    //     // } else if ((x >= 0.5 && y >= -0.5 && y <= 0) || (x >= 0.5 && y <= 0.5 && y >= 0)) {
+    //     // } else if (x > 0.7 ) {
+    // } else if (x > 1) {
+    //     action = 4;
+    // }
 
-    switch (action) {
-        case 0:
-            break;
-        case 1:
-            id = self.setInterval("PDB.painter.near()", 20);
-            break;
-        case 2:
-            id = self.setInterval("PDB.painter.far()", 20);
-            break;
-        case 3:
-            PDB.ROTATION_DIRECTION = 0;
-            id = self.setInterval("PDB.painter.rotate()", 20);
-            break;
-        case 4:
-            PDB.ROTATION_DIRECTION = 1;
-            id = self.setInterval("PDB.painter.rotate()", 20);
-            break;
-    }
+    // switch (action) {
+    //     case 0:
+    //         break;
+    //     case 1:
+    //         id = self.setInterval("PDB.painter.near()", 20);
+    //         break;
+    //     case 2:
+    //         id = self.setInterval("PDB.painter.far()", 20);
+    //         break;
+    //     case 3:
+    //         PDB.ROTATION_DIRECTION = 0;
+    //         id = self.setInterval("PDB.painter.rotate()", 20);
+    //         break;
+    //     case 4:
+    //         PDB.ROTATION_DIRECTION = 1;
+    //         id = self.setInterval("PDB.painter.rotate()", 20);
+    //         break;
+    // }
 
 
 }
@@ -815,13 +841,14 @@ function dealwithMenu(object) {
     }
 }
 
-function onRotationDown(event) {
-    var controller = event.target;
-
-    for (const pobject in PDB.GROUP["chain_a"]) {
-        controller.add(PDB.GROUP["chain_a"].children[pobject]);
+function onRotationDown() {
+    if (PDB.HANDLER_ROTATION === 0) {
+        PDB.HANDLER_ROTATION = controller1.quaternion.clone();
     }
-
+    let rotationChange = controller1.quaternion.clone();
+    rotationChange.premultiply(PDB.HANDLER_ROTATION.inverse());
+    train.applyQuaternion(rotationChange);
+    PDB.HANDLER_ROTATION = controller1.quaternion.clone();
 }
 
 
@@ -898,6 +925,10 @@ function PDBFormatEr(coords) {
 
 function onTriggerDown(event) {
 
+    // camera
+    // train.position.add(new THREE.Vector3(1, 0, 0))
+
+
     var controller = event.target;
     PDB.HELIX_SHEET_ARRAY = [];
     PDB.HELIX_SHEET_index = [];
@@ -910,6 +941,8 @@ function onTriggerDown(event) {
 
     var object = intersection.object;
     var pos = intersection.pos;
+
+    // rotation
 
     if (PDB.selection_mode === PDB.SELECTION_HELIX_SHEET) {
         var object_1 = intersection.userdata_o;
@@ -1032,6 +1065,7 @@ function onTriggerDown(event) {
                     }
                 }
                 break;
+            // case PDB.SELECTION_ROTATION:
         }
 
         // ================================ Deal with Trigger mode ===
@@ -1713,6 +1747,8 @@ function getIntersections(controller) {
 
 function intersectObjects(controller) {
 
+    // train.rotation.copy(controller.rotation);
+
     if (controller.userData.selected !== undefined) {
 
         // 二级结构编辑
@@ -2094,7 +2130,8 @@ PDB.render = {
         // camera.position.copy(new THREE.Vector3(0, 0, 0));
         camera.position.set(0, 1.6, 300);
         //camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 0.1, 50 );
-        scene.add(camera);
+        train.add(camera);
+        scene.add(train);
         //controls
         controls = new THREE.OrbitControls(camera, container);
 
@@ -2137,6 +2174,7 @@ PDB.render = {
 
             controller1.addEventListener('selectstart', onTriggerDown);
             controller1.addEventListener('selectend', onTriggerUp);
+
 
             scene.add(controller1);
             // scene.add(controller2);
