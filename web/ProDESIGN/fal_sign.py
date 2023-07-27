@@ -12,7 +12,7 @@ from ProDESIGN.model import ProDesign
 import numpy as np
 from copy import deepcopy
 from Bio.PDB import PDBParser
-
+import random
 import io
 import os
 
@@ -62,16 +62,43 @@ def str_to_fasta(fasta_str, fasta_name):
         f.writelines(fasta_str)
 
 
+def additional(tensors,
+               res_state, idx, chain_id):
+    # 氨基酸属性
+    is_type = ''
+    index_dict = torch.tensor([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19])
+    if chain_id in res_state.keys():
+        chain_state = res_state[chain_id]
+        if idx in chain_state.keys():
+            is_type = chain_state[idx]
+    # 含芳香族的氨基酸
+    if is_type == "Nonpolar":
+        index_dict = torch.tensor([0, 7, 9, 10, 12, 19])
+    # 亲水性氨基酸
+    if is_type == "Polar uncharged":
+        index_dict = torch.tensor([2, 4, 5, 14, 15, 16])
+    elif is_type == "Positively charged":
+        index_dict = torch.tensor([1, 8, 11])
+    elif is_type == "Negatively charged":
+        index_dict = torch.tensor([3, 6])
+    elif is_type == "Sulfur-containing":
+        index_dict = torch.tensor([4, 12])
+    elif is_type == "Aromatic":
+        index_dict = torch.tensor([13, 17, 18])
+    select_pred = torch.index_select(tensors, 1, index_dict)
+    return select_pred
+
+
 def falcon2_design(pdb_file,
                    fasta_name,
                    num=None,
                    fixed_dict=None,
                    total_step=None,
                    save_step=None,
+                   res_state=None
                    ):
     current_directory = os.getcwd()
 
-    fasta_str = ''
     # fasta_con = ""
 
     pdb_fh = io.StringIO(pdb_file)
@@ -97,7 +124,11 @@ def falcon2_design(pdb_file,
     model = models[0]
 
     chains = list(model.get_chains())
-
+    fasta_str = ''
+    # for i in range(10):
+    # random_seed = random.randint(1, 1000)
+    # torch.manual_seed(random_seed)
+    # fasta_str = ''
     for number in range(len(chains)):
         chain = chains[number]
         chain_id = chain.id
@@ -114,7 +145,8 @@ def falcon2_design(pdb_file,
 
             model = ProDesign(dim=args.dim, device=args.device)
             model.load_state_dict(
-                torch.load(f'/Users/danfeng/falcon2/web/ProDESIGN/{args.save_file}.pt', map_location=torch.device('cpu')))
+                torch.load(f'/Users/danfeng/falcon2/web/ProDESIGN/{args.save_file}.pt',
+                           map_location=torch.device('cpu')))
 
             model.eval()
             with torch.no_grad():
@@ -124,15 +156,17 @@ def falcon2_design(pdb_file,
 
                     for step in range(total_step):
                         preds = model(ret)
-                        res = preds.argmax(-1)[0].item()
+                        # 根据约束求res
                         idx = ret['select_idx']
+                        preds = additional(preds, res_state, idx, chain_id)
+                        res = preds.argmax(-1).item()
                         ret['seq'][idx] = res
                         update_feature(ret, fixed)
                         if (step + 1) % save_step == 0:
                             str_seq = from_aatype_to_strtype(ret["seq"])
                             identity = get_identity(default_seq, str_seq)
                             # fasta_str += f'> {pdb_file} {args.save_file}_num{i}_step{step + 1} identity:{identity}\n{str_seq}\n'
-                            fasta_str += f'{chain.id }> \n{str_seq}\n'
+                            fasta_str += f'{chain.id}> \n{str_seq}\n'
                             print(f'num {i} step {step + 1} identity {identity}\n', str_seq)
     str_to_fasta(fasta_str, fasta_name)
     return fasta_str

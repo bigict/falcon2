@@ -332,14 +332,17 @@ def calc_prodigy():
 @app.route("/design", methods=["GET", "POST"])
 def pro_design_v1():
     pdb_str = request.form.get("pdb_str")
-    res_dict = request.form.get("res_id")
     pdb_id = request.form.get("pdb_id")
+    res_dict = request.form.get("pdb_data")
+
     print(pdb_id)
     res_dict = eval(res_dict)
     res_id = collections.defaultdict(list)
+    res_state = collections.defaultdict(dict)
     for i in res_dict:
         if i[0] == pdb_id:
             res_id[i[1].upper()].append(str(i[2]))
+            res_state[i[1].upper()][str(i[2])] = str(i[3])
     print("res_id", res_id)
 
     # 获取所有res number链长
@@ -371,22 +374,27 @@ def pro_design_v1():
                     continue
             if key not in res_id.keys():
                 fixed_dict[key].append(num)
+    print("fixed_dict", fixed_dict)
     if len(res_id.keys()) == 0:
         # fixed_len = len(residue_numbers[[i for i in residue_numbers.keys()][0]])
         data = falcon2_design(pdb_str,
                               fasta_name,
-                              num=2,
+                              num=1,
                               fixed_dict=fixed_dict,
-                              total_step=3,
-                              save_step=3, )
+                              total_step=5,
+                              save_step=5,
+                              res_state=res_state
+                              )
 
     else:
         data = falcon2_design(pdb_str,
                               fasta_name,
                               num=1,
                               fixed_dict=fixed_dict,
-                              total_step=3,
-                              save_step=3, )
+                              total_step=5,
+                              save_step=5,
+                              res_state=res_state
+                              )
     design_result = {"result": data}
     print(data)
     return jsonify(design_result)

@@ -440,6 +440,251 @@ PDB.controller = {
         var closeeditResidue = document.getElementById("closeeditResidue");
         var b_show_editResidue = document.getElementById("b_show_editResidue");
 
+        // 杨丹枫
+        var b_show_proDesign = document.getElementById("b_show_proDesign");
+        var proDesignModal = document.getElementById("proDesignModal");
+        var addRow = document.getElementById("addRow");
+        var submitData = document.getElementById("submitData");
+        var closeProDesign = document.getElementById("closeProDesign");
+
+        let rowCount = 0;
+        let chain_array = [];
+        let fasta_array = {};
+        let element_storage = [];
+        let anonymousListener = {};
+
+        closeProDesign.addEventListener('click', function () {
+            resetModal();
+            PDB.tool.showSegmentholder(false);
+            // const proDesignModal = document.getElementById("proDesignModal");
+            proDesignModal.style.display = "none";
+        })
+
+        // var close_ProDesign = document.getElementById("close_ProDesign");
+        b_show_proDesign.addEventListener('click', function () {
+            PDB.tool.showSegmentholder(true);
+            // const proDesignModal = document.getElementById("proDesignModal");
+            proDesignModal.style.display = "block";
+
+            const fasta_fmt = fasta_format();
+            chain_array = fasta_fmt[0];
+            fasta_array = fasta_fmt[1];
+
+            if (PDB.ProDESIGNPosition.length > 0) {
+                const contentContainer = document.getElementById("contentContainer");
+                const row = document.createElement("div");
+                row.classList.add("row");
+                const select_chain = document.createElement("select");
+                const select_residue = document.createElement("select");
+                PDB.ProDESIGNPosition.forEach(item => {
+                    row_construction(item[1], item[2].toString());
+                });
+            }
+        })
+
+        // const list = [[1, 'A'], [2, 'B'], [3, 'C'], [4, 'D']];
+        // 构造list
+        addRow.addEventListener('click', row_construction.bind(null, '-1', '-1'));
+
+        function row_construction(chain_value = '-1', res_value = '-1') {
+            const contentContainer = document.getElementById("contentContainer");
+
+            const row = document.createElement("div");
+            row.classList.add("row");
+
+            const select_chain = document.createElement("select");
+            const select_residue = document.createElement("select");
+
+            chain_array.forEach(item => {
+                const option = document.createElement("option");
+                option.value = item;
+                if (option.value === chain_value) {
+                    option.selected = true;
+                }
+                option.text = "chain:" + item;
+                select_chain.appendChild(option);
+            });
+            let chain_id = ""
+            if (chain_value !== '-1') {
+                chain_id = chain_value;
+            } else {
+                chain_id = chain_array[0];
+            }
+            console.log(chain_value)
+            fasta_array[chain_id].forEach((item) => {
+                const option = document.createElement('option');
+                option.value = item[0];
+                if (option.value === res_value) {
+                    option.selected = true;
+                }
+                option.textContent = item[0] + ":" + item[1];
+                select_residue.appendChild(option);
+            });
+            anonymousListener['change'] = function () {
+                const selectedKey = select_chain.value;
+                select_residue.innerHTML = '';
+
+                fasta_array[selectedKey].forEach((item) => {
+                    const option = document.createElement('option');
+                    option.value = item[0];
+                    option.textContent = item[0] + ":" + item[1];
+                    select_residue.appendChild(option);
+                });
+            }
+
+            select_chain.addEventListener('change', anonymousListener['change']);
+            element_storage.push(select_chain);
+
+            const radio1 = createRadioButton("Nonpolar", "Nonpolar");
+            const radio2 = createRadioButton("Polar uncharged", "Polar uncharged");
+            const radio3 = createRadioButton("Positively charged", "Positively charged");
+            const radio4 = createRadioButton("Negatively charged", "Negatively charged");
+            const radio5 = createRadioButton("Sulfur-containing", "Sulfur-containing");
+            const radio6 = createRadioButton("Aromatic", "Aromatic");
+            const deleteButton = createDeleteButton(row);
+
+            row.appendChild(select_chain);
+            row.appendChild(select_residue);
+            row.appendChild(radio1.input);
+            row.appendChild(radio1.label);
+            row.appendChild(radio2.input);
+            row.appendChild(radio2.label);
+            row.appendChild(radio3.input);
+            row.appendChild(radio3.label);
+            row.appendChild(radio4.input);
+            row.appendChild(radio4.label);
+            row.appendChild(radio5.input);
+            row.appendChild(radio5.label);
+            row.appendChild(radio6.input);
+            row.appendChild(radio6.label);
+            row.appendChild(deleteButton);
+
+            contentContainer.appendChild(row);
+
+            rowCount++;
+
+        }
+
+        function resetModal() {
+            const contentContainer = document.getElementById("contentContainer");
+            contentContainer.innerHTML = ''; // Remove all rows
+            rowCount = 0;
+            for (const elementStorageKey in element_storage) {
+                element_storage[elementStorageKey].removeEventListener('change', anonymousListener['change']);
+            }
+        }
+
+        function createRadioButton(name, label) {
+            const radio = document.createElement("input");
+            radio.type = "radio";
+            radio.name = `radio_${rowCount}`;
+            radio.value = label;
+            radio.id = `${name}_${rowCount}`;
+
+            const radioLabel = document.createElement("label");
+            radioLabel.htmlFor = `${name}_${rowCount}`;
+            radioLabel.textContent = label;
+
+            return {input: radio, label: radioLabel};
+        }
+
+        submitData.addEventListener('click', function () {
+            const rows = document.getElementsByClassName("row");
+            const submit_data = [];
+            for (let i = 0; i < rows.length; i++) {
+                const row = rows[i];
+                const select_chain = row.querySelector("select");
+                const select_residue = row.querySelectorAll("select")[1];
+                const selectedChainOption = select_chain.options[select_chain.selectedIndex];
+                const selectedResidueOption = select_residue.options[select_residue.selectedIndex];
+                const radio = row.querySelector("input[type=radio]:checked");
+                if (selectedChainOption && selectedResidueOption) {
+                    if (radio) {
+                        submit_data.push([
+                            PDB.pdbId,
+                            selectedChainOption.value,
+                            selectedResidueOption.value,
+                            radio.value
+                        ]);
+                    } else {
+                        submit_data.push([
+                                PDB.pdbId,
+                                selectedChainOption.value,
+                                selectedResidueOption.value,
+                                0
+                            ]
+                        );
+                    }
+                }
+            }
+
+            let submit_data_format = JSON.stringify(submit_data);
+            console.log("ProDESIGNPosition", submit_data_format)
+            $.ajax({
+                url: "design",
+                type: "POST",
+                dataType: "json",
+                data: {
+                    "pdb_str": PDB.textData,
+                    "pdb_id": PDB.pdbId,
+                    "pdb_data": submit_data_format,
+                },
+                success: function (data) {
+                    let Prodesign_data = data["result"]
+                    let blob = new Blob([Prodesign_data], {type: 'text/plain;charset=UTF-8'});
+                    let url = URL.createObjectURL(blob);
+
+                    var link = document.createElement('a');
+                    link.href = url;
+                    link.download = PDB.pdbId + '.fasta'; // 下载的文件名，可以根据需要进行修改
+                    link.click();
+                    PDB.ProDESIGNPosition = [];
+                }
+            });
+
+
+            resetModal();
+            PDB.tool.showSegmentholder(false);
+            // const proDesignModal = document.getElementById("proDesignModal");
+            proDesignModal.style.display = "none";
+            console.log(submit_data);
+        })
+
+        function fasta_format() {
+            let vrmol = w3m.mol[w3m.global.mol];
+            let residue_dict = vrmol.residue;
+            let res_dict = w3m.structure.info;
+            let fasta_dict = {};
+            let chain_list = [];
+            for (const w3mKey in residue_dict) {
+                chain_list.push(w3mKey.toUpperCase());
+                fasta_dict[w3mKey.toUpperCase()] = [];
+                for (const residue in residue_dict[w3mKey]) {
+                    let res_cont = []
+                    res_cont.push(residue);
+                    res_cont.push(res_dict[residue_dict[w3mKey][residue]][0]);
+                    fasta_dict[w3mKey.toUpperCase()].push(res_cont);
+                }
+            }
+            return [chain_list, fasta_dict];
+        }
+
+        function createDeleteButton(row) {
+            const deleteButton = document.createElement("button");
+            deleteButton.textContent = "删除";
+            deleteButton.onclick = function () {
+                deleteRow(row);
+            };
+            return deleteButton;
+        }
+
+        function deleteRow(row) {
+            const contentContainer = document.getElementById("contentContainer");
+            contentContainer.removeChild(row);
+        }
+
+
+        // --------------------------
         closeeditResidue.addEventListener('click', function () {
             //segmentholder.style.display = "none";
             PDB.tool.showSegmentholder(false);
@@ -939,34 +1184,37 @@ PDB.controller = {
         //
         // var designScene = document.getElementById("designScene");
 
-        let proDesign = document.getElementById("proDesign");
-        proDesign.addEventListener('click', function (e) {
-
-            let ProDESIGNPosition = JSON.stringify(PDB.ProDESIGNPosition);
-            console.log("ProDESIGNPosition", ProDESIGNPosition)
-            console.log("PDB.ProDESIGNPosition", PDB.ProDESIGNPosition)
-            $.ajax({
-                url: "design",
-                type: "POST",
-                dataType: "json",
-                data: {
-                    "pdb_str": PDB.textData,
-                    "res_id": ProDESIGNPosition,
-                    "pdb_id": PDB.pdbId,
-                },
-                success: function (data) {
-                    let Prodesign_data = data["result"]
-                    let blob = new Blob([Prodesign_data], {type: 'text/plain;charset=UTF-8'});
-                    let url = URL.createObjectURL(blob);
-
-                    var link = document.createElement('a');
-                    link.href = url;
-                    link.download = PDB.pdbId + '.fasta'; // 下载的文件名，可以根据需要进行修改
-                    link.click();
-                    PDB.ProDESIGNPosition = [];
-                }
-            });
-        });
+        // let proDesign = document.getElementById("proDesign");
+        // proDesign.addEventListener('click', function (e) {
+        //
+        //     let ProDESIGNPosition = JSON.stringify(PDB.ProDESIGNPosition);
+        //     console.log("ProDESIGNPosition", ProDESIGNPosition)
+        //     console.log("PDB.ProDESIGNPosition", PDB.ProDESIGNPosition)
+        //     $.ajax({
+        //         url: "design",
+        //         type: "POST",
+        //         dataType: "json",
+        //         data: {
+        //             "pdb_str": PDB.textData,
+        //             "res_id": ProDESIGNPosition,
+        //             "pdb_id": PDB.pdbId,
+        //             "is_aromatic": PDB.is_aromatic,
+        //             "is_hydrophilia":PDB.is_hydrophilia,
+        //             "is_hydrophobicity":PDB.is_hydrophobicity,
+        //         },
+        //         success: function (data) {
+        //             let Prodesign_data = data["result"]
+        //             let blob = new Blob([Prodesign_data], {type: 'text/plain;charset=UTF-8'});
+        //             let url = URL.createObjectURL(blob);
+        //
+        //             var link = document.createElement('a');
+        //             link.href = url;
+        //             link.download = PDB.pdbId + '.fasta'; // 下载的文件名，可以根据需要进行修改
+        //             link.click();
+        //             PDB.ProDESIGNPosition = [];
+        //         }
+        //     });
+        // });
 
         //=============================== EXPORT =======================
         //

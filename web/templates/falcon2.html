@@ -465,13 +465,17 @@
 
     <LABEL onclick="switchMenu('designScene')">ProDESIGN</LABEL><BR/>
     <span class="submenu" id="designScene">
-      <button id="proDesign">ProDESIGN</button><BR/>
+      <button id="b_show_proDesign">ProDESIGN</button><BR/>
     </span>
+    <BR/>
+    <a>
+        ProFOLD<input size="1000" type="file" name="file" id="upload_button">
+    </a>
     <BR/>
     <LABEL onclick="switchMenu('designScene')">Language</LABEL><BR/>
     <span class="submenu" id="language">
-      <button >Chinese</button><BR/>
-      <button >English</button><BR/>
+      <button>Chinese</button><BR/>
+      <button>English</button><BR/>
     </span>
     <BR/>
 
@@ -610,6 +614,8 @@
         <button id="Confirm_fregment">Confirm</button>
     </div>
 </div>
+
+
 <div id="editResidue">
     <div id="editResidueHeader">
         <span id="closeeditResidue" class="closerClass">&nbsp;X&nbsp;</span>
@@ -646,6 +652,21 @@
         </ul>
     </div>
 </div>
+
+
+<div id="proDesignModal" class="modal-content">
+    <h2 class="header">ProDESIGN
+        <button id="closeProDesign">关闭</button>
+    </h2>
+    <button id="addRow" class="addRow">添加</button>
+    <button id="submitData" class="addRow">提交</button>
+    <div id="contentContainer">
+        <!-- 这里会动态添加内容行 -->
+    </div>
+
+</div>
+
+
 <button id="vrMode">VR Mode</button>
 <script type="text/javascript" src="libs/index.js"></script>
 <div id="labelContent_measure" style="position:absolute;bottom:30px;right:10px;color:#fff"></div>

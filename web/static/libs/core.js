@@ -27,7 +27,7 @@ PDB = {
     textData: "",
     DFMATRIX: 0,
     FFDPosition: [24],
-    ProDESIGNPosition: [['1dfb', 'H', 24]],
+    ProDESIGNPosition: [],
     HELIX_SHEET_ARRAY: [],
     HELIX_SHEET_index: [],
     HS_FIRSTTIMENUMBER: [],

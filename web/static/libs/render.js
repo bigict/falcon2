@@ -1271,6 +1271,8 @@ function objectTrans(controller, object, event) {
                 controller.userData.selected = object;
                 PDB.NEWOBJ = object.clone();
 
+
+
                 PDB.ProDESIGNPosition.push([PDB.pdbId, object.userData.presentAtom.chainname, object.userData.presentAtom.resid])
 
                 if (PDB.selection_mode === PDB.SELECTION_RESIDUE) {
