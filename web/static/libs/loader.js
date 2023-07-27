@@ -10,6 +10,7 @@ PDB.loader = {
         w3m.config.rep_mode_het = PDB.config.hetMode;
         w3m.pdb(text);
         PDB.textData = text;
+
         PDB.pdbId = w3m.global.mol;
         scope.dealwithBigPDB();
         scope.getCenterOffset();
@@ -84,6 +85,7 @@ PDB.loader = {
         var scope = this;
         w3m.ajax.get(name, function (text) {
             PDB.textData = text;
+            PDB.PDBRESET = PDB.textData;
             w3m.tool.clear();
             w3m.config.rep_mode_main = PDB.config.mainMode;
             w3m.config.rep_mode_het = PDB.config.hetMode;
@@ -169,6 +171,7 @@ PDB.loader = {
         w3m.file.get(file, function (response) {
             text = response;
             PDB.textData = text;
+            PDB.PDBRESET = PDB.textData;
             w3m.pdb(text);
             PDB.pdbId = w3m.global.mol;
             scope.dealwithBigPDB();

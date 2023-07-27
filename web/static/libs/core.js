@@ -15,6 +15,9 @@ var API_URL = "https://vrmol.life.tsinghua.edu.cn";
 var API_URL_EMMAP = "server/api_em.php?pdbid=";
 var API_SPEECH = "server/speech/service.php"
 PDB = {
+    // 重置
+    CAMERARESET: 0,
+    PDBRESET: 0,
     // rotation
     HANDLER_ROTATION: 0,
 

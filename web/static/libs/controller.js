@@ -18,6 +18,12 @@ PDB.controller = {
         } else {
             PDB.render.init();
         }
+        if (PDB.CAMERARESET === 0) {
+            PDB.CAMERARESET = new THREE.Object3D();
+            PDB.CAMERARESET.position.copy(train.position);
+            PDB.CAMERARESET.rotation.copy(train.rotation);
+            PDB.CAMERARESET.scale.copy(train.scale);
+        }
     },
     createMenu: function () {
         var scope = this;
@@ -440,6 +446,20 @@ PDB.controller = {
         var closeeditResidue = document.getElementById("closeeditResidue");
         var b_show_editResidue = document.getElementById("b_show_editResidue");
 
+        // 杨丹枫
+        var reset_pdb = document.getElementById("resetRes");
+        reset_pdb.addEventListener("click", function () {
+            PDB.textData = PDB.PDBRESET;
+            PDB.render.clear(0);
+            PDB.loader.loadData(PDB.textData);
+            PDB.controller.drawGeometry(PDB.config.mainMode);
+        });
+        var reset_camera = document.getElementById("resetCam");
+        reset_camera.addEventListener("click", function () {
+            train.position.copy(PDB.CAMERARESET.position);
+            train.rotation.copy(PDB.CAMERARESET.rotation);
+            train.scale.copy(PDB.CAMERARESET.scale);
+        });
         // 杨丹枫
         var b_show_proDesign = document.getElementById("b_show_proDesign");
         var proDesignModal = document.getElementById("proDesignModal");

@@ -46,102 +46,19 @@ var ThumbpadAxes = [];
 var id = 0;
 
 
-const train = new THREE.Object3D();
+let train = new THREE.Object3D();
 
 
 //=======webxr=====
 
 let isImmersive = false;
+let revocationFrame = 0;
+const type_a = "button_a";
+const type_b = "button_b";
 
 var DOING = 0;
 var STATE = {};
 
-
-// function process_button(type, component) {
-//     if (component.values.state === Constants.ComponentState.PRESSED && DOING === 0) {
-//         switch (type) {
-//             case Constants.ComponentType.TRIGGER:
-//                 break;
-//             case Constants.ComponentType.SQUEEZE:
-//                 onMenuDown(event);
-//                 DOING = 1;
-//                 STATE[type] = 1;
-//                 break;
-//             case Constants.ComponentType.TOUCHPAD:
-//                 ThumbpadAxes = [component.values.xAxis, component.values.yAxis]
-//                 onThumbpadDown(event);
-//                 DOING = 1;
-//                 STATE[type] = 1;
-//                 break;
-//             case Constants.ComponentType.THUMBSTICK:
-//                 ThumbpadAxes = [component.values.xAxis, component.values.yAxis]
-//                 onThumbpadDown(event);
-//                 DOING = 1;
-//                 STATE[type] = 1;
-//                 break;
-//             // case Constants.ComponentType.BUTTON:
-//             //     switch (component.gamepadIndices.button) {
-//             //         case 4:
-//             //             onXDown(event);
-//             //             DOING = 1;
-//             //             STATE[type] = 1;
-//             //             break;
-//             //     }
-//             //     break;
-//             default:
-//                 throw new Error(`Unexpected ComponentType ${type}`);
-//         }
-//
-//     } else if (component.values.state === Constants.ComponentState.TOUCHED && DOING === 0) {
-//         switch (type) {
-//             case Constants.ComponentType.THUMBSTICK:
-//                 ThumbpadAxes = [component.values.xAxis, component.values.yAxis]
-//                 onThumbpadDown(event);
-//                 DOING = 1;
-//                 STATE[type] = 1;
-//                 break;
-//         }
-//         console.log(ThumbpadAxes);
-//     } else if (component.values.state === Constants.ComponentState.DEFAULT && DOING === 1) {
-//
-//         switch (type) {
-//             case Constants.ComponentType.TRIGGER:
-//                 break;
-//             case Constants.ComponentType.SQUEEZE:
-//                 if (STATE[type] === 1) {
-//                     DOING = 0;
-//                     STATE[type] = 0;
-//                 }
-//                 break;
-//             case Constants.ComponentType.TOUCHPAD:
-//                 if (STATE[type] === 1) {
-//                     onThumbpadUp(event);
-//                     DOING = 0;
-//                     STATE[type] = 0;
-//                 }
-//                 break;
-//             case Constants.ComponentType.THUMBSTICK:
-//                 if (STATE[type] === 1) {
-//                     onThumbpadUp(event);
-//                     DOING = 0;
-//                     STATE[type] = 0;
-//                 }
-//                 break;
-//             // case Constants.ComponentType.BUTTON:
-//             //     switch (component.gamepadIndices.button) {
-//             //         case 4:
-//             //             if (STATE[type] === 1) {
-//             //                 DOING = 0;
-//             //                 STATE[type] = 0;
-//             //             }
-//             //             break;
-//             //     }
-//             //     break;
-//             default:
-//                 throw new Error(`Unexpected ComponentType ${type}`);
-//         }
-//     }
-// }
 
 function process_button(type, component) {
     if (component.values.state === Constants.ComponentState.DEFAULT && PDB.HANDLER_ROTATION !== 0) {
@@ -167,7 +84,15 @@ function process_button(type, component) {
                     case 4:
                         onRotationDown();
                         DOING = 1;
-                        STATE[type] = 1;
+                        STATE[type_a] = 1;
+                        break;
+                    case 5:
+                        revocationFrame += 1
+                        if (revocationFrame === 1) {
+                            revocation();
+                        }
+                        DOING = 1;
+                        STATE[type_b] = 1;
                         break;
                 }
                 break;
@@ -219,12 +144,16 @@ function process_button(type, component) {
             //     }
             //     break;
             case Constants.ComponentType.BUTTON:
-                if (STATE[type] === 1) {
-                    DOING = 0;
-                    STATE[type] = 0;
+                switch (component.gamepadIndices.button) {
+                    case 5:
+                        if (STATE[type_b] === 1) {
+                            STATE[type_b] = 0;
+                            DOING = 0;
+                            revocationFrame = 0;
+                        }
+                        break;
                 }
                 break;
-
             // default:
             //     throw new Error(`Unexpected ComponentType ${type}`);
         }
@@ -852,21 +781,6 @@ function onRotationDown() {
 }
 
 
-// 倒回上一个状态
-// function revocation() {
-//     // 记录状态
-//     if (PDB.BODY_STYLE.length > 1) {
-//         // 将textData倒回上一个状态
-//         // PDB.BODY_STYLE.pop()
-//         // PDB.textData = PDB.BODY_STYLE[PDB.BODY_STYLE.length - 1];
-//         // console.log("PDB.textData", PDB.textData);
-//         PDB.loader.loadData(PDB.INITSTRUCTURE);
-//         PDB.render.clear(0);
-//         PDB.controller.drawGeometry(PDB.config.mainMode);
-//
-//     }
-// }
-
 function OperatingInstructions() {
     if (PDB.OPERAINS === 0) {
         var geometry = new THREE.PlaneGeometry(16, 9);
@@ -924,6 +838,10 @@ function PDBFormatEr(coords) {
 
 
 function onTriggerDown(event) {
+
+    if (PDB.BODY_STYLE.length === 0) {
+        PDB.BODY_STYLE.push(PDB.textData)
+    }
 
     // camera
     // train.position.add(new THREE.Vector3(1, 0, 0))
@@ -1075,16 +993,26 @@ function onTriggerDown(event) {
                 break;
         }
     }
+}
 
+
+function revocation() {
+    if (PDB.BODY_STYLE.length > 1) {
+        PDB.BODY_STYLE.pop();
+    }
+    PDB.textData = PDB.BODY_STYLE[PDB.BODY_STYLE.length - 1];
+    PDB.render.clear(0);
+    PDB.loader.loadData(PDB.textData);
+    PDB.controller.drawGeometry(PDB.config.mainMode);
 }
 
 function onTriggerUp(event) {
 
     // 撤销模块
-    // if (PDB.BODY_STYLE.length > 6) {
-    //     PDB.BODY_STYLE.shift()
-    // }
-    // PDB.BODY_STYLE.push(PDB.textData);
+    if (PDB.BODY_STYLE.length > 6) {
+        PDB.BODY_STYLE.shift()
+    }
+    PDB.BODY_STYLE.push(PDB.textData);
 
     //console.log("onTriggerUp");
     PDB.firstTimeNum = [];
@@ -1270,7 +1198,6 @@ function objectTrans(controller, object, event) {
                 controller.add(object);
                 controller.userData.selected = object;
                 PDB.NEWOBJ = object.clone();
-
 
 
                 PDB.ProDESIGNPosition.push([PDB.pdbId, object.userData.presentAtom.chainname, object.userData.presentAtom.resid])
@@ -2030,7 +1957,7 @@ function intersectObjects(controller) {
             PDB.tool.colorIntersectObjectRed(object, 1);
             if (!PDB.isShowMenu && object.userData.presentAtom) {
                 PDB.painter.showDFIREInfo(object.userData.presentAtom,
-                "chain: " + object.userData.presentAtom.chainname.toUpperCase() + " " + "Residue ID: " + object.userData.presentAtom.resid);
+                    "chain: " + object.userData.presentAtom.chainname.toUpperCase() + " " + "Residue ID: " + object.userData.presentAtom.resid);
             }
         }
 
