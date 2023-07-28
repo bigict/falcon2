@@ -71,6 +71,9 @@ def additional(tensors,
         chain_state = res_state[chain_id]
         if idx in chain_state.keys():
             is_type = chain_state[idx]
+    print("chain_id", chain_id)
+    print("idx", idx)
+    print("res_state", res_state)
     # 含芳香族的氨基酸
     if is_type == "Nonpolar":
         index_dict = torch.tensor([0, 7, 9, 10, 12, 19])
@@ -86,7 +89,8 @@ def additional(tensors,
     elif is_type == "Aromatic":
         index_dict = torch.tensor([13, 17, 18])
     select_pred = torch.index_select(tensors, 1, index_dict)
-    return select_pred
+    print(select_pred)
+    return index_dict, select_pred
 
 
 def falcon2_design(pdb_file,
@@ -158,8 +162,10 @@ def falcon2_design(pdb_file,
                         preds = model(ret)
                         # 根据约束求res
                         idx = ret['select_idx']
-                        preds = additional(preds, res_state, idx, chain_id)
-                        res = preds.argmax(-1).item()
+                        print(idx)
+                        index_id, preds = additional(preds, res_state, idx, chain_id)
+                        print(preds)
+                        res = index_id[preds.argmax(-1)].item()
                         ret['seq'][idx] = res
                         update_feature(ret, fixed)
                         if (step + 1) % save_step == 0:

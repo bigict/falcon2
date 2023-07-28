@@ -339,6 +339,7 @@ def pro_design_v1():
     res_dict = eval(res_dict)
     res_id = collections.defaultdict(list)
     res_state = collections.defaultdict(dict)
+    res_result = collections.defaultdict(dict)
     for i in res_dict:
         if i[0] == pdb_id:
             res_id[i[1].upper()].append(str(i[2]))
@@ -371,6 +372,7 @@ def pro_design_v1():
                 if j not in res_id[key]:
                     fixed_dict[key].append(num)
                 else:
+                    res_result[key][num] = res_state[key][j]
                     continue
             if key not in res_id.keys():
                 fixed_dict[key].append(num)
@@ -383,7 +385,7 @@ def pro_design_v1():
                               fixed_dict=fixed_dict,
                               total_step=5,
                               save_step=5,
-                              res_state=res_state
+                              res_state=res_result
                               )
 
     else:
@@ -393,7 +395,7 @@ def pro_design_v1():
                               fixed_dict=fixed_dict,
                               total_step=5,
                               save_step=5,
-                              res_state=res_state
+                              res_state=res_result
                               )
     design_result = {"result": data}
     print(data)
