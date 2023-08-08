@@ -414,8 +414,6 @@ function dealwithMenu(object) {
                 PDB.controller.switchColorBymode(object.userData.reptype);
                 onMenuDown();
             }
-
-
             break;
         case PDB.GROUP_MENU_MEASURE:
             PDB.controller.switchMeasureByMode(object.userData.reptype);
@@ -447,7 +445,6 @@ function dealwithMenu(object) {
             } else {
                 PDB.trigger = PDB.TRIGGER_EVENT_LABEL;
             }
-
             onMenuDown();
             break;
         case PDB.GROUP_MENU_SURFACE:
@@ -550,7 +547,6 @@ function dealwithMenu(object) {
             } else if (PDB.ROTATION_AXIS == 3) {
                 PDB.MOVE_AXIS = 3;
             }
-
             //PDB.MOVE_DIRECTION = PDB.ROTATION_AXIS;
             onMenuDown();
             break;
@@ -637,7 +633,6 @@ function dealwithMenu(object) {
             break;
         case PDB.GROUP_VR_MENU_DRUG:
             console.log(object.userData.reptype);
-
             break;
         case PDB.GROUP_MENU_DENSITYMAP:
             var type = object.userData.reptype;
@@ -803,6 +798,9 @@ function PDBFormatEr(coords) {
     let PDBFormat = "";
     if (PDB.textData.length > 0) {
         const text = PDB.textData.split('\n');
+        let axis_x = 0;
+        let axis_y = 0;
+        let axis_z = 0;
         for (let i = 0; i < text.length; i++) {
             let line = text[i].toLowerCase();
             switch (w3m_sub(line, 0, 6)) {
@@ -811,13 +809,31 @@ function PDBFormatEr(coords) {
                     const atom_name = w3m_sub(line, 13, 16);
                     const atom_chain = w3m_sub(line, 22) || 'x';
                     const residueKey = "chain" + "_" + atom_chain + "_" + residue_id;
+                    const resNameKey = "chain" + "_" + atom_chain + "_" + residue_id + "_" + atom_name;
+                    const resNameMainKey = "chain" + "_" + atom_chain + "_" + residue_id + "_" + "ca";
+
+                    // 添加侧链移动
+                    if (coords[residueKey]) {
+                        if ((axis_x === 0) && (axis_y === 0)) {
+                            axis_x = parseFloat(coords[residueKey].x) - PDB.PDBPOS[resNameMainKey][0];
+                            axis_y = parseFloat(coords[residueKey].y) - PDB.PDBPOS[resNameMainKey][1];
+                            axis_z = parseFloat(coords[residueKey].z) - PDB.PDBPOS[resNameMainKey][2];
+                        }
+
+                        const b_x = (PDB.PDBPOS[resNameKey][0] + axis_x).toFixed(3);
+                        const b_y = (PDB.PDBPOS[resNameKey][1] + axis_y).toFixed(3);
+                        const b_z = (PDB.PDBPOS[resNameKey][2] + axis_z).toFixed(3);
+                        line = line.replace(w3m_sub(line, 31, 38).padStart(8, ' '), b_x.padStart(8, ' '));
+                        line = line.replace(w3m_sub(line, 39, 46).padStart(8, ' '), b_y.padStart(8, ' '));
+                        line = line.replace(w3m_sub(line, 47, 54).padStart(8, ' '), b_z.padStart(8, ' '));
+                    }
 
                     // 只改变Ca坐标
-                    if (coords[residueKey] && atom_name === "ca") {
-                        line = line.replace(w3m_sub(line, 31, 38).padStart(8, ' '), coords[residueKey].x.padStart(8, ' '));
-                        line = line.replace(w3m_sub(line, 39, 46).padStart(8, ' '), coords[residueKey].y.padStart(8, ' '));
-                        line = line.replace(w3m_sub(line, 47, 54).padStart(8, ' '), coords[residueKey].z.padStart(8, ' '));
-                    }
+                    // if (coords[residueKey] && atom_name === "ca") {
+                    //     line = line.replace(w3m_sub(line, 31, 38).padStart(8, ' '), coords[residueKey].x.padStart(8, ' '));
+                    //     line = line.replace(w3m_sub(line, 39, 46).padStart(8, ' '), coords[residueKey].y.padStart(8, ' '));
+                    //     line = line.replace(w3m_sub(line, 47, 54).padStart(8, ' '), coords[residueKey].z.padStart(8, ' '));
+                    // }
 
                     line = line.toUpperCase();
                     PDBFormat = PDBFormat + line + "\n";
@@ -838,6 +854,24 @@ function PDBFormatEr(coords) {
 
 
 function onTriggerDown(event) {
+    if (Object.getOwnPropertyNames(PDB.PDBPOS).length === 0) {
+        const pdb_text = PDB.PDBRESET.split('\n');
+        for (let i = 0; i < pdb_text.length; i++) {
+            let line = pdb_text[i].toLowerCase();
+            switch (w3m_sub(line, 0, 6)) {
+                case 'atom':
+                    const residue_id = parseInt(w3m_sub(line, 23, 26)) || 0;
+                    const atom_name = w3m_sub(line, 13, 16);
+                    const atom_chain = w3m_sub(line, 22) || 'x';
+                    const residueKey = "chain" + "_" + atom_chain + "_" + residue_id + "_" + atom_name;
+                    const pdb_x = parseFloat(w3m_sub(line, 31, 38));
+                    const pdb_y = parseFloat(w3m_sub(line, 39, 46));
+                    const pdb_z = parseFloat(w3m_sub(line, 47, 54));
+                    PDB.PDBPOS[residueKey] = [pdb_x, pdb_y, pdb_z];
+            }
+        }
+    }
+
 
     if (PDB.BODY_STYLE.length === 0) {
         PDB.BODY_STYLE.push(PDB.textData)

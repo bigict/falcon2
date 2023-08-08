@@ -18,6 +18,7 @@ PDB = {
     // 重置
     CAMERARESET: 0,
     PDBRESET: 0,
+    PDBPOS:{},
     // rotation
     HANDLER_ROTATION: 0,
 

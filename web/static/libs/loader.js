@@ -86,6 +86,7 @@ PDB.loader = {
         w3m.ajax.get(name, function (text) {
             PDB.textData = text;
             PDB.PDBRESET = PDB.textData;
+            PDB.PDBPOS = {};
             w3m.tool.clear();
             w3m.config.rep_mode_main = PDB.config.mainMode;
             w3m.config.rep_mode_het = PDB.config.hetMode;
@@ -171,6 +172,7 @@ PDB.loader = {
         w3m.file.get(file, function (response) {
             text = response;
             PDB.textData = text;
+            PDB.PDBPOS = {};
             PDB.PDBRESET = PDB.textData;
             w3m.pdb(text);
             PDB.pdbId = w3m.global.mol;
