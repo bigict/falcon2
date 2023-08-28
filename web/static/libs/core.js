@@ -144,7 +144,8 @@ PDB = {
     remoteUrl: [SERVERURL + '/data/', SERVERURL + '/data/', SERVERURL + '/data/'],
     // remoteUrl: [ 'https://files.rcsb.org/view/',  'https://www.rcsb.org/pdb/files/', SERVERURL + '/data/' ],
     drugPDBUrl: [SERVERURL + '/data/', 'https://www.drugbank.ca/structures/small_molecule_drugs/'],
-    pdbId: "1dfb",
+    // pdbId: "1dfb",
+    pdbId: "1cbs",
     pdburl: "",
     molecules: {
         "aaa": "aaa.pdb",

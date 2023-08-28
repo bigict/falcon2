@@ -1964,6 +1964,199 @@ PDB.tool = {
                 nowresID = atom[5];
             }
         }
+        console.log("PDB.allMainToms", PDB.allMainToms);
+        // 杨丹枫
+        let text = PDB.textData;
+        // console.log("PDB.textData", PDB.textData)
+        text = text.split('\n');
+        let afterText = '';
+
+        var doeEitHet = function (s) {
+            var atom_id = parseInt(w3m_sub(s, 7, 11)),
+                atom_name = w3m_sub(s, 13, 16),
+                residue_name = w3m_sub(s, 18, 20) || 'xxx',
+                chain_id = w3m_sub(s, 22) || 'x',
+                residue_id = parseInt(w3m_sub(s, 23, 26)) || 0,
+                xyz = [parseFloat(w3m_sub(s, 31, 38)), parseFloat(w3m_sub(s, 39, 46)), parseFloat(w3m_sub(s, 47, 54))],
+                occupancy = parseFloat(w3m_sub(s, 55, 60)),
+                b_factor = parseFloat(w3m_sub(s, 61, 66)) || 0.0,
+                element = w3m_sub(s, 77, 78);
+            if (residue_id < 0) return;
+            math.limit(xyz[0], w3m.global.limit.x);
+            math.limit(xyz[1], w3m.global.limit.y);
+            math.limit(xyz[2], w3m.global.limit.z);
+            return s;
+
+        }
+
+        var doEditAtom = function (s) {
+
+            var atom_alt = w3m_sub(s, 17);
+            if (atom_alt != '' && atom_alt != 'a') {
+                return;
+            }
+            // if this is not AA or NA
+            var chain_type = w3m.tool.getChainType(w3m_sub(s, 18, 20));
+            if (chain_type == w3m.CHAIN_UNK) {
+                s = doeEitHet(s);
+                return s;
+            }
+            var atom_id = parseInt(w3m_sub(s, 7, 11)),
+                atom_name = w3m_sub(s, 13, 16),
+                residue_name = w3m_sub(s, 18, 20) || 'xxx',
+                chain_id = w3m_sub(s, 22) || 'x',
+                residue_id = parseInt(w3m_sub(s, 23, 26)) || 0,
+                xyz = [parseFloat(w3m_sub(s, 31, 38)), parseFloat(w3m_sub(s, 39, 46)), parseFloat(w3m_sub(s, 47, 54))],
+                occupancy = parseFloat(w3m_sub(s, 55, 60)),
+                b_factor = parseFloat(w3m_sub(s, 61, 66)) || 0.0,
+                element = w3m_sub(s, 77, 78);
+            if (residue_id < 0) return;
+            math.limit(xyz[0], w3m.global.limit.x);
+            math.limit(xyz[1], w3m.global.limit.y);
+            math.limit(xyz[2], w3m.global.limit.z);
+            if (PDB.residueGroupObject[chain_id][residue_id].moveVec) {
+                var v = PDB.residueGroupObject[chain_id][residue_id].moveVec;
+                math.limit(v.x, w3m.global.limit.x);
+                math.limit(v.y, w3m.global.limit.y);
+                math.limit(v.z, w3m.global.limit.z);
+                xyz[0] = xyz[0] + v.x;
+                xyz[1] = xyz[1] + v.y;
+                xyz[2] = xyz[2] + v.z;
+                s = s.replace(w3m_sub(s, 31, 38), Math.floor(xyz[0] * 1000) / 1000);
+                s = s.replace(w3m_sub(s, 39, 46), Math.floor(xyz[1] * 1000) / 1000);
+                s = s.replace(w3m_sub(s, 47, 54), Math.floor(xyz[2] * 1000) / 1000);
+            }
+
+            if (PDB.allMainToms && PDB.allMainToms[chain_id][residue_id]) {
+                var state = PDB.allMainToms[chain_id][residue_id]['state'];
+                if (state == 'editRes') {
+                    var nowEndID = w3m.structure.enum[residue_name].length + PDB.allMainToms[chain_id][residue_id].startAtomID - 1;
+                    if (!PDB.allMainToms[chain_id][residue_id].tempID) {
+                        PDB.allMainToms[chain_id][residue_id].tempID = PDB.allMainToms[chain_id][residue_id].startAtomID;
+                    } else if (PDB.allMainToms[chain_id][residue_id].tempID < nowEndID) {
+                        PDB.allMainToms[chain_id][residue_id].tempID++;
+                    }
+                    if (PDB.allMainToms[chain_id][residue_id].tempID == nowEndID) {
+                        var _t_ = "";
+                        var atoms = PDB.allMainToms[chain_id][residue_id].atoms;
+                        var sss_ = new Array(atoms.length);
+
+
+                        for (var i = 0; i < sss_.length; i++) {
+                            sss_[i] = s;
+                        }
+
+                        for (var i in atoms) {
+                            var atom_ = atoms[i];
+                            var startAtomID = PDB.allMainToms[chain_id][residue_id].startAtomID;
+                            var endAtomID = PDB.allMainToms[chain_id][residue_id].endAtomID;
+                            atom_id = startAtomID + Number(i);
+                            atom_id = (atom_id + "").length < 4 ? PDB.tool.fillSpace(atom_id, 4) : atom_id;
+                            atom_name = atom_[2];
+                            atom_name = atom_name.length < 3 ? PDB.tool.fillSpace(atom_name, 3, 'hou') : atom_name;
+                            residue_name = atom_[3];
+                            chain_id = atom_[4];
+                            residue_id_ = residue_id + "";
+                            residue_id_ = residue_id_.length < 3 ? PDB.tool.fillSpace(residue_id_, 3) : residue_id_;
+                            var _x_ = Number(atom_[6][0]).toFixed(3);
+                            var _y_ = Number(atom_[6][1]).toFixed(3);
+                            var _z_ = Number(atom_[6][2]).toFixed(3);
+                            var _o_ = Number(atom_[7]).toFixed(2);
+                            var _b_ = Number(atom_[8]).toFixed(2);
+                            //xyz          	= [x,y,z];
+                            occupancy = _o_;
+                            b_factor = _b_;
+                            element = atom_[9];
+                            //element = element.length<2?PDB.tool.fillSpace(element,1):element;
+                            sss_[i] = PDB.tool.replacePosByStartEnd(sss_[i], 7, 11, atom_id);
+                            sss_[i] = PDB.tool.replacePosByStartEnd(sss_[i], 13, 16, atom_name);
+                            sss_[i] = PDB.tool.replacePosByStartEnd(sss_[i], 17, 20, residue_name);
+
+
+                            sss_[i] = PDB.tool.replacePos(sss_[i], 22, chain_id);
+                            sss_[i] = PDB.tool.replacePosByStartEnd(sss_[i], 23, 26, residue_id_);
+
+                            _x_ = (_x_ + "").length < 7 ? PDB.tool.fillSpace((_x_ + ""), 7) : (_x_ + "");
+                            _y_ = (_y_ + "").length < 7 ? PDB.tool.fillSpace((_y_ + ""), 7) : (_y_ + "");
+                            _z_ = (_z_ + "").length < 7 ? PDB.tool.fillSpace((_z_ + ""), 7) : (_z_ + "");
+
+                            sss_[i] = PDB.tool.replacePosByStartEnd(sss_[i], 31, 38, _x_);
+                            sss_[i] = PDB.tool.replacePosByStartEnd(sss_[i], 39, 46, _y_);
+                            sss_[i] = PDB.tool.replacePosByStartEnd(sss_[i], 47, 54, _z_);
+
+                            occupancy = (occupancy + "").length < 5 ? PDB.tool.fillSpace((occupancy + ""), 5) : (occupancy + "");
+                            sss_[i] = PDB.tool.replacePosByStartEnd(sss_[i], 55, 60, occupancy);
+
+                            b_factor = (b_factor + "").length < 5 ? PDB.tool.fillSpace((b_factor + ""), 5) : (b_factor + "");
+                            sss_[i] = PDB.tool.replacePosByStartEnd(sss_[i], 61, 66, b_factor);
+
+                            sss_[i] = PDB.tool.replacePosByStartEnd(sss_[i], 77, 78, element);
+
+                        }
+
+                        for (var i in sss_) {
+                            _t_ = _t_ + sss_[i] + "\n";
+                            ;
+
+                        }
+                        _t_ = _t_.substring(0, _t_.length - 1);
+                        PDB.allMainToms[chain_id][residue_id].tempID = undefined;
+                        return _t_;
+
+                    } else {
+                        return null;
+                    }
+
+                } else if (state == 'justID') {
+                    if (!PDB.allMainToms[chain_id][residue_id].tempID) {
+                        PDB.allMainToms[chain_id][residue_id].tempID = PDB.allMainToms[chain_id][residue_id].startAtomID;
+                    } else if (PDB.allMainToms[chain_id][residue_id].tempID < PDB.allMainToms[chain_id][residue_id].endAtomID) {
+                        PDB.allMainToms[chain_id][residue_id].tempID++;
+                    }
+                    var tempID = PDB.allMainToms[chain_id][residue_id].tempID;
+                    tempID = PDB.tool.fillSpace(tempID, 4);
+                    s = PDB.tool.replacePosByStartEnd(s, 7, 11, tempID);
+
+                    //s = s.replace(w3m_sub(s, 7, 11),PDB.allMainToms[chain_id][residue_id].tempID);
+                }
+            }
+
+            return s;
+
+        }
+
+        for (var i = 0, l = text.length; i < l; i++) {
+            var s = text[i].toLowerCase();
+            switch (w3m_sub(s, 0, 6)) {
+                case 'atom':
+
+                    s = doEditAtom(s);
+
+                    if (s) {
+                        s = s.toUpperCase();
+                        afterText = afterText + s + "\n";
+                    } else {
+                        //afterText = afterText + s+"\n";
+                    }
+                    break;
+                case 'hetatm':
+                    s = doeEitHet(s);
+                    s = s.toUpperCase();
+                    if (s) {
+                        afterText = afterText + s + "\n";
+                    } else {
+                        afterText = afterText + s + "\n";
+                    }
+                    break;
+                default:
+                    s = s.toUpperCase();
+                    afterText = afterText + s + "\n";
+                    break;
+            }
+        }
+        PDB.textData = afterText;
+        // PDB.loader.loadData(PDB.textData);
+
     },
 
     clearTempAtomId: function () {

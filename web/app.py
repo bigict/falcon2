@@ -6,6 +6,7 @@ import io
 import zipfile
 import re
 import sys
+import requests
 
 from flask import (Flask, jsonify, redirect, request, render_template, send_file)
 from dfire.calene import read_lib, calc_energy
@@ -329,6 +330,17 @@ def calc_prodigy():
     return jsonify(ba_result)
 
 
+@app.route("/hbonds", methods=["GET", "POST"])
+def hbonds():
+    data_response = request.values.get("data_base")
+    data_to_send = {"data_base": data_response}
+    response = requests.post("http://127.0.0.1:8000/hbonds/", json=data_to_send)
+    rd = response.json()
+    # rd = {'hbonds': [{'donor': 155, 'acc': 397, 'donor_chain': 'A', 'donor_id': 487, 'acc_chain': 'C', 'acc_id': 99}, {'donor': 155, 'acc': 291, 'donor_chain': 'A', 'donor_id': 487, 'acc_chain': 'B', 'acc_id': 96}]}
+    print(rd)
+    return jsonify(rd)
+
+
 @app.route("/design", methods=["GET", "POST"])
 def pro_design_v1():
     pdb_str = request.form.get("pdb_str")
@@ -398,7 +410,6 @@ def pro_design_v1():
                               res_state=res_result
                               )
     design_result = {"result": data}
-    print(data)
     return jsonify(design_result)
 
 

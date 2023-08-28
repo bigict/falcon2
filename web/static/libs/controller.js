@@ -186,6 +186,63 @@ PDB.controller = {
         //});
 
         //=============================== Mode for structure =======================
+        let hbond = document.getElementById("hbond");
+        hbond.addEventListener('click', function () {
+            $.ajax({
+                url: "hbonds",
+                type: "POST",
+                dataType: "json",
+                data: {
+                    "data_base": PDB.textData,
+                },
+                success: function (data) {
+                    let hbonds_set = data["hbonds"];
+                    for (let hdicts in hbonds_set) {
+                        // 绘制氢键虚线
+                        let hdict = hbonds_set[hdicts]
+                        let donor_chain = hdict["donor_chain"];
+                        let acc_chain = hdict["acc_chain"];
+                        let donor_id = hdict["donor_id"];
+                        let acc_id = hdict["acc_id"];
+                        let groupindex_a = "chain_" + donor_chain.toLowerCase();
+                        let groupindex_b = "chain_" + acc_chain.toLowerCase();
+                        // 获取donor和acc的坐标
+                        let donor_axis = new THREE.Vector3(0, 0, 0);
+                        let acc_axis = new THREE.Vector3(0, 0, 0);
+                        if (PDB.GROUP[groupindex_a + '_low'] && PDB.GROUP[groupindex_a + '_low'].children.length > 0) {
+                            groupindex_a = groupindex_a + '_low'
+                        }
+                        if (PDB.GROUP[groupindex_b + '_low'] && PDB.GROUP[groupindex_b + '_low'].children.length > 0) {
+                            groupindex_b = groupindex_b + '_low'
+                        }
+                        if (PDB.GROUP[groupindex_a] && PDB.GROUP[groupindex_a].children.length > 0) {
+                            for (let res_dt in PDB.GROUP[groupindex_a].children) {
+                                let res_atom_donor = PDB.GROUP[groupindex_a].children[res_dt];
+                                if (res_atom_donor.userData.presentAtom.resid == donor_id) {
+                                    donor_axis = res_atom_donor.userData.presentAtom.pos_centered;
+                                    break;
+                                }
+                            }
+                        }
+                        if (PDB.GROUP[groupindex_b] && PDB.GROUP[groupindex_b].children.length > 0) {
+                            for (let res_dt in PDB.GROUP[groupindex_b].children) {
+                                let res_atom_acc = PDB.GROUP[groupindex_b].children[res_dt];
+                                console.log("res_atom_acc", res_atom_acc.userData.presentAtom.resid)
+                                console.log("acc_id", acc_id)
+                                if (res_atom_acc.userData.presentAtom.resid == acc_id) {
+                                    acc_axis = res_atom_acc.userData.presentAtom.pos_centered;
+                                    break;
+                                }
+                            }
+                        }
+                        console.log("donor", donor_axis, acc_axis);
+
+                        PDB.drawer.drawAtomLine(donor_axis, acc_axis);
+                        PDB.drawer.drawPointDistance(donor_axis, acc_axis);
+                    }
+                }
+            });
+        });
 
         //upload button
         var b_upload = document.getElementById("upload_button");
@@ -719,6 +776,7 @@ PDB.controller = {
 
         var b_replace = document.getElementById("b_replace");
 
+        // 替换氨基酸
         b_replace.addEventListener('click', function (e) {
             PDB.GROUP_ONE_RES = PDB.GROUP_COUNT + 1;
 
@@ -930,6 +988,9 @@ PDB.controller = {
                     PDB.tool.updateAllEditResInfo(reReplaceAtom, sjpo, resName, resid, chain_replace.value);
                 });
             }
+
+
+            // console.log("PDB.textData1", PDB.textData)
         });
 
         b_hide.addEventListener('click', function (e) {
@@ -1930,7 +1991,6 @@ PDB.controller = {
             }
         }
     },
-
     segmentSelectBindEvent: function (startPointDom, endPointDom) {
         var scope = this;
         var atomIDs = Object.keys(w3m.mol[PDB.pdbId].atom.main);

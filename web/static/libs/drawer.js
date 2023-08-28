@@ -4,12 +4,12 @@
  */
 var font;
 var loader = new THREE.FontLoader();
-// loader.load('js/fonts/helvetiker_bold.typeface.json', function (font0) {
+loader.load('js/fonts/helvetiker_bold.typeface.json', function (font0) {
+    font = font0;
+});
+// loader.load('js/fonts/Alibaba_PuHuiTi_Medium_Regular.json', function (font0) {
 //     font = font0;
 // });
-loader.load('js/fonts/Alibaba PuHuiTi Medium_Regular.json', function(font0) {
-  font = font0;
-});
 var fontloader =
     PDB.drawer = {
         drawLabel: function (group, pos, color, name) {
@@ -1322,5 +1322,72 @@ var fontloader =
             PDB.GROUP[group].add(plane);
             PDB.GROUP[group].scale.set(newScale.x, newScale.y, newScale.z);
 
+        },
+        // draw distance
+        drawPointDistance: function (point_a, point_b) {
+            // 计算point_a, point_b的距离
+            let pa = new THREE.Vector3(
+                point_a.x - PDB.GeoCenterOffset.x,
+                point_a.y - PDB.GeoCenterOffset.y,
+                point_a.z - PDB.GeoCenterOffset.z,
+            )
+            let pb = new THREE.Vector3(
+                point_b.x - PDB.GeoCenterOffset.x,
+                point_b.y - PDB.GeoCenterOffset.y,
+                point_b.z - PDB.GeoCenterOffset.z,
+            )
+            let distance = pa.distanceTo(pb);
+            let midPoint = new THREE.Vector3().addVectors(point_a, point_b).multiplyScalar(0.5);
+            let text = distance.toFixed(2) + ' A'
+            var geometry = new THREE.TextGeometry(text, {
+                font: font,
+                size: 0.60,
+                height: 0.1,
+                curveSegments: 5
+            });
+            geometry.computeBoundingBox();
+            var material = new THREE.MeshPhongMaterial({
+                color: Math.random() * 0xffffff
+                // color: color
+            });
+            var mesh = new THREE.Mesh(geometry, material);
+            mesh.position.set(midPoint.x, midPoint.y, midPoint.z);
+            var dir = new THREE.Vector3(0, 0, 0);
+            camera.getWorldDirection(dir);
+
+            if (PDB.GROUP['distance'] instanceof THREE.Group) {
+            } else {
+                PDB.GROUP['distance'] = new THREE.Group();
+                scene.add(PDB.GROUP['distance'])
+            }
+            PDB.GROUP['distance'].add(mesh);
+
+            // PDB.GROUP["distance"].position.copy(midPoint);
+            // PDB.GROUP["distance"].lookAt(dir);
+        },
+        drawAtomLine: function (donor_axis, acc_axis) {
+            // 绘制线条
+            const dashedLineMaterial = new THREE.LineDashedMaterial({
+                color: 0x00ff00,
+                dashSize: 0.1,
+                gapSize: 0.05
+            });
+            const lineGeometry = new THREE.BufferGeometry().setFromPoints([donor_axis, acc_axis]);
+            const dashedLine = new THREE.Line(lineGeometry, dashedLineMaterial);
+            let midPoint = new THREE.Vector3().addVectors(donor_axis, acc_axis).multiplyScalar(0.5);
+
+            dashedLine.computeLineDistances(); // Important for dashed lines
+            // PDB.GROUP中管理line
+            var dir = new THREE.Vector3(0, 0, 0);
+            camera.getWorldDirection(dir);
+
+            if (PDB.GROUP["hbond"] instanceof THREE.Group) {
+            } else {
+                PDB.GROUP["hbond"] = new THREE.Group();
+                scene.add(PDB.GROUP['hbond'])
+            }
+            PDB.GROUP["hbond"].add(dashedLine);
+            // PDB.GROUP["hbond"].position.copy(midPoint);
+            // PDB.GROUP["hbond"].lookAt(dir);
         }
     };

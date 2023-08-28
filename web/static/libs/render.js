@@ -1191,7 +1191,6 @@ function objectTrans(controller, object, event) {
         // console.log(object);
         // PDB.painter.showDFIREInfo(object.userData.presentAtom,
         //     "chain: " + object.userData.presentAtom.chainname + " Res ID: " + object.userData.presentAtom.resid);
-
         var groupindex = object.userData["group"];
         if (groupindex != undefined) {
 
@@ -1957,6 +1956,7 @@ function intersectObjects(controller) {
                     }
                 })
             }
+
 
             return;
         }

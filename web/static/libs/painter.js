@@ -701,8 +701,13 @@ PDB.painter = {
         // var message = showAtom.chainname.toUpperCase();
         var pos1;
 
+        if (showAtom.pos) {
+            pos1 = showAtom.pos_centered;
+        } else {
+            pos1 = PDB.tool.getAtomInfoPosition(showAtom.pos_centered, camera.position);
+        }
+
         // pos1 = PDB.tool.getAtomInfoPosition(showAtom.pos_centered, camera.position);
-        pos1 = showAtom.pos_centered
 
         PDB.drawer.drawTextDFIRE(PDB.GROUP_INFO, pos1,
             message, "", showAtom.color, 180);
@@ -2940,16 +2945,16 @@ PDB.painter = {
         }
     },
     showRes_Line: function (molId) {
-        var groupindex = PDB.GROUP_ONE_RES;
-        var resobj = w3m.mol[molId].residueData['a'][1];
-        atomIdArray = resobj.lines;
-        for (var t = 0; t < atomIdArray.length; t++) {
-            var startAtom = PDB.tool.getMainAtom(molId, atomIdArray[t][0]);
-            var atom = PDB.tool.getMainAtom(molId, atomIdArray[t][1]);
-            var midp = PDB.tool.midPoint(startAtom.pos_centered, atom.pos_centered);
+        let groupindex = PDB.GROUP_ONE_RES;
+        // 氨基酸的基本属性
+        let resobj = w3m.mol[molId].residueData['a'][1];
+        let atomIdArray = resobj.lines;
+        for (let t = 0; t < atomIdArray.length; t++) {
+            let startAtom = PDB.tool.getMainAtom(molId, atomIdArray[t][0]);
+            let atom = PDB.tool.getMainAtom(molId, atomIdArray[t][1]);
+            let midp = PDB.tool.midPoint(startAtom.pos_centered, atom.pos_centered);
             PDB.drawer.drawOneResLine(groupindex, resobj.caid, startAtom.pos_centered, midp, startAtom.color, startAtom);
             PDB.drawer.drawOneResLine(groupindex, resobj.caid, midp, atom.pos_centered, atom.color, atom);
-            //geometry.vertices.push(start,end);
         }
     },
     showHet_Line: function (molId, isdocking) {
@@ -3042,13 +3047,13 @@ PDB.painter = {
 
     showRes_Sphere: function (molId) {
         PDB.CONFIG = PDB.CONFIG_HIGH;
-        var addgroup;
-        var w = PDB.CONFIG.stick_sphere_w;
-        var group = PDB.GROUP_ONE_RES;
-        var main_obj = w3m.mol[molId].atom.main;
-        for (var i_atom in main_obj) {
-            var atom = PDB.tool.getHetAtom(molId, i_atom);
-            if (atom == undefined) {
+        let addgroup;
+        let w = PDB.CONFIG.stick_sphere_w;
+        let group = PDB.GROUP_ONE_RES;
+        let main_obj = w3m.mol[molId].atom.main;
+        for (let i_atom in main_obj) {
+            let atom = PDB.tool.getHetAtom(molId, i_atom);
+            if (atom === undefined) {
                 atom = PDB.tool.getMainAtom(molId, i_atom);
             }
             atom.caid = atom.id;
@@ -3088,38 +3093,33 @@ PDB.painter = {
         }
     },
     showRes_Ball_Rod: function (molId, isdocking) {
-        var addgroup;
-        var w = PDB.CONFIG.stick_sphere_w;
-        var radius = 0.1;
-        var resobj = w3m.mol[molId].residueData['a'][1];
-        var lines = resobj.lines;
-        var history = {};
-        var groupindex = PDB.GROUP_ONE_RES
-        for (var t = 0; t < lines.length; t++) {
-            var ids = lines[t];
-            var startAtom = PDB.tool.getMainAtom(molId, ids[0]);
+        let addgroup;
+        let w = PDB.CONFIG.stick_sphere_w;
+        let radius = 0.1;
+        let resobj = w3m.mol[molId].residueData['a'][1];
+        let lines = resobj.lines;
+        let history = {};
+        let groupindex = PDB.GROUP_ONE_RES
+        for (let t = 0; t < lines.length; t++) {
+            let ids = lines[t];
+            let startAtom = PDB.tool.getMainAtom(molId, ids[0]);
 
-            var atom = PDB.tool.getMainAtom(molId, ids[1]);
+            let atom = PDB.tool.getMainAtom(molId, ids[1]);
             if (!startAtom.caid) {
                 startAtom.caid = resobj.caid;
                 atom.caid = resobj.caid;
             }
-            //var groupindex = "chain_"+atom.chainname+(showLow?'_low':'');
             if (history[startAtom.id] == undefined) {
                 PDB.drawer.drawSphere(groupindex, startAtom.pos_centered, startAtom.color, startAtom.radius * 0.2, startAtom, addgroup, w);
-                //PDB.GROUP[groupindex].children[PDB.GROUP[groupindex].children.length-1].visible = isshow;
                 history[startAtom.id] = 1;
             }
             if (history[atom.id] == undefined) {
                 PDB.drawer.drawSphere(groupindex, atom.pos_centered, atom.color, atom.radius * 0.2, atom, addgroup, w);
-                //PDB.GROUP[groupindex].children[PDB.GROUP[groupindex].children.length-1].visible = isshow;
                 history[atom.id] = 1;
             }
-            var midp = PDB.tool.midPoint(startAtom.pos_centered, atom.pos_centered);
+            let midp = PDB.tool.midPoint(startAtom.pos_centered, atom.pos_centered);
             PDB.drawer.drawStick(groupindex, startAtom.pos_centered, midp, startAtom.color, radius, startAtom);
-            //PDB.GROUP[groupindex].children[PDB.GROUP[groupindex].children.length-1].visible = isshow;
             PDB.drawer.drawStick(groupindex, midp, atom.pos_centered, atom.color, radius, atom);
-            //PDB.GROUP[groupindex].children[PDB.GROUP[groupindex].children.length-1].visible = isshow;
         }
     },
     showHet_Ball_Rod: function (molId, isdocking) {
