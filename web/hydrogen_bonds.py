@@ -2,10 +2,20 @@
 # -*- coding: utf-8 -*-
 
 # 氢键 Hydrogen bonds
-from pyrosetta import pose_from_pdb
-from pyrosetta.rosetta.core.scoring.hbonds import HBondSet
+from pyrosetta import *
 import tempfile
 import os
+
+
+def atom_name(pose, atom, res, statue):
+    atom_id = AtomID(atom, res)
+    residue = pose.residue(atom_id.rsd())
+    if statue == 'donor':
+        atom_bs = residue.atom_base(atom)
+        sidechain_atom_name = residue.atom_name(atom_bs)
+    else:
+        sidechain_atom_name = residue.atom_name(atom)
+    return sidechain_atom_name
 
 
 def pyrosetta_hbonds(pdb_data):
@@ -15,14 +25,15 @@ def pyrosetta_hbonds(pdb_data):
     pose = pose_from_pdb(temp_pdb.name)
     os.unlink(temp_pdb.name)
     pose_info = pose.pdb_info()
-    hbond_set = HBondSet(pose, False)
+    hbond_set = pose.get_hbonds()
     hydrogen_set = list()
     for hd in range(1, hbond_set.nhbonds() + 1):
         hydrogen_bond = {}
         hbond = hbond_set.hbond(hd)
-        print(hbond)
         hydrogen_bond["donor"] = hbond.don_res()
+        hydrogen_bond["don_hatm"] = hbond.don_hatm()
         hydrogen_bond["acc"] = hbond.acc_res()
+        hydrogen_bond["acc_atm"] = hbond.acc_atm()
         hydrogen_bond["donor_chain"] = pose_info.chain(hydrogen_bond["donor"])
         hydrogen_bond["donor_id"] = pose_info.number(hydrogen_bond["donor"])
         hydrogen_bond["acc_chain"] = pose_info.chain(hydrogen_bond["acc"])
@@ -30,4 +41,11 @@ def pyrosetta_hbonds(pdb_data):
         if hydrogen_bond["donor_chain"] == hydrogen_bond["acc_chain"]:
             continue
         hydrogen_set.append(hydrogen_bond)
+        hydrogen_bond["don_side_atom"] = atom_name(pose, hydrogen_bond["don_hatm"], hydrogen_bond["donor"], "donor")
+        hydrogen_bond["acc_side_atom"] = atom_name(pose, hydrogen_bond["acc_atm"], hydrogen_bond["acc"], "acc")
+
     return hydrogen_set
+
+
+if __name__ == '__main__':
+    pyrosetta_hbonds("/Users/danfeng/acer_rubrum/protein/dataset/7e3b.pdb")
