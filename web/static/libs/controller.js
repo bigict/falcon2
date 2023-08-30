@@ -200,12 +200,16 @@ PDB.controller = {
                     for (let hdicts in hbonds_set) {
                         // 绘制氢键虚线
                         let hdict = hbonds_set[hdicts]
-                        let donor_chain = hdict["donor_chain"];
-                        let acc_chain = hdict["acc_chain"];
+                        let donor_chain = hdict["donor_chain"].toLowerCase();
+                        let acc_chain = hdict["acc_chain"].toLowerCase();
                         let donor_id = hdict["donor_id"];
                         let acc_id = hdict["acc_id"];
-                        let groupindex_a = "chain_" + donor_chain.toLowerCase();
-                        let groupindex_b = "chain_" + acc_chain.toLowerCase();
+                        let donor_atom = hdict["don_side_atom"].toLowerCase();
+                        donor_atom = donor_atom.replaceAll(" ", "");
+                        let acc_atom = hdict["acc_side_atom"].toLowerCase();
+                        acc_atom = acc_atom.replaceAll(" ", "");
+                        let groupindex_a = "chain_" + donor_chain;
+                        let groupindex_b = "chain_" + acc_chain;
                         // 获取donor和acc的坐标
                         let donor_axis = new THREE.Vector3(0, 0, 0);
                         let acc_axis = new THREE.Vector3(0, 0, 0);
@@ -215,27 +219,39 @@ PDB.controller = {
                         if (PDB.GROUP[groupindex_b + '_low'] && PDB.GROUP[groupindex_b + '_low'].children.length > 0) {
                             groupindex_b = groupindex_b + '_low'
                         }
+
+                        // 获取Res ID绘制 Ball & Rod;
+                        PDB.painter.showBallRodByResdue(donor_chain, donor_id);
+                        PDB.painter.showBallRodByResdue(acc_chain, acc_id);
+
                         if (PDB.GROUP[groupindex_a] && PDB.GROUP[groupindex_a].children.length > 0) {
                             for (let res_dt in PDB.GROUP[groupindex_a].children) {
                                 let res_atom_donor = PDB.GROUP[groupindex_a].children[res_dt];
                                 if (res_atom_donor.userData.presentAtom.resid == donor_id) {
-                                    donor_axis = res_atom_donor.userData.presentAtom.pos_centered;
-                                    break;
+                                    if (res_atom_donor.userData.presentAtom.name == donor_atom) {
+                                        if (res_atom_donor.geometry.type === "SphereBufferGeometry") {
+                                            donor_axis = res_atom_donor.userData.presentAtom.pos_centered;
+                                            console.log("atom", acc_atom, donor_atom);
+                                            break;
+                                        }
+                                    }
                                 }
                             }
                         }
                         if (PDB.GROUP[groupindex_b] && PDB.GROUP[groupindex_b].children.length > 0) {
                             for (let res_dt in PDB.GROUP[groupindex_b].children) {
                                 let res_atom_acc = PDB.GROUP[groupindex_b].children[res_dt];
-                                console.log("res_atom_acc", res_atom_acc.userData.presentAtom.resid)
-                                console.log("acc_id", acc_id)
-                                if (res_atom_acc.userData.presentAtom.resid == acc_id) {
-                                    acc_axis = res_atom_acc.userData.presentAtom.pos_centered;
-                                    break;
+
+                                if ((res_atom_acc.userData.presentAtom.resid == acc_id) && (res_atom_acc.userData.presentAtom.name == acc_atom)) {
+                                    if (res_atom_acc.geometry.type === "SphereBufferGeometry") {
+                                        acc_axis = res_atom_acc.userData.presentAtom.pos_centered;
+                                        console.log("donor", donor_axis, acc_axis);
+                                        break;
+                                    }
                                 }
                             }
                         }
-                        console.log("donor", donor_axis, acc_axis);
+
 
                         PDB.drawer.drawAtomLine(donor_axis, acc_axis);
                         PDB.drawer.drawPointDistance(donor_axis, acc_axis);
