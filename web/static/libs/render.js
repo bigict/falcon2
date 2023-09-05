@@ -75,7 +75,7 @@ function process_button(type, component) {
             case Constants.ComponentType.TRIGGER:
                 break;
             case Constants.ComponentType.SQUEEZE:
-                onMenuDown(event);
+                onMenuDown();
                 DOING = 1;
                 STATE[type] = 1;
                 break;
@@ -180,7 +180,7 @@ function onMenuUp(event) {
     // var controller = event.target;
 }
 
-function onMenuDown(event) {
+function onMenuDown() {
     if (PDB.TravelMode) {
         PDB.render.changeToVrMode(PDB.MODE_VR, false);
     } else {
