@@ -108,6 +108,7 @@
     <input type="text" name="search_text" class="search_text" id="search_text" placeholder="PDB ID"
            onkeydown="PDB.controller.onKeyDown(event)"/>
     <input type="button" class="top_btn" id="search_button" value="搜索">
+{#    改为添加蛋白#}
     <a class="input-file input-fileup">
         上传文件<input size="100" type="file" name="file" id="upload_button">
     </a>
@@ -163,7 +164,7 @@
     <!--    </span>-->
 
     <!--    chinese-->
-    <LABEL onclick="switchMenu('mainStructure')">蛋白质结构</LABEL><BR/>
+    <LABEL onclick="switchMenu('mainStructure')">蛋白质结构</LABEL><BR></BR>
     <span class="submenu" id="mainStructure">
       <button id="b_hide">隐藏</button><BR/>
       <button id="b_line">线形结构</button><BR/>

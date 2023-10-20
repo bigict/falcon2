@@ -5,13 +5,7 @@
 
 // vr avaliable
 PDB.controller = {
-    //webvr: function() {
-    //  WEBVR.checkAvailability().catch(function(message) {
-    //    document.body.appendChild(WEBVR.getMessageContainer(message));
-    //  });
-    //},
     init: function () {
-        // this.webvr();
         this.createMenu();
         if (PDB.mode === PDB.MODE_VR) {
             PDB.render.initVR();
@@ -30,8 +24,6 @@ PDB.controller = {
         //switch Mode of show on big Structure
         var c_isLow = document.getElementById("isLow");
         c_isLow.addEventListener('click', function (e) {
-            //PDB.render.changeToThreeMode(PDB.MODE_THREE,false);
-            //console.log(this.checked);
             if (this.checked) {
                 PDB.loadType = PDB.bigmodel;
             } else if (!this.checked) {
@@ -40,7 +32,6 @@ PDB.controller = {
             PDB.render.clear(2);
             scope.refreshGeometryByMode(PDB.config.mainMode);
             PDB.render.clear(5);
-            PDB.config.hetMode = PDB.config.hetMode;
             scope.refreshGeometryByMode(PDB.config.hetMode);
 
         });
@@ -64,35 +55,15 @@ PDB.controller = {
 
         threeMode.addEventListener('click', function (e) {
             vrMode.style.display = "none";
-            //PDB.render.changeToThreeMode(PDB.MODE_THREE,false);
             window.location.href = "index.html?vmode=nonvr";
         });
 
-        // threeWithTravel.addEventListener('click', function(e) {
-        // PDB.CHANGESTYLE = 6;
-        // PDB.render.clearStructure();
-        // PDB.render.changeToThreeMode(PDB.MODE_TRAVEL_THREE, true);
-        // PDB.painter.showResidueByThreeTravel();
-
-        // });
         document.addEventListener("mouseup", (event) => {
-// <<<<<<< HEAD
             if (raycasterFor3 !== undefined && 'setFromCamer' in raycasterFor3) {
                 raycasterFor3.setFromCamera(mouse, camera);
             } else {
                 return;
             }
-// =======
-// 	  if (raycasterFor3===undefined){
-// 	      return ;
-// 	  }
-// 	  if('setFromCamera' in raycasterFor3){
-// 	      var aaa= '';
-// 	  }else{
-// 	      return ;
-// 	  }
-//           raycasterFor3.setFromCamera(mouse, camera);
-// >>>>>>> 021096b14333ad374cf48e554e88c266a509806e
             var allObjs = [];
             var groupMain = PDB.GROUP[PDB.GROUP_STRUCTURE_INDEX[PDB.GROUP_MAIN]];
             var groupHet = PDB.GROUP[PDB.GROUP_HET];
@@ -258,6 +229,7 @@ PDB.controller = {
                     }
                 }
             });
+
         });
 
         //upload button
@@ -776,16 +748,13 @@ PDB.controller = {
             contentContainer.removeChild(row);
         }
 
-
         // --------------------------
         closeeditResidue.addEventListener('click', function () {
-            //segmentholder.style.display = "none";
             PDB.tool.showSegmentholder(false);
             editResidue.style.display = "none";
         });
 
         b_show_editResidue.addEventListener('click', function (e) {
-            //segmentholder.style.display = "block";
             PDB.tool.showSegmentholder(true);
             editResidue.style.display = "block";
         });
@@ -1008,6 +977,11 @@ PDB.controller = {
 
             // console.log("PDB.textData1", PDB.textData)
         });
+
+        // b_replace.addEventListener('click', function (e) {
+        //
+        // });
+
 
         b_hide.addEventListener('click', function (e) {
             //console.log(e.target.innerText);
@@ -1637,11 +1611,11 @@ PDB.controller = {
         //} );
 
 
-        //var showHBond   = document.getElementById( "showHBond" );
-        //showHBond.addEventListener( 'click', function(event) {
-        //    PDB.render.clearGroupIndex(PDB.GROUP_BOND);
-        //    PDB.painter.showBond(PDB.BOND_TYPE_HBOND);
-        //} );
+        var showHBond   = document.getElementById( "showHBond" );
+        showHBond.addEventListener( 'click', function(event) {
+           PDB.render.clearGroupIndex(PDB.GROUP_BOND);
+           PDB.painter.showBond(PDB.BOND_TYPE_HBOND);
+        } );
 
         //var showSSBond   = document.getElementById( "showSSBond" );
         //showSSBond.addEventListener( 'click', function(event) {

@@ -5,11 +5,11 @@
 var PDB;
 var ServerType = 1;
 
-var SERVERURL = "http://127.0.0.1:9098/vrmol";
+var SERVERURL = "http://127.0.0.1:9098/falcon2";
 if (ServerType === 1) {
-    SERVERURL = "http://127.0.0.1:9098/";
+    SERVERURL = "http://127.0.0.1:9098";
 } else if (ServerType === 2) {
-    SERVERURL = "https://vrmol.net";
+    SERVERURL = "http://vrmol.net";
 }
 var API_URL = "https://vrmol.life.tsinghua.edu.cn";
 var API_URL_EMMAP = "server/api_em.php?pdbid=";
@@ -24,6 +24,8 @@ PDB = {
 
     // ProDESIGN
     CHANGERESID: [],
+    RESIDUEID: {},
+    RESIDUEIDLIST: [],
 
     // ydf change
     firstTimeNum: [],

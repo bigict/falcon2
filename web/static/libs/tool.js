@@ -1296,18 +1296,18 @@ PDB.tool = {
     },
 
     rotateAboutWorldAxis: function (vec, axis, angle) {
-        var rotationMatrix = new THREE.Matrix4();
+        let rotationMatrix = new THREE.Matrix4();
         rotationMatrix.makeRotationAxis(axis.normalize(), angle);
-        var currentPos = new THREE.Vector4(vec.x, vec.y, vec.z, 1);
-        var newPos = currentPos.applyMatrix4(rotationMatrix);
+        let currentPos = new THREE.Vector4(vec.x, vec.y, vec.z, 1);
+        let newPos = currentPos.applyMatrix4(rotationMatrix);
         return new THREE.Vector3(newPos.x, newPos.y, newPos.z);
     },
 
     freshAllResidueGroupObject: function (angle) {
         PDB.nowRotateAngle = PDB.nowRotateAngle + angle;
         if (Math.abs(PDB.nowRotateAngle) >= PDB.rotateAngleThreshold) {
-            var scope = this;
-            var axis;
+            let scope = this;
+            let axis;
             switch (PDB.ROTATION_AXIS) {
                 case 1:
                     PDB.rotateAxisAngle.x += angle;
@@ -1322,9 +1322,9 @@ PDB.tool = {
                     axis = new THREE.Vector3(0, 0, 1);
                     break;
             }
-            for (var chain in PDB.residueGroupObject) {
-                for (var resid in PDB.residueGroupObject[chain]) {
-                    var pos = camera.position;
+            for (let chain in PDB.residueGroupObject) {
+                for (let resid in PDB.residueGroupObject[chain]) {
+                    let pos = camera.position;
                     var obj = PDB.residueGroupObject[chain][resid].vector;
                     // var vec = {
                     // x:pos.x+obj.x,

@@ -229,7 +229,7 @@ PDB.painter = {
                 //     ["Mutation", PDB.MENU_TYPE_MUTATION],
                 //     ["Transition", PDB.MENU_TYPE_DIRECTION],
                 //     ["Rotation", PDB.MENU_TYPE_ROTATION],
-                //     // ["Bond", PDB.MENU_TYPE_HBOND],
+                //     ["Bond", PDB.MENU_TYPE_HBOND],
                 //     // ["Conservation",              PDB.MENU_TYPE_CONSERVATION],
                 //     //["Density Map", PDB.MENU_TYPE_DENSITYMAP],
                 //     ["Drugs & Docking", PDB.MENU_TYPE_DRUG],
@@ -252,7 +252,7 @@ PDB.painter = {
                     // ["突变", PDB.MENU_TYPE_MUTATION],
                     // ["转换", PDB.MENU_TYPE_DIRECTION],
                     // ["旋转", PDB.MENU_TYPE_ROTATION],
-                    // ["Bond", PDB.MENU_TYPE_HBOND],
+                    ["Bond", PDB.MENU_TYPE_HBOND],
                     // ["Conservation",              PDB.MENU_TYPE_CONSERVATION],
                     //["Density Map", PDB.MENU_TYPE_DENSITYMAP],
                     // ["药物对接", PDB.MENU_TYPE_DRUG],
@@ -528,17 +528,17 @@ PDB.painter = {
             // PDB.drawer.drawTextKB(PDB.GROUP_MENU_CONSERVATION, new THREE.Vector3(x, y-i*0.2, z),  conMenu[i][0], conMenu[i][1], color, 135);
             // }
             // break;
-            // case PDB.MENU_TYPE_HBOND:
-            //   var bondMenu = [
-            //     ["Hide Bond", PDB.BOND_TYPE_NONE],
-            //     ["Show HBond", PDB.BOND_TYPE_HBOND],
-            //     ["Show SSBond", PDB.BOND_TYPE_SSBOND],
-            //     ["Show Covalent", PDB.BOND_TYPE_COVALENT]
-            //   ];
-            //   for (var i = 0; i < bondMenu.length; i++) {
-            //     PDB.drawer.drawTextKB(PDB.GROUP_MENU_HBOND, new THREE.Vector3(x, y - i * 0.2, z), bondMenu[i][0], bondMenu[i][1], color, 135);
-            //   }
-            //   break;
+            case PDB.MENU_TYPE_HBOND:
+              var bondMenu = [
+                ["Hide Bond", PDB.BOND_TYPE_NONE],
+                ["Show HBond", PDB.BOND_TYPE_HBOND],
+                ["Show SSBond", PDB.BOND_TYPE_SSBOND],
+                ["Show Covalent", PDB.BOND_TYPE_COVALENT]
+              ];
+              for (var i = 0; i < bondMenu.length; i++) {
+                PDB.drawer.drawTextKB(PDB.GROUP_MENU_HBOND, new THREE.Vector3(x, y - i * 0.2, z), bondMenu[i][0], bondMenu[i][1], color, 135);
+              }
+              break;
             case PDB.MENU_TYPE_DIRECTION:
                 var moveMenu = [
                     ["Move along the X axis", 2],
@@ -697,7 +697,7 @@ PDB.painter = {
         PDB.drawer.drawText(PDB.GROUP_INFO, pos1,
             message, "", showAtom.color, 180);
     },
-    showDFIREInfo: function (showAtom, message) {
+    showDFIREInfo: function (showAtom, message, color=0) {
         // var message = showAtom.chainname.toUpperCase();
         var pos1;
 
@@ -706,11 +706,13 @@ PDB.painter = {
         } else {
             pos1 = PDB.tool.getAtomInfoPosition(showAtom.pos_centered, camera.position);
         }
-
+        if (color === 0) {
+            color = showAtom.color
+        }
         // pos1 = PDB.tool.getAtomInfoPosition(showAtom.pos_centered, camera.position);
 
         PDB.drawer.drawTextDFIRE(PDB.GROUP_INFO, pos1,
-            message, "", showAtom.color, 180);
+            message, "", color, 180);
 
     },
     showLine: function () {
@@ -3951,7 +3953,6 @@ PDB.painter = {
                 PDB.drawer.drawPlane(PDB.GROUP_SLICE, emmap.header.NX, emmap.header.NY, "", PDB.DIMENSION_Z, val, emmap);
                 break;
         }
-
         console.log("time(ms):" + (new Date() - start));
     },
     // showTravelTube : function(paths,ids){

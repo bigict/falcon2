@@ -7,6 +7,7 @@ import zipfile
 import re
 import sys
 import requests
+import json
 
 from flask import (Flask, jsonify, redirect, request, render_template, send_file)
 from dfire.calene import read_lib, calc_energy
@@ -14,6 +15,9 @@ from ProDESIGN.fal_sign import falcon2_design
 from FFD.ffd_ppl import get_ffd_short
 # from web import db, form, utils
 from dfprodigy import execute_prodigy
+from pdb_process.spring import adjust_positions
+from pdb_process.pdbs import get_coords_by_array, change_coords_by_atom
+from flask_cors import CORS
 
 module = os.environ.get('Falcon_MODULE', '')
 
@@ -21,7 +25,7 @@ app = Flask(__name__, static_url_path='')
 
 
 # icon
-
+CORS(app, origins=["*"])
 
 @app.route('/search/', methods=['POST'])
 def search():
@@ -413,9 +417,79 @@ def pro_design_v1():
     return jsonify(design_result)
 
 
+@app.route("/spring", methods=["GET", "POST"])
+def spring_loop():
+    pdb_str = request.values.get("pdb_str")
+    res_id = request.values.get("res_id")
+    res_id = int(res_id)
+    res_chain = request.values.get("res_chain")
+    res_chain = res_chain.lower()
+    res_atom = request.values.get("res_atom")
+    res_atom = res_atom.upper()
+    atom_coord = request.values.get("atom_coord")
+    atom_coord = json.loads(atom_coord, strict=False)
+    res_number = request.values.get("res_number")
+    res_number = int(res_number)
+    second_structure = request.values.get("second_structure")
+
+    res_array = []
+    # 寻找范围
+    if res_atom == "CA":
+        start = 1
+        end = res_number
+        second_structure = json.loads(second_structure, strict=False)
+        if not isinstance(second_structure, dict):
+            return pdb_str
+        for key, values in second_structure.items():
+            if key == "sheet":
+                chain_dict = values[res_chain]
+                for _, second_dict in chain_dict.items():
+                    for s_start, s_end in second_dict:
+                        if int(s_start) <= res_id <= int(s_end):
+                            start = int(s_start)
+                            end = int(s_end)
+                            break
+                        elif res_id < int(s_start):
+                            if end == 0:
+                                end = int(s_start) - 1
+                            if end > int(s_start):
+                                end = int(s_start) - 1
+                        elif int(s_end) < res_id:
+                            if start < int(s_end) + 1:
+                                start = int(s_end) + 1
+            elif key == "helix":
+                chain_dict = values[res_chain]
+                for s_start, s_end in chain_dict:
+                    if int(s_start) <= res_id <= int(s_end):
+                        start = int(s_start)
+                        end = int(s_end)
+                        break
+                    elif res_id < int(s_start):
+                        if end > int(s_start):
+                            end = int(s_start) - 1
+                    elif int(s_end) < res_id:
+                        if start < int(s_end) + 1:
+                            start = int(s_end) + 1
+
+        res_array = [start, end]
+        if len(res_array) == 2:
+            tmp_path = "tmps/tmp_protein.pdb"
+            output = "tmps/output.pdb"
+            with open(tmp_path, "w") as fw:
+                fw.writelines(pdb_str)
+            coords = get_coords_by_array(tmp_path, res_array[0], res_array[1], res_chain, res_atom)
+            # fixed_index
+            coords, res_np = adjust_positions(coords, fixed_index=res_id-1, fixed_value=atom_coord)
+            new_pdb_str = change_coords_by_atom(tmp_path, res_chain, res_array, res_np, coords, output)
+            pdb_result = {"pdb": new_pdb_str}
+            return jsonify(pdb_result)
+
+
+
+
 if __name__ == '__main__':
     app.config['DEBUG'] = True
     app.run(host='0.0.0.0', port=9098, threaded=True)
 
-    # app.run(host='172.20.10.2', port=9098, threaded=True,
+    # app.run(host='0.0.0.0', port=9098, threaded=True,
     #         ssl_context=("server/server.crt", "server/server.key"))
