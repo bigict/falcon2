@@ -1874,6 +1874,8 @@ function intersectObjects(controller) {
                 let coords = {};
                 let cdKey = chainName + "_" + ob_resid;
                 coords[cdKey] = coord;
+                let cn = chainName.split("_")[1]
+                console.log(coord_list)
 
                 // 使用接口重新加载PDB结构
                 $.ajax({
@@ -1883,10 +1885,10 @@ function intersectObjects(controller) {
                     data: {
                         "pdb_str": PDB.textData,
                         "res_id": ob_resid,
-                        "res_chain": chainName,
+                        "res_chain": cn,
                         "res_atom": ob_residue.name,
-                        "atom_coord": coord_list,
-                        "res_number": w3m.mol[PDB.pdbId].residue[chainName].length,
+                        "atom_coord": JSON.stringify(coord_list),
+                        "res_number": w3m.mol[PDB.pdbId].residue[cn].length,
                         "second_structure": JSON.stringify({
                             'helix': w3m.mol[PDB.pdbId].helix,
                             'sheet': w3m.mol[PDB.pdbId].sheet
@@ -2014,7 +2016,7 @@ function intersectObjects(controller) {
             if (!PDB.isShowMenu && object.userData.presentAtom) {
                 let resid = findKeyByValue(PDB.RESIDUEID[object.userData.presentAtom.chainname.toLowerCase()], object.userData.presentAtom.resid);
                 if (resid) {
-                    let message = "Res: " + object.userData.presentAtom.chainname.toUpperCase() + "." + object.userData.presentAtom.resid + "." + object.userData.presentAtom.resname.toUpperCase();
+                    let message = "Res: " + object.userData.presentAtom.chainname.toUpperCase() + "." + resid + "." + object.userData.presentAtom.resname.toUpperCase();
                     message = message + "." + object.userData.presentAtom.name.toUpperCase();
                     let atom_color = object.userData.presentAtom.color
                     let new_color = new THREE.Color(1 - atom_color.r, 1 - atom_color.g, 1 - atom_color.b);

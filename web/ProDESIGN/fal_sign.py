@@ -62,8 +62,7 @@ def str_to_fasta(fasta_str, fasta_name):
         f.writelines(fasta_str)
 
 
-def additional(tensors,
-               res_state, idx, chain_id):
+def additional(tensors, res_state, idx, chain_id):
     # 氨基酸属性
     is_type = ''
     index_dict = torch.tensor([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19])
@@ -71,9 +70,6 @@ def additional(tensors,
         chain_state = res_state[chain_id]
         if idx in chain_state.keys():
             is_type = chain_state[idx]
-    print("chain_id", chain_id)
-    print("idx", idx)
-    print("res_state", res_state)
     # 含芳香族的氨基酸
     if is_type == "Nonpolar":
         index_dict = torch.tensor([0, 7, 9, 10, 12, 19])

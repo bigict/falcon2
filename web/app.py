@@ -428,9 +428,11 @@ def spring_loop():
     res_atom = res_atom.upper()
     atom_coord = request.values.get("atom_coord")
     atom_coord = json.loads(atom_coord, strict=False)
+
     res_number = request.values.get("res_number")
     res_number = int(res_number)
     second_structure = request.values.get("second_structure")
+
 
     res_array = []
     # 寻找范围
@@ -438,6 +440,7 @@ def spring_loop():
         start = 1
         end = res_number
         second_structure = json.loads(second_structure, strict=False)
+        print("second_structure", second_structure)
         if not isinstance(second_structure, dict):
             return pdb_str
         for key, values in second_structure.items():
@@ -479,6 +482,7 @@ def spring_loop():
                 fw.writelines(pdb_str)
             coords = get_coords_by_array(tmp_path, res_array[0], res_array[1], res_chain, res_atom)
             # fixed_index
+            print("res_id-1", res_id-1)
             coords, res_np = adjust_positions(coords, fixed_index=res_id-1, fixed_value=atom_coord)
             new_pdb_str = change_coords_by_atom(tmp_path, res_chain, res_array, res_np, coords, output)
             pdb_result = {"pdb": new_pdb_str}
