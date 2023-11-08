@@ -130,7 +130,7 @@ var fontloader =
                 group: group
             };
             PDB.GROUP[group].position.copy(pos);
-            PDB.GROUP[group].lookAt(dir);
+            PDB.GROUP[group].lookAt(train.position);
             if (PDB.GROUP[group].children.length > 0) {
                 // console.log(PDB.GROUP[group])
                 PDB.GROUP[group].children = [];
@@ -521,6 +521,7 @@ var fontloader =
             var mesh = new THREE.Mesh(geometry, material);
             mesh.name = atom.caid;
             mesh.position.copy(point);
+
             mesh.userData = {
                 group: group,
                 presentAtom: atom

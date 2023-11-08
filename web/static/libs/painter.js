@@ -710,7 +710,6 @@ PDB.painter = {
             color = showAtom.color
         }
         // pos1 = PDB.tool.getAtomInfoPosition(showAtom.pos_centered, camera.position);
-
         PDB.drawer.drawTextDFIRE(PDB.GROUP_INFO, pos1,
             message, "", color, 180);
 

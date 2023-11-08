@@ -12,7 +12,9 @@ import json
 from flask import (Flask, jsonify, redirect, request, render_template, send_file)
 from dfire.calene import read_lib, calc_energy
 from ProDESIGN.fal_sign import falcon2_design
-from FFD.ffd_ppl import get_ffd_short
+
+from ffd_pipeline.run_ffd import get_ffd_from_numbers
+# from FFD.ffd_ppl import get_ffd_short
 # from web import db, form, utils
 from dfprodigy import execute_prodigy
 from pdb_process.spring import adjust_positions
@@ -26,6 +28,7 @@ app = Flask(__name__, static_url_path='')
 
 # icon
 CORS(app, origins=["*"])
+
 
 @app.route('/search/', methods=['POST'])
 def search():
@@ -244,18 +247,50 @@ def submit(job_id):
         return redirect(f'{module}/checking/{job_id}/?app={app_id}')
 
 
+@app.route("/cgpdb", methods=["GET", "POST"])
+def change_pdb():
+    pdb_content = request.values.get("pdb_content")
+    pdb_chain = request.values.get("pdb_chain")
+    pdb_resid = request.values.get("pdb_resid")
+    pdb_ca_coords = request.values.get("pdb_ca_coords")
+    res_array = [int(pdb_resid)]
+
+    pdb_file = 'cgpdb_temp.pdb'
+    with open(pdb_file, 'w') as fw:
+        fw.writelines(pdb_content)
+
+    # 根据被修改的氨基酸，提取肽段信息
+    # 获取原始Ca坐标，求坐标差
+    ca_res_coord = get_coords_by_array(pdb_file, pdb_resid, pdb_resid, pdb_chain, "ca")
+    coords = ca_res_coord - pdb_ca_coords
+    new_pdb_content = change_coords_by_atom(pdb_file, pdb_chain, res_array, coords)
+    new_pdb_content = {"result": new_pdb_content}
+    return jsonify(new_pdb_content)
+
+
 @app.route("/ffd/", methods=["GET", "POST"])
 def ffd():
     pdb_content = request.values.get("pdb_file")
     pdb_position = request.values.get("pdb_position")
-
-    outdir = "output"
+    pdb_chain = request.values.get("pdb_chain")
+    pdb_position = [int(i) for i in pdb_position]
+    pdb_position.sort()
+    pdb_file = 'ffd_temp.pdb'
     n_structs = 1
     pool_size = -1
     device = 0
-    snapshot = 0
+    start = pdb_position[0]
+    end = pdb_position[-1]
+    ca_coords = get_ffd_from_numbers(pdb_content, pdb_position, n_structs, pool_size, device)
+    # 获取原始坐标
+    with open(pdb_file, 'w') as fw:
+        fw.writelines(pdb_content)
 
-    result = get_ffd_short(pdb_content, pdb_position, outdir, n_structs, pool_size, device, snapshot)
+    # 对齐坐标
+    ca_coord_bf = get_coords_by_array(pdb_file, start, end, pdb_chain, "CA")
+    coord_diff = ca_coord_bf - ca_coords
+    result = change_coords_by_atom(pdb_file, pdb_chain, pdb_position, coord_diff)
+
     result = {"result": result}
     return jsonify(result)
 

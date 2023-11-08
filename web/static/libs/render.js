@@ -48,6 +48,8 @@ var id = 0;
 
 let train = new THREE.Object3D();
 
+var ChangePDBLock = 0;
+
 
 //=======webxr=====
 
@@ -1023,7 +1025,11 @@ function onTriggerDown(event) {
         // ================================ Deal with Trigger mode ===
         switch (PDB.trigger) {
             case PDB.TRIGGER_EVENT_DRAG:
-                objectTrans(controller, object, event);
+                if (PDB.config.mainMode === PDB.BALL_AND_ROD) {
+                    objectTrans(controller, intersections, event);
+                } else {
+                    objectTrans(controller, object, event);
+                }
                 break;
         }
     }
@@ -1184,117 +1190,142 @@ function onTriggerUp(event) {
 // }
 
 function objectTrans(controller, object, event) {
-    if (object != undefined && (object.material != undefined || object.type === "Group")) {
-        PDB.tool.colorIntersectObjectBlue(object, 1);
+    if (PDB.config.mainMode === PDB.BALL_AND_ROD) {
+        if (object[0].object != undefined && (object[0].object.material != undefined || object[0].object.type === "Group")) {
+            var object_list = []
+            for (let objectListKey in object) {
+                object_list.push(object[objectListKey].object)
+            }
+            if (object_list.length > 0) {
 
-        // yangdanfeng ID说明功能
-        // console.log(object);
-        // PDB.painter.showDFIREInfo(object.userData.presentAtom,
-        //     "chain: " + object.userData.presentAtom.chainname + " Res ID: " + object.userData.presentAtom.resid);
-        var groupindex = object.userData["group"];
-        if (groupindex != undefined) {
+                for (let objMesh in object_list) {
+                    let new_object = object_list[objMesh];
+                    PDB.tool.colorIntersectObjectBlue(new_object, 1);
+                    var groupindex = new_object.userData["group"];
+                    var mtx = new THREE.Vector3()
+                    new_object.matrix.premultiply(tempMatrix);
+                    new_object.matrix.decompose(new_object.position, new_object.quaternion, new_object.scale);
 
-            // HELIX_SHEET 拖动
-            if (PDB.selection_mode === PDB.SELECTION_HELIX_SHEET) {
-                console.log(scene.children)
-
-                PDB.HS_FIRSTTIMENUMBER = [];
-                PDB.CHANGE_DICT = {};
-                PDB.HS_ATOM = "";
-
-
-                for (var per_object in object) {
-                    if (object[per_object].type === "Mesh") {
-                        // 拖拽代码 ---费了好大劲
-                        object[per_object].matrix.premultiply(tempMatrix);
-                        object[per_object].matrix.decompose(object[per_object].position, object[per_object].quaternion, object[per_object].scale);
-
-                        controller.add(object[per_object]);
-                        controller.userData.selected = object;
-                    }
+                    controller.add(new_object);
+                    controller.userData.selected = new_object;
                 }
-
-
+                PDB.ProDESIGNPosition.push([PDB.pdbId, object_list[0].userData.presentAtom.chainname, object_list[0].userData.presentAtom.resid])
                 PDB.DFMATRIX1 = controller.matrixWorld.clone();
-
-            } else {
-
-                var mtx = new THREE.Vector3()
-
-                console.log(scene.children)
-
-
-                // 拖拽代码 ---费了好大劲
-                object.matrix.premultiply(tempMatrix);
-                object.matrix.decompose(object.position, object.quaternion, object.scale);
-
-                controller.add(object);
-                controller.userData.selected = object;
-                PDB.NEWOBJ = object.clone();
+            }
+        }
+        // PDB.tool.colorIntersectObjectBlue(object, 1);
+    } else {
+        if (object != undefined && (object.material != undefined || object.type === "Group")) {
 
 
-                PDB.ProDESIGNPosition.push([PDB.pdbId, object.userData.presentAtom.chainname, object.userData.presentAtom.resid])
+            PDB.tool.colorIntersectObjectBlue(object, 1);
 
-                if (PDB.selection_mode === PDB.SELECTION_RESIDUE) {
+            // yangdanfeng ID说明功能
+            // console.log(object);
+            // PDB.painter.showDFIREInfo(object.userData.presentAtom,
+            //     "chain: " + object.userData.presentAtom.chainname + " Res ID: " + object.userData.presentAtom.resid);
+            var groupindex = object.userData["group"];
+            if (groupindex != undefined) {
+
+                // HELIX_SHEET 拖动
+                if (PDB.selection_mode === PDB.SELECTION_HELIX_SHEET) {
+                    console.log(scene.children)
+
+                    PDB.HS_FIRSTTIMENUMBER = [];
+                    PDB.CHANGE_DICT = {};
+                    PDB.HS_ATOM = "";
+
+
+                    for (var per_object in object) {
+                        if (object[per_object].type === "Mesh") {
+                            // 拖拽代码 ---费了好大劲
+                            object[per_object].matrix.premultiply(tempMatrix);
+                            object[per_object].matrix.decompose(object[per_object].position, object[per_object].quaternion, object[per_object].scale);
+
+                            controller.add(object[per_object]);
+                            controller.userData.selected = object;
+                        }
+                    }
+
 
                     PDB.DFMATRIX1 = controller.matrixWorld.clone();
 
-                    for (var num = object.userData.presentAtom.resid - 5; num < atom.resid + 5; num++) {
-                        PDB.firstTimeNum.push(num);
-                        if (PDB.FFDPosition.indexOf(num) < 0) {
-                            PDB.FFDPosition.push(num);
-                        }
-                    }
-
-                }
-            }
-
-
-            // object.visible = false;
-
-            if (object.type == 'Mesh') {
-                if (groupindex.search('_low') > 0) {
-                    var n_groupindex = groupindex.substring(0, groupindex.length - 4);
-                    for (var i in PDB.GROUP[n_groupindex].children) {
-                        if (PDB.GROUP[n_groupindex].children[i].id == object.id) {
-                            var _h = PDB.GROUP[n_groupindex].children[i]
-                            _h.matrix.premultiply(tempMatrix);
-                            _h.matrix.decompose(_h.position, _h.quaternion, _h.scale);
-                            controller.add(_h);
-                            break;
-                        }
-                    }
-                    //PDB.GROUP[n_groupindex].getObjectById(object.id);
                 } else {
-                    if (PDB.GROUP[groupindex + '_low'] && PDB.GROUP[groupindex + '_low'].children.length > 0) {
-                        for (var i in PDB.GROUP[groupindex + '_low'].children) {
-                            if (PDB.GROUP[groupindex + '_low'].children[i].id == object.id) {
-                                var _h = PDB.GROUP[groupindex + '_low'].children[i]
+
+                    var mtx = new THREE.Vector3()
+
+                    // 拖拽代码 ---费了好大劲
+                    object.matrix.premultiply(tempMatrix);
+                    object.matrix.decompose(object.position, object.quaternion, object.scale);
+
+                    controller.add(object);
+                    controller.userData.selected = object;
+                    PDB.NEWOBJ = object.clone();
+
+
+                    PDB.ProDESIGNPosition.push([PDB.pdbId, object.userData.presentAtom.chainname, object.userData.presentAtom.resid])
+
+                    if (PDB.selection_mode === PDB.SELECTION_RESIDUE) {
+
+                        PDB.DFMATRIX1 = controller.matrixWorld.clone();
+
+                        for (var num = object.userData.presentAtom.resid - 5; num < atom.resid + 5; num++) {
+                            PDB.firstTimeNum.push(num);
+                            if (PDB.FFDPosition.indexOf(num) < 0) {
+                                PDB.FFDPosition.push(num);
+                            }
+                        }
+
+                    }
+                }
+
+
+                // object.visible = false;
+
+                if (object.type == 'Mesh') {
+                    if (groupindex.search('_low') > 0) {
+                        var n_groupindex = groupindex.substring(0, groupindex.length - 4);
+                        for (var i in PDB.GROUP[n_groupindex].children) {
+                            if (PDB.GROUP[n_groupindex].children[i].id == object.id) {
+                                var _h = PDB.GROUP[n_groupindex].children[i]
                                 _h.matrix.premultiply(tempMatrix);
                                 _h.matrix.decompose(_h.position, _h.quaternion, _h.scale);
                                 controller.add(_h);
                                 break;
                             }
                         }
+                        //PDB.GROUP[n_groupindex].getObjectById(object.id);
+                    } else {
+                        if (PDB.GROUP[groupindex + '_low'] && PDB.GROUP[groupindex + '_low'].children.length > 0) {
+                            for (var i in PDB.GROUP[groupindex + '_low'].children) {
+                                if (PDB.GROUP[groupindex + '_low'].children[i].id == object.id) {
+                                    var _h = PDB.GROUP[groupindex + '_low'].children[i]
+                                    _h.matrix.premultiply(tempMatrix);
+                                    _h.matrix.decompose(_h.position, _h.quaternion, _h.scale);
+                                    controller.add(_h);
+                                    break;
+                                }
+                            }
+                        }
                     }
                 }
-            }
 
-            if (object.userData["type"]) {
-                var ot_index = '';
-                if (object.userData["type"] == 'low') {
-                    ot_index = groupindex.substring(0, groupindex.length - 4);
-                } else if (object.userData["type"] == 'normal') {
-                    ot_index = groupindex + '_low';
+                if (object.userData["type"]) {
+                    var ot_index = '';
+                    if (object.userData["type"] == 'low') {
+                        ot_index = groupindex.substring(0, groupindex.length - 4);
+                    } else if (object.userData["type"] == 'normal') {
+                        ot_index = groupindex + '_low';
+                    }
+                    //console.log(ot_index);
+                    PDB.tool.colorIntersectObjectBlue(PDB.GROUP[ot_index], 1);
+                    PDB.GROUP[ot_index].matrix.premultiply(tempMatrix);
+                    PDB.GROUP[ot_index].matrix.decompose(PDB.GROUP[ot_index].position, PDB.GROUP[ot_index].quaternion, PDB.GROUP[ot_index].scale);
+
+                    controller.add(PDB.GROUP[ot_index]);
                 }
-                //console.log(ot_index);
-                PDB.tool.colorIntersectObjectBlue(PDB.GROUP[ot_index], 1);
-                PDB.GROUP[ot_index].matrix.premultiply(tempMatrix);
-                PDB.GROUP[ot_index].matrix.decompose(PDB.GROUP[ot_index].position, PDB.GROUP[ot_index].quaternion, PDB.GROUP[ot_index].scale);
 
-                controller.add(PDB.GROUP[ot_index]);
             }
-
         }
     }
 }
@@ -1531,49 +1562,81 @@ function getIntersections(controller) {
                 //}
                 break;
             case PDB.SELECTION_RESIDUE:
-                var gIndexies = PDB.GROUP_STRUCTURE_INDEX;
-                for (var i = gIndexies.length - 1; i >= 0; i--) {
-                    if (!PDB.GROUP[gIndexies[i]].visible) continue;
-
-                    // 鼠标射线，选择器
-                    var tmp_inters = raycaster.intersectObjects(PDB.GROUP[gIndexies[i]].children);
-                    // console.log("tmp_inters", tmp_inters);
-                    if (tmp_inters.length <= 0) continue;
-                    object = tmp_inters[0].object;
-                    point = tmp_inters[0].point;
-                    // console.log(point)
-                    if (object.name != undefined && object.name != "" && object.userData.presentAtom !== undefined) {
-                        if (object.userData.reptype === "tube") {
-                            //if (object.userData.realtype !== undefined && object.userData.realtype === "arrow") {
-                            //console.log(object.userData);
-                            //}
-                            var atomObjects = PDB.GROUP[gIndexies[i]].getChildrenByName(object.userData.presentAtom.id);
-
+                if (PDB.config.mainMode === PDB.BALL_AND_ROD) {
+                    var gIndexies = PDB.GROUP_STRUCTURE_INDEX;
+                    for (var i = gIndexies.length - 1; i >= 0; i--) {
+                        if (!PDB.GROUP[gIndexies[i]].visible) continue;
+                        var tmp_inters = raycaster.intersectObjects(PDB.GROUP[gIndexies[i]].children);
+                        if (tmp_inters.length <= 0) continue;
+                        object = tmp_inters[0].object;
+                        point = tmp_inters[0].point;
+                        if (object.name != undefined && object.name != "" && object.userData.presentAtom !== undefined) {
+                            var atomObjects = []
+                            // var atomObjects = PDB.GROUP[gIndexies[i]].getChildrenByName(object.userData.presentAtom.caid);
+                            for (const tmpIntersKey in PDB.GROUP[gIndexies[i]].children) {
+                                var childrenMesh = PDB.GROUP[gIndexies[i]].children[tmpIntersKey];
+                                if (childrenMesh.userData?.presentAtom?.resid === object.userData.presentAtom.resid) {
+                                    atomObjects.push(childrenMesh);
+                                }
+                            }
                             for (var a = 0; a < atomObjects.length; a++) {
                                 // 更改坐标
-
                                 inters.push({
                                     "object": atomObjects[a],
-                                    "pos": point
+                                    "pos": point,
+                                    "center": object.userData.presentAtom.name
                                 });
                             }
-                        } else {
+                        }
+                    }
+                    break;
+                }
+                if (PDB.config.mainMode === PDB.CARTOON_SSE) {
+                    var gIndexies = PDB.GROUP_STRUCTURE_INDEX;
+                    for (var i = gIndexies.length - 1; i >= 0; i--) {
+                        if (!PDB.GROUP[gIndexies[i]].visible) continue;
 
-                            var resAtoms = PDB.tool.getMainResAtomsByAtom(object.userData.presentAtom);
-                            for (var k = 0; k < resAtoms.length; k++) {
-                                var atomObjects = PDB.GROUP[gIndexies[i]].getChildrenByName(resAtoms[k].id);
+                        // 鼠标射线，选择器
+                        var tmp_inters = raycaster.intersectObjects(PDB.GROUP[gIndexies[i]].children);
+                        // console.log("tmp_inters", tmp_inters);
+                        if (tmp_inters.length <= 0) continue;
+                        object = tmp_inters[0].object;
+                        point = tmp_inters[0].point;
+                        // console.log(point)
+                        if (object.name != undefined && object.name != "" && object.userData.presentAtom !== undefined) {
+                            if (object.userData.reptype === "tube") {
+                                //if (object.userData.realtype !== undefined && object.userData.realtype === "arrow") {
+                                //console.log(object.userData);
+                                //}
+                                var atomObjects = PDB.GROUP[gIndexies[i]].getChildrenByName(object.userData.presentAtom.id);
+
                                 for (var a = 0; a < atomObjects.length; a++) {
+                                    // 更改坐标
+
                                     inters.push({
                                         "object": atomObjects[a],
                                         "pos": point
                                     });
                                 }
-                            }
+                            } else {
 
+                                var resAtoms = PDB.tool.getMainResAtomsByAtom(object.userData.presentAtom);
+                                for (var k = 0; k < resAtoms.length; k++) {
+                                    var atomObjects = PDB.GROUP[gIndexies[i]].getChildrenByName(resAtoms[k].id);
+                                    for (var a = 0; a < atomObjects.length; a++) {
+                                        inters.push({
+                                            "object": atomObjects[a],
+                                            "pos": point
+                                        });
+                                    }
+                                }
+
+                            }
                         }
                     }
+                    break;
                 }
-                break;
+
 
             case PDB.SELECTION_HELIX_SHEET:
                 var gIndexies = PDB.GROUP_STRUCTURE_INDEX;
@@ -1706,6 +1769,33 @@ function getIntersections(controller) {
     return inters;
 }
 
+function changeMeshPerFrame(groupIndex, ca_residue, rs_showLow) {
+    for (let i = PDB.GROUP[groupIndex].children.length - 1; i >= 0; i--) {
+        const child = PDB.GROUP[groupIndex].children[i];
+        if (child instanceof THREE.Mesh) {
+            if (child?.userData?.presentAtom?.caid === ca_residue.caid) {
+                PDB.GROUP[groupIndex].remove(child);
+                scene.remove(child);
+                // 清理资源
+                if (child.geometry) child.geometry.dispose();
+                if (child.material) child.material.dispose();
+            }
+        }
+    }
+    PDB.loader.loadData(PDB.textData);
+
+    let chainName = groupIndex;
+    if (chainName.search('_low') > 0) {
+        chainName = chainName[0].toLowerCase();
+    }
+
+    let cn = chainName.split("_")[1]
+    const ob_resid = ca_residue.resid;
+
+    PDB.painter.showResidue(cn, ob_resid, PDB.config.mainMode, ca_residue.color, rs_showLow);
+
+}
+
 
 function intersectObjects(controller) {
 
@@ -1832,155 +1922,234 @@ function intersectObjects(controller) {
         }
         // 拖拽单体
         if ((PDB.selection_mode === PDB.SELECTION_RESIDUE) && (PDB.trigger === PDB.TRIGGER_EVENT_DRAG)) {
+            if (PDB.config.mainMode === PDB.CARTOON_SSE) {
+                var ob_selected = controller.children[1];
 
-            var ob_selected = controller.children[1];
+                if (!PDB.DFMATRIX1.equals(controller.matrixWorld)) {
+                    PDB.DFMATRIX1 = controller.matrixWorld.clone();
 
-            if (!PDB.DFMATRIX1.equals(controller.matrixWorld)) {
-                PDB.DFMATRIX1 = controller.matrixWorld.clone();
+                    // 求出当前氨基酸的三维坐标
+                    const ob_residue = ob_selected.userData.presentAtom;
+                    ob_selected.visible = false;
 
-                // TODO
-                // 求出当前氨基酸的三维坐标
-                const ob_residue = ob_selected.userData.presentAtom;
-                ob_selected.visible = false;
-
-                const ob_pos_center = new THREE.Vector3(
-                    ob_residue.pos_centered.x,
-                    ob_residue.pos_centered.y,
-                    ob_residue.pos_centered.z,
-                )
+                    const ob_pos_center = new THREE.Vector3(
+                        ob_residue.pos_centered.x,
+                        ob_residue.pos_centered.y,
+                        ob_residue.pos_centered.z,
+                    )
 
 
-                const ob_resid = ob_residue.resid;
-                const groupIndex = ob_selected.userData["group"];
+                    const ob_resid = ob_residue.resid;
+                    const groupIndex = ob_selected.userData["group"];
 
-                ob_pos_center.applyMatrix4(ob_selected.matrixWorld);
+                    ob_pos_center.applyMatrix4(ob_selected.matrixWorld);
 
-                let residue_x = (ob_pos_center.x - PDB.GeoCenterOffset.x).toFixed(3);
-                let residue_y = (ob_pos_center.y - PDB.GeoCenterOffset.y).toFixed(3);
-                let residue_z = (ob_pos_center.z - PDB.GeoCenterOffset.z).toFixed(3);
+                    let residue_x = (ob_pos_center.x - PDB.GeoCenterOffset.x).toFixed(3);
+                    let residue_y = (ob_pos_center.y - PDB.GeoCenterOffset.y).toFixed(3);
+                    let residue_z = (ob_pos_center.z - PDB.GeoCenterOffset.z).toFixed(3);
 
-                let coord = new THREE.Vector3(
-                    residue_x,
-                    residue_y,
-                    residue_z);
-                let coord_list = [residue_x, residue_y, residue_z]
+                    let coord = new THREE.Vector3(
+                        residue_x,
+                        residue_y,
+                        residue_z);
+                    let coord_list = [residue_x, residue_y, residue_z]
 
-                // 坐标存储字典
-                let chainName = groupIndex;
-                if (chainName.search('_low') > 0) {
-                    chainName = chainName[0].toLowerCase();
-                }
-
-                let coords = {};
-                let cdKey = chainName + "_" + ob_resid;
-                coords[cdKey] = coord;
-                let cn = chainName.split("_")[1]
-                console.log(coord_list)
-
-                // 使用接口重新加载PDB结构
-                $.ajax({
-                    url: "spring",
-                    type: "POST",
-                    dataType: "json",
-                    data: {
-                        "pdb_str": PDB.textData,
-                        "res_id": ob_resid,
-                        "res_chain": cn,
-                        "res_atom": ob_residue.name,
-                        "atom_coord": JSON.stringify(coord_list),
-                        "res_number": w3m.mol[PDB.pdbId].residue[cn].length,
-                        "second_structure": JSON.stringify({
-                            'helix': w3m.mol[PDB.pdbId].helix,
-                            'sheet': w3m.mol[PDB.pdbId].sheet
-                        })
-                    },
-                    success: function (data) {
-                        console.log(data)
+                    // 坐标存储字典
+                    let chainName = groupIndex;
+                    if (chainName.search('_low') > 0) {
+                        chainName = chainName[0].toLowerCase();
                     }
-                });
 
-                // 重新加载PDB结构数据
-                const PDBText = PDBFormatEr(coords);
-                if (PDBText !== "") {
-                    PDB.textData = PDBText;
-                }
+                    let coords = {};
+                    let cdKey = chainName + "_" + ob_resid;
+                    coords[cdKey] = coord;
+                    let cn = chainName.split("_")[1]
+                    console.log(coord_list)
 
-                // PDB.GROUP.children
-                let resData = PDB.GROUP[groupIndex].clone();
-                let newChildren = [];
-                for (let i = 0; i < resData.children.length; i++) {
-                    if (resData.children[i] instanceof THREE.Mesh) {
-                        let meshobj = resData.children[i];
-                        if (PDB.firstTimeNum.indexOf(meshobj.userData.presentAtom.resid) < 0) {
-                            if (newChildren.indexOf(meshobj) < 0) {
-                                newChildren.push(meshobj)
+                    // 使用接口重新加载PDB结构
+                    $.ajax({
+                        url: "spring",
+                        type: "POST",
+                        dataType: "json",
+                        data: {
+                            "pdb_str": PDB.textData,
+                            "res_id": ob_resid,
+                            "res_chain": cn,
+                            "res_atom": ob_residue.name,
+                            "atom_coord": JSON.stringify(coord_list),
+                            "res_number": w3m.mol[PDB.pdbId].residue[cn].length,
+                            "second_structure": JSON.stringify({
+                                'helix': w3m.mol[PDB.pdbId].helix,
+                                'sheet': w3m.mol[PDB.pdbId].sheet
+                            })
+                        },
+                        success: function (data) {
+                            console.log(data)
+                        }
+                    });
+
+                    // 重新加载PDB结构数据
+                    const PDBText = PDBFormatEr(coords);
+                    if (PDBText !== "") {
+                        PDB.textData = PDBText;
+                    }
+
+                    // PDB.GROUP.children
+                    let resData = PDB.GROUP[groupIndex].clone();
+                    let newChildren = [];
+                    for (let i = 0; i < resData.children.length; i++) {
+                        if (resData.children[i] instanceof THREE.Mesh) {
+                            let meshobj = resData.children[i];
+                            if (PDB.firstTimeNum.indexOf(meshobj.userData.presentAtom.resid) < 0) {
+                                if (newChildren.indexOf(meshobj) < 0) {
+                                    newChildren.push(meshobj)
+                                }
                             }
                         }
                     }
-                }
 
-                // reload PDB
-                PDB.loader.loadData(PDB.textData);
+                    // reload PDB
+                    PDB.loader.loadData(PDB.textData);
 
-                // 判断是否为多链;
-                let resShowLow = 0;
-                if (groupIndex.search('_low') > 0) {
-                    resShowLow = 1;
-                }
+                    // 判断是否为多链;
+                    let resShowLow = 0;
+                    if (groupIndex.search('_low') > 0) {
+                        resShowLow = 1;
+                    }
 
-                for (const number in PDB.firstTimeNum) {
-                    let resId = PDB.firstTimeNum[number];
-                    PDB.painter.showResidue(ob_residue.chainname,
-                        resId,
-                        PDB.config.mainMode,
-                        ob_residue.color,
-                        resShowLow);
-                }
+                    for (const number in PDB.firstTimeNum) {
+                        let resId = PDB.firstTimeNum[number];
+                        PDB.painter.showResidue(ob_residue.chainname,
+                            resId,
+                            PDB.config.mainMode,
+                            ob_residue.color,
+                            resShowLow);
+                    }
 
 
-                for (let i = 0; i < scene.children.length; i++) {
-                    if (scene.children[i].name === ob_residue.chainname) {
-                        if (scene.children[i].children.length !== PDB.GROUP[groupIndex].children.length) {
-                            scene.remove(scene.children[i])
+                    for (let i = 0; i < scene.children.length; i++) {
+                        if (scene.children[i].name === ob_residue.chainname) {
+                            if (scene.children[i].children.length !== PDB.GROUP[groupIndex].children.length) {
+                                scene.remove(scene.children[i])
+                            }
                         }
                     }
-                }
 
-                for (let i = 0; i < newChildren.length; i++) {
-                    PDB.GROUP[groupIndex].children.push(newChildren[i]);
-                }
-            }
-
-            // 接口
-            // 防止多次触发
-            if (PDB.DFIRE_INFO !== PDB.textData) {
-                $.ajax({
-                    url: "dfire",
-                    type: "POST",
-                    dataType: "json",
-                    data: {
-                        "pdb_file": PDB.textData,
-                        "pdb_position": PDB.FFDPosition
-                    },
-                    success: function (data) {
-                        var atom_0 = ob_selected.userData.presentAtom
-
-                        // if (PDB.DFIRE_SCORE != data["result"]) {
-                        // 删除原有的mesh
-                        var groupindex = ob_selected.userData["group"];
-                        var children2 = PDB.GROUP[groupindex].children;
-
-                        let inline = " dDFIRE: " + data["result"] + "\n" +
-                            " binding_affinity: " + data["binding_affinity"]
-
-                        PDB.painter.showDFIREInfo(atom_0,
-                            inline);
-
-                        PDB.DFIRE_INFO = PDB.textData;
+                    for (let i = 0; i < newChildren.length; i++) {
+                        PDB.GROUP[groupIndex].children.push(newChildren[i]);
                     }
-                })
+                }
+
+                // 接口
+                // 防止多次触发
+                if (PDB.DFIRE_INFO !== PDB.textData) {
+                    $.ajax({
+                        url: "dfire",
+                        type: "POST",
+                        dataType: "json",
+                        data: {
+                            "pdb_file": PDB.textData,
+                            "pdb_position": PDB.FFDPosition
+                        },
+                        success: function (data) {
+                            var atom_0 = ob_selected.userData.presentAtom
+
+                            // if (PDB.DFIRE_SCORE != data["result"]) {
+                            // 删除原有的mesh
+                            var groupindex = ob_selected.userData["group"];
+                            var children2 = PDB.GROUP[groupindex].children;
+
+                            let inline = " dDFIRE: " + data["result"] + "\n" +
+                                " binding_affinity: " + data["binding_affinity"]
+
+                            PDB.painter.showDFIREInfo(atom_0,
+                                inline);
+
+                            PDB.DFIRE_INFO = PDB.textData;
+                        }
+                    })
+                }
+                return;
             }
-            return;
+            if (PDB.config.mainMode === PDB.BALL_AND_ROD) {
+                // 拖拽BALL_AND_ROD情况
+                // 侧链旋转
+
+                // 在controller中选中侧链，并实现侧链绕Ca做旋转
+                // 选中的氨基酸
+                var ob_selected = controller.userData.selected;
+                if (!PDB.DFMATRIX1.equals(controller.matrixWorld)) {
+                    PDB.DFMATRIX1 = controller.matrixWorld.clone();
+                    // 如果选中的氨基酸是 N Ca C等 则计算Ca的坐标变换，做蛋白质位移
+                    if (ob_selected) {
+                        // 获取Ca的实时坐标
+                        let caSelectedMesh = '';
+                        for (const clNum in controller.children) {
+                            let currentMesh = controller.children[clNum];
+                            if (currentMesh?.userData?.presentAtom?.name === "ca") {
+                                if (currentMesh.geometry.type === "SphereBufferGeometry") {
+                                    caSelectedMesh = currentMesh;
+                                }
+                            }
+                            currentMesh.visible = false;
+                        }
+                        if (caSelectedMesh !== '') {
+                            let ca_residue = caSelectedMesh.userData.presentAtom;
+
+                            const ob_pos_center = new THREE.Vector3(
+                                ca_residue.pos_centered.x,
+                                ca_residue.pos_centered.y,
+                                ca_residue.pos_centered.z,
+                            )
+
+                            const ob_resid = ca_residue.resid;
+
+                            const groupIndex = caSelectedMesh.userData["group"];
+
+                            // 坐标存储字典
+                            let chainName = groupIndex;
+                            if (chainName.search('_low') > 0) {
+                                chainName = chainName[0].toLowerCase();
+                            }
+
+                            let cn = chainName.split("_")[1]
+
+                            ob_pos_center.applyMatrix4(caSelectedMesh.matrixWorld);
+                            let residue_x = (ob_pos_center.x - PDB.GeoCenterOffset.x).toFixed(3);
+                            let residue_y = (ob_pos_center.y - PDB.GeoCenterOffset.y).toFixed(3);
+                            let residue_z = (ob_pos_center.z - PDB.GeoCenterOffset.z).toFixed(3);
+                            let ca_coord = JSON.stringify([residue_x, residue_y, residue_z]);
+                            var rs_showLow = 0;
+
+                            // 将坐标通过ajax传递给后台，获取新的蛋白质PDB文件
+                            if (ChangePDBLock === 0) {
+                                ChangePDBLock = 1;
+                                $.ajax({
+                                    url: "cgpdb",
+                                    type: "POST",
+                                    dataType: "json",
+                                    data: {
+                                        "pdb_content": PDB.textData,
+                                        "pdb_resid": ob_resid,
+                                        "pdb_chain": cn,
+                                        "pdb_ca_coords": ca_coord,
+                                    },
+                                    success: function (data) {
+                                        ChangePDBLock = 1;
+                                        PDB.textData = data["result"];
+                                        changeMeshPerFrame(groupIndex, ca_residue, rs_showLow)
+                                    }
+                                });
+                            }
+                        }
+                    }
+                    // 如果是侧链蛋白，则以Ca为圆心，转动，转动后坐标更新到PDB中
+                    // if () {
+                    //     pass
+                    // }
+
+                }
+            }
         }
     }
 
@@ -2016,13 +2185,25 @@ function intersectObjects(controller) {
             if (!PDB.isShowMenu && object.userData.presentAtom) {
                 let resid = findKeyByValue(PDB.RESIDUEID[object.userData.presentAtom.chainname.toLowerCase()], object.userData.presentAtom.resid);
                 if (resid) {
-                    let message = "Res: " + object.userData.presentAtom.chainname.toUpperCase() + "." + resid + "." + object.userData.presentAtom.resname.toUpperCase();
-                    message = message + "." + object.userData.presentAtom.name.toUpperCase();
-                    let atom_color = object.userData.presentAtom.color
-                    let new_color = new THREE.Color(1 - atom_color.r, 1 - atom_color.g, 1 - atom_color.b);
-                    PDB.painter.showDFIREInfo(object.userData.presentAtom, message, new_color);
-                    // "chain: " + object.userData.presentAtom.chainname.toUpperCase() + " " + "Residue ID: " + object.userData.presentAtom.resid);)
+                    if (resid != PDB.GLOBAL_ID) {
+                        PDB.GLOBAL_ID = resid;
+                        setTimeout(function () {
+                            // 在这里编写需要延迟执行的代码
+                            let message = object.userData.presentAtom.chainname.toUpperCase() + "." + resid + "." + object.userData.presentAtom.resname.toUpperCase();
+                            message = message + "." + object.userData.presentAtom.name.toUpperCase();
+                            let atom_color = object.userData.presentAtom.color
+                            let new_color = new THREE.Color(1 - atom_color.r, 1 - atom_color.g, 1 - atom_color.b);
+                            PDB.painter.showDFIREInfo(object.userData.presentAtom, message, new_color);
+
+
+                        }, 100);
+
+
+                        // "chain: " + object.userData.presentAtom.chainname.toUpperCase() + " " + "Residue ID: " + object.userData.presentAtom.resid);)
+                    }
+
                 }
+
             }
         }
     } else {

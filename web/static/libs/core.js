@@ -5,8 +5,10 @@
 var PDB;
 var ServerType = 1;
 
+// var SERVERURL = "https://172.17.12.41:9098/falcon2";
 var SERVERURL = "http://127.0.0.1:9098/falcon2";
 if (ServerType === 1) {
+    // SERVERURL = "https://172.17.12.41:9098";
     SERVERURL = "http://127.0.0.1:9098";
 } else if (ServerType === 2) {
     SERVERURL = "http://vrmol.net";
@@ -19,6 +21,7 @@ PDB = {
     CAMERARESET: 0,
     PDBRESET: 0,
     PDBPOS:{},
+    GLOBAL_ID:0,
     // rotation
     HANDLER_ROTATION: 0,
 

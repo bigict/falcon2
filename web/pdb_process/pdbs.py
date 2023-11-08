@@ -31,25 +31,33 @@ def get_coords_by_array(path, start, end, chain, res_atom):
 
 
 # 根据坐标以及位置修改atom坐标
-def change_coords_by_atom(path, chain, res_array, residue_atom, coords, output):
+def change_coords_by_atom(path, chain, res_array, coords):
     chain = chain.upper()
-    residue_atom = residue_atom.upper()
     newlines = ""
     with open(path, 'r') as infile:
         pdb_data = infile.readlines()
-        number = 0
+        number = -1
+        res_number = 0
         for lines in pdb_data:
             try:
                 if lines.startswith("ATOM") and (lines[21] == chain):
-                    # if (lines[13:15] == residue_atom) and (res_array[0] <= int(lines[22:25]) <= res_array[1]):
-                    if res_array[0] <= int(lines[22:25]) <= res_array[1]:
-                        # 获取原先的x,y,z
-
-                        x, y, z = coords[number]
+                    if res_number != int(lines[23:26]):
                         number += 1
+                        res_number = int(lines[23:26])
+                    # if (lines[13:15] == residue_atom) and (res_array[0] <= int(lines[22:25]) <= res_array[1]):
+                    if res_array[0] <= int(lines[23:26]) <= res_array[-1]:
+                        # 获取原先的x,y,z
+                        x_a = float(lines[30:38])
+                        y_a = float(lines[38:46])
+                        z_a = float(lines[46:54])
+                        x, y, z = coords[number]
+                        x = x + x_a
+                        y = y + y_a
+                        z = z + z_a
                         lines = lines[:30] + f"{x:8.3f}{y:8.3f}{z:8.3f}" + lines[54:]
+
                 newlines += lines
-            except:
+            except Exception as e:
                 newlines += lines
-                break
+                # break
     return newlines
