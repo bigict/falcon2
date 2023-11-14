@@ -6,12 +6,17 @@ import io
 import zipfile
 import re
 import sys
+
+import numpy as np
 import requests
 import json
-
+import tempfile
 from flask import (Flask, jsonify, redirect, request, render_template, send_file)
 from dfire.calene import read_lib, calc_energy
 from ProDESIGN.fal_sign import falcon2_design
+
+# 替换氨基酸
+from pdb_process.replace_pdb import change_residue, change_residue_p
 
 from ffd_pipeline.run_ffd import get_ffd_from_numbers
 # from FFD.ffd_ppl import get_ffd_short
@@ -25,7 +30,7 @@ module = os.environ.get('Falcon_MODULE', '')
 
 app = Flask(__name__, static_url_path='')
 
-
+np.set_printoptions(precision=3, suppress=True)
 # icon
 CORS(app, origins=["*"])
 
@@ -251,9 +256,12 @@ def submit(job_id):
 def change_pdb():
     pdb_content = request.values.get("pdb_content")
     pdb_chain = request.values.get("pdb_chain")
-    pdb_resid = request.values.get("pdb_resid")
+    pdb_resid = int(request.values.get("pdb_resid"))
     pdb_ca_coords = request.values.get("pdb_ca_coords")
+    pdb_ca_coords = np.array(eval(pdb_ca_coords))
+    pdb_ca_coords = pdb_ca_coords.astype(float)
     res_array = [int(pdb_resid)]
+    print("pdb_ca_coords", pdb_ca_coords)
 
     pdb_file = 'cgpdb_temp.pdb'
     with open(pdb_file, 'w') as fw:
@@ -262,7 +270,8 @@ def change_pdb():
     # 根据被修改的氨基酸，提取肽段信息
     # 获取原始Ca坐标，求坐标差
     ca_res_coord = get_coords_by_array(pdb_file, pdb_resid, pdb_resid, pdb_chain, "ca")
-    coords = ca_res_coord - pdb_ca_coords
+    ca_res_coord = np.array(ca_res_coord)
+    coords = pdb_ca_coords - ca_res_coord
     new_pdb_content = change_coords_by_atom(pdb_file, pdb_chain, res_array, coords)
     new_pdb_content = {"result": new_pdb_content}
     return jsonify(new_pdb_content)
@@ -524,6 +533,22 @@ def spring_loop():
             return jsonify(pdb_result)
 
 
+# replace residue
+@app.route("/replace_residue", methods=["GET", "POST"])
+def replace_residue():
+    pdb_text = request.values.get("pdb_text")
+    chain_id = request.values.get("chain_id")
+    res_id = request.values.get("res_id")
+    res_atom = request.values.get("res_atom")
+
+    pdb_path = "tmps/tmp_replace_pdb.pdb"
+    with open(pdb_path, "w") as fw:
+        fw.writelines(pdb_text)
+    atom_data = change_residue(pdb_path, chain_id, res_id, res_atom)
+    pdb_header, pdb_end = change_residue_p(pdb_path)
+    pdb_text = pdb_header + atom_data + pdb_end
+    pdb_result = {"pdb": pdb_text}
+    return jsonify(pdb_result)
 
 
 if __name__ == '__main__':

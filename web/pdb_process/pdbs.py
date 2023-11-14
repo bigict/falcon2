@@ -4,6 +4,7 @@
 from Bio import PDB
 import numpy as np
 
+
 parser = PDB.PDBParser()
 
 
@@ -22,6 +23,7 @@ def get_coords_by_array(path, start, end, chain, res_atom):
     for residue in structure[0][chain]:
         # 获取残基的ID
         res_id = residue.get_id()[1]
+        res_id = int(res_id)
         # 根据残基ID进行筛选
         if start <= res_id <= end:
             for atom in residue:
@@ -39,25 +41,25 @@ def change_coords_by_atom(path, chain, res_array, coords):
         number = -1
         res_number = 0
         for lines in pdb_data:
-            try:
-                if lines.startswith("ATOM") and (lines[21] == chain):
+            # try:
+            if lines.startswith("ATOM") and (lines[21] == chain):
+
+                if res_array[0] <= int(lines[23:26]) <= res_array[-1]:
                     if res_number != int(lines[23:26]):
                         number += 1
                         res_number = int(lines[23:26])
-                    # if (lines[13:15] == residue_atom) and (res_array[0] <= int(lines[22:25]) <= res_array[1]):
-                    if res_array[0] <= int(lines[23:26]) <= res_array[-1]:
-                        # 获取原先的x,y,z
-                        x_a = float(lines[30:38])
-                        y_a = float(lines[38:46])
-                        z_a = float(lines[46:54])
-                        x, y, z = coords[number]
-                        x = x + x_a
-                        y = y + y_a
-                        z = z + z_a
-                        lines = lines[:30] + f"{x:8.3f}{y:8.3f}{z:8.3f}" + lines[54:]
-
-                newlines += lines
-            except Exception as e:
-                newlines += lines
+                    # 获取原先的x,y,z
+                    x_a = float(lines[30:38])
+                    y_a = float(lines[38:46])
+                    z_a = float(lines[46:54])
+                    x, y, z = coords[number]
+                    x = x + x_a
+                    y = y + y_a
+                    z = z + z_a
+                    lines = lines[:30] + f"{x:8.3f}{y:8.3f}{z:8.3f}" + lines[54:]
+            newlines += lines
+            # except Exception as e:
+            #     print(2)
+            #     newlines += lines
                 # break
     return newlines

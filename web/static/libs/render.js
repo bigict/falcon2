@@ -1084,6 +1084,7 @@ function onTriggerUp(event) {
 
     var controller = event.target;
     if (controller.userData !== undefined && controller.userData.selected !== undefined) {
+        console.log(111111)
         var intersections = controller.userData.selected;
         var object = intersections;
         objectDeTrans(controller, object);
@@ -1456,7 +1457,12 @@ function objectDeTrans(controller, object) {
                 scene.add(PDB.GROUP[ot_index]);
             }
             // scene.add(object);
-            controller.remove(object);
+        }
+        for (let i = controller.children.length - 1; i >= 0; i--) {
+            var object_ct = controller.children[i]
+            if (object_ct.type === "Mesh") {
+                controller.remove(object_ct);
+            }
         }
     }
 }
@@ -1769,16 +1775,37 @@ function getIntersections(controller) {
     return inters;
 }
 
-function changeMeshPerFrame(groupIndex, ca_residue, rs_showLow) {
+function changeMeshPerFrame(groupIndex, caid, resid, rs_showLow) {
+    var resid = parseInt(resid)
+    var resids = [resid - 1, resid, resid + 1]
     for (let i = PDB.GROUP[groupIndex].children.length - 1; i >= 0; i--) {
         const child = PDB.GROUP[groupIndex].children[i];
         if (child instanceof THREE.Mesh) {
-            if (child?.userData?.presentAtom?.caid === ca_residue.caid) {
-                PDB.GROUP[groupIndex].remove(child);
-                scene.remove(child);
-                // 清理资源
-                if (child.geometry) child.geometry.dispose();
-                if (child.material) child.material.dispose();
+            switch (PDB.config.mainMode) {
+                case PDB.BALL_AND_ROD:
+                    if (child?.userData?.presentAtom?.caid === caid) {
+                        PDB.GROUP[groupIndex].remove(child);
+                        scene.remove(child);
+                        // 清理资源
+                        if (child.geometry && child.geometry.dispose) {
+                            child.geometry.dispose();
+                        }
+                        if (child.material && child.material.dispose) {
+                            child.material.dispose();
+                        }
+                    }
+                case PDB.CARTOON_SSE:
+                    if (resids.includes(child?.userData?.presentAtom?.resid)) {
+                        PDB.GROUP[groupIndex].remove(child);
+                        scene.remove(child);
+                        // 清理资源
+                        if (child.geometry && child.geometry.dispose) {
+                            child.geometry.dispose();
+                        }
+                        if (child.material && child.material.dispose) {
+                            child.material.dispose();
+                        }
+                    }
             }
         }
     }
@@ -1790,17 +1817,55 @@ function changeMeshPerFrame(groupIndex, ca_residue, rs_showLow) {
     }
 
     let cn = chainName.split("_")[1]
-    const ob_resid = ca_residue.resid;
+    var color = new THREE.Color(0x800080);
+    var chain_length = w3m.mol[PDB.pdbId].residue[cn].length - 1
+    for (const idKey in resids) {
+        var ob_resid = resids[idKey]
+        if (ob_resid < 1 || ob_resid >= chain_length) {
+            continue;
+        }
+        PDB.painter.showResidue(cn, ob_resid, PDB.config.mainMode, color, rs_showLow);
+    }
 
-    PDB.painter.showResidue(cn, ob_resid, PDB.config.mainMode, ca_residue.color, rs_showLow);
-
+    for (let i = PDB.GROUP[groupIndex].children.length - 1; i >= 0; i--) {
+        const child = PDB.GROUP[groupIndex].children[i];
+        if (child instanceof THREE.Mesh) {
+            switch (PDB.config.mainMode) {
+                case PDB.BALL_AND_ROD:
+                    if (child?.userData?.presentAtom?.caid === caid) {
+                        if (child != undefined && child.material != undefined) {
+                            if (typeof (child.material) === "object" && child.material.emissive != undefined) {
+                                child.material = new THREE.MeshPhongMaterial({
+                                    color: color
+                                });
+                            } else if (child.material.length !== undefined && child.material.length >= 0 && child.material[0].emissive != undefined) {
+                                child.material[0] = new THREE.MeshPhongMaterial({
+                                    color: color
+                                });
+                            }
+                        }
+                    }
+                case PDB.CARTOON_SSE:
+                    if (resids.includes(child?.userData?.presentAtom?.resid)) {
+                        if (child != undefined && child.material != undefined) {
+                            if (typeof (child.material) === "object" && child.material.emissive != undefined) {
+                                child.material = new THREE.MeshPhongMaterial({
+                                    color: color
+                                });
+                            } else if (child.material.length !== undefined && child.material.length >= 0 && child.material[0].emissive != undefined) {
+                                child.material[0] = new THREE.MeshPhongMaterial({
+                                    color: color
+                                });
+                            }
+                        }
+                    }
+            }
+        }
+    }
 }
 
 
 function intersectObjects(controller) {
-
-    // train.rotation.copy(controller.rotation);
-
     if (controller.userData.selected !== undefined) {
 
         // 二级结构编辑
@@ -2101,6 +2166,7 @@ function intersectObjects(controller) {
                                 ca_residue.pos_centered.y,
                                 ca_residue.pos_centered.z,
                             )
+                            console.log("ob_pos_center",ob_pos_center)
 
                             const ob_resid = ca_residue.resid;
 
@@ -2115,11 +2181,13 @@ function intersectObjects(controller) {
                             let cn = chainName.split("_")[1]
 
                             ob_pos_center.applyMatrix4(caSelectedMesh.matrixWorld);
+                            console.log("ob_pos_center",ob_pos_center)
                             let residue_x = (ob_pos_center.x - PDB.GeoCenterOffset.x).toFixed(3);
                             let residue_y = (ob_pos_center.y - PDB.GeoCenterOffset.y).toFixed(3);
                             let residue_z = (ob_pos_center.z - PDB.GeoCenterOffset.z).toFixed(3);
                             let ca_coord = JSON.stringify([residue_x, residue_y, residue_z]);
                             var rs_showLow = 0;
+
 
                             // 将坐标通过ajax传递给后台，获取新的蛋白质PDB文件
                             if (ChangePDBLock === 0) {
@@ -2135,9 +2203,9 @@ function intersectObjects(controller) {
                                         "pdb_ca_coords": ca_coord,
                                     },
                                     success: function (data) {
-                                        ChangePDBLock = 1;
+                                        ChangePDBLock = 0;
                                         PDB.textData = data["result"];
-                                        changeMeshPerFrame(groupIndex, ca_residue, rs_showLow)
+                                        changeMeshPerFrame(groupIndex, ca_residue.caid, ca_residue.resid, rs_showLow)
                                     }
                                 });
                             }

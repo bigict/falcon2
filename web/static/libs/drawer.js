@@ -707,30 +707,6 @@ var fontloader =
                 presentAtom: atom,
                 reptype: "tube"
             };
-            // if(PDB.mode === PDB.MODE_TRAVEL_VR && PDB.VRTraveMesh===""){
-            //     //scene.add( mesh );
-            //     PDB.VRTraveMesh = mesh;
-            //     PDB.VRTravelGeometry = geometry;
-            // }
-
-            // if ((PDB.mode === PDB.MODE_TRAVEL_THREE )&& PDB.TravelGeometry==="") {
-            // var wireframeMaterial = new THREE.MeshBasicMaterial( { color: 0x000000, opacity: 0.3, wireframe: false, transparent: true } );
-            // if ( PDB.GROUP[PDB.GROUP_TRAVEL]  !== undefined ) {
-            // PDB.parent.remove( PDB.GROUP[PDB.GROUP_TRAVEL]  );
-            // for(var key in PDB.GROUP[PDB.GROUP_TRAVEL].children){
-            // PDB.GROUP[PDB.GROUP_TRAVEL].children[ key ].geometry.dispose();
-            // }
-            // }
-            // PDB.GROUP[PDB.GROUP_TRAVEL] = THREE.SceneUtils.createMultiMaterialObject( geometry, [ materials[0], wireframeMaterial ] );
-            // PDB.TravelGeometry = geometry;
-            // PDB.parent.add( PDB.GROUP[PDB.GROUP_TRAVEL] );
-            // var scale = PDB.TravelScale;
-            // PDB.GROUP[PDB.GROUP_TRAVEL].scale.set( scale, scale, scale);
-            // PDB.render.render();
-            // }else{
-            // //Add tube into the scene
-
-            // }
             PDB.GROUP[group].add(mesh);
         },
         drawTubeByTravel: function (paths, ids, radius) {
