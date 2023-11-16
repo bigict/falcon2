@@ -22,7 +22,8 @@ def get_coords_by_array(path, start, end, chain, res_atom):
     # 遍历给定链中的每一个残基
     for residue in structure[0][chain]:
         # 获取残基的ID
-        res_id = residue.get_id()[1]
+        # res_id = residue.get_id()[1]
+        hetflag, res_id, icode = residue.get_id()
         res_id = int(res_id)
         # 根据残基ID进行筛选
         if start <= res_id <= end:

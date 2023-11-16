@@ -260,6 +260,7 @@ def change_pdb():
     pdb_ca_coords = request.values.get("pdb_ca_coords")
     pdb_ca_coords = np.array(eval(pdb_ca_coords))
     pdb_ca_coords = pdb_ca_coords.astype(float)
+
     res_array = [int(pdb_resid)]
     print("pdb_ca_coords", pdb_ca_coords)
 

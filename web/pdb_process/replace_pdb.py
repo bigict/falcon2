@@ -158,6 +158,7 @@ def save_pdb(structure):
 def load_residue(amino_acid):
     amino_acid = amino_acid.upper()
     res_path = "pdb_process/amino_acid/" + amino_acid + ".pdb"
+    # res_path = "amino_acid/" + amino_acid + ".pdb"
     res_structure = parser.get_structure("my_structure", res_path)
     residue_change = res_structure[0]["A"][1]
     return residue_change
@@ -189,11 +190,32 @@ def translate_residue(res_a, res_b, atom):
     return res_b
 
 
+def convert_resid_to_tuple(resid):
+    # 检查resid是否为空或者非字符串
+    if not resid or not isinstance(resid, str):
+        raise ValueError("Invalid resid provided")
+
+    # 初始化插入代码为一个空格（表示没有插入代码）
+    icode = ' '
+
+    # 检查resid的最后一个字符是否为字母（插入代码）
+    if resid[-1].isalpha():
+        icode = resid[-1].upper()
+        # 去除插入代码，留下序列号
+        seq_num = int(resid[:-1])
+    else:
+        # 如果没有插入代码，整个resid都是序列号
+        seq_num = int(resid)
+
+    # 返回三元组
+    return (' ', seq_num, icode)
+
+
 def change_residue(path,
                    res_chain,
                    res_id,
                    res_name):
-    res_id = int(res_id)
+    res_id = convert_resid_to_tuple(res_id)
     res_chain = res_chain.upper()
     res_name = res_name.upper()
     structure = load_pdb(path)
@@ -205,9 +227,10 @@ def change_residue(path,
 
     # change atom coord
     changed_residue = translate_residue(residue, changed_residue, "CA")
+    new_res_id = next((new_res_id for new_res_id, i in enumerate(chain) if i.id == residue.id), None)
     chain.detach_child(residue.id)
     changed_residue.id = residue.id
-    chain.insert(res_id - 1, changed_residue)
+    chain.insert(new_res_id, changed_residue)
     pdb_data = save_pdb(structure)
     return pdb_data
 
@@ -235,8 +258,8 @@ def return_coord(tmp):
 
 
 if __name__ == '__main__':
-    atom_data = change_residue("../1dfb.pdb", "H", "184", "ALA")
-    pdb_header, pdb_end = change_residue_p("../1dfb.pdb")
+    atom_data = change_residue("../7jmp.pdb", "H", "100C", "ALA")
+    pdb_header, pdb_end = change_residue_p("../7jmp.pdb")
     pdb_text = pdb_header + atom_data + pdb_end
     with open("ttt.pdb", "w") as fw:
         fw.write(pdb_text)
