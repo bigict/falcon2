@@ -179,7 +179,7 @@ def translate_residue(res_a, res_b, atom):
     res_a_array = np.array(res_a_array)
     res_b_array = np.array(res_b_array)
 
-    indics = [1, 0, 4]
+    indics = [1, 0, 3]
     pa = res_a_array[indics, :]
     pb = res_b_array[indics, :]
     r, t = align_peptides_by_three_points(pb, pa)

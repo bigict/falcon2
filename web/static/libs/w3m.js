@@ -5408,25 +5408,30 @@ w3m.pdb = function (text, drugname) {
         } else {
 
             PDB.RESIDUEID = {}
+            var RES_NUMBER_ADD = 0
+
             PDB.RESIDUEIDLIST = []
             // 先生成PDB.RESIDUEID和PDB.RESIDUEIDLIST
             for (var i = 0, l = text.length; i < l; i++) {
                 var s = text[i].toLowerCase();
                 if (w3m_sub(s, 0, 6) === 'atom') {
+                    var icode = w3m_sub(s, 27) || " "
                     var chain_id = w3m_sub(s, 22) || 'x'
                     var true_residue_id = (w3m_sub(s, 23, 27)) || 0
                     if (PDB.RESIDUEID.hasOwnProperty(chain_id)) {
                         if (PDB.RESIDUEIDLIST.length > 0) {
-                            const lastValue = PDB.RESIDUEIDLIST.pop()
                             if (PDB.RESIDUEID[chain_id].hasOwnProperty(true_residue_id)) {
-
                             } else {
-                                PDB.RESIDUEID[chain_id][true_residue_id] = PDB.RESIDUEID[chain_id][lastValue] + 1
+                                if (icode !== " ") {
+                                    RES_NUMBER_ADD = RES_NUMBER_ADD + 1
+                                }
+                                PDB.RESIDUEID[chain_id][true_residue_id] = parseInt(w3m_sub(s, 23, 26)) + RES_NUMBER_ADD
                             }
                         }
                     } else {
                         PDB.RESIDUEID[chain_id] = {}
-                        PDB.RESIDUEID[chain_id][true_residue_id] = 1
+                        RES_NUMBER_ADD = 0
+                        PDB.RESIDUEID[chain_id][true_residue_id] = parseInt(w3m_sub(s, 23, 26))
                     }
                     PDB.RESIDUEIDLIST.push(true_residue_id)
                 }
@@ -5752,20 +5757,6 @@ w3m.pdb = function (text, drugname) {
         // var residue_dict = {(parseInt(w3m_sub(s, 23, 26)) || 0): number}
         var chain_id = w3m_sub(s, 22) || 'x'
         var true_residue_id = (w3m_sub(s, 23, 27)) || 0
-        // if (PDB.RESIDUEID.hasOwnProperty(chain_id)) {
-        //     if (PDB.RESIDUEIDLIST.length > 0) {
-        //         const lastValue = PDB.RESIDUEIDLIST.pop()
-        //         if (PDB.RESIDUEID[chain_id].hasOwnProperty(true_residue_id)) {
-        //
-        //         } else {
-        //             PDB.RESIDUEID[chain_id][true_residue_id] = PDB.RESIDUEID[chain_id][lastValue] + 1
-        //         }
-        //     }
-        // } else {
-        //     PDB.RESIDUEID[chain_id] = {}
-        //     PDB.RESIDUEID[chain_id][true_residue_id] = 1
-        // }
-        // PDB.RESIDUEIDLIST.push(true_residue_id)
         var atom_id = parseInt(w3m_sub(s, 7, 11)),
             atom_name = w3m_sub(s, 13, 16),
             residue_name = w3m_sub(s, 18, 20) || 'xxx',
@@ -5943,8 +5934,8 @@ w3m.pdb = function (text, drugname) {
     };
     var doHelix = function (s) {
         var chain_id = w3m_sub(s, 20),
-            helix_start = parseInt(w3m_sub(s, 22, 25)),
-            helix_stop = parseInt(w3m_sub(s, 34, 37));
+            helix_start = w3m_sub(s, 22, 26),
+            helix_stop = w3m_sub(s, 34, 38);
         helix_stop = PDB.RESIDUEID[chain_id][helix_stop];
         helix_start = PDB.RESIDUEID[chain_id][helix_start];
         w3m_isset(o.helix[chain_id]) ? void (0) : o.helix[chain_id] = [];
@@ -5953,10 +5944,14 @@ w3m.pdb = function (text, drugname) {
     var doSheet = function (s) {
         var chain_id = w3m_sub(s, 22),
             sheet_id = w3m_sub(s, 12, 14),
-            strand_start = parseInt(w3m_sub(s, 23, 26)),
-            strand_stop = parseInt(w3m_sub(s, 34, 37));
+            strand_start = w3m_sub(s, 23, 27),
+            strand_stop = w3m_sub(s, 34, 38);
+
         strand_start = PDB.RESIDUEID[chain_id][strand_start];
         strand_stop = PDB.RESIDUEID[chain_id][strand_stop];
+        if (strand_start === "100C") {
+            console.log("strand_start", strand_start)
+        }
         w3m_isset(o.sheet[chain_id]) ? void (0) : o.sheet[chain_id] = {};
         w3m_isset(o.sheet[chain_id][sheet_id]) ? void (0) : o.sheet[chain_id][sheet_id] = [];
         o.sheet[chain_id][sheet_id].push([strand_start, strand_stop]);

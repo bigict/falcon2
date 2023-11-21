@@ -529,16 +529,16 @@ PDB.painter = {
             // }
             // break;
             case PDB.MENU_TYPE_HBOND:
-              var bondMenu = [
-                ["Hide Bond", PDB.BOND_TYPE_NONE],
-                ["Show HBond", PDB.BOND_TYPE_HBOND],
-                ["Show SSBond", PDB.BOND_TYPE_SSBOND],
-                ["Show Covalent", PDB.BOND_TYPE_COVALENT]
-              ];
-              for (var i = 0; i < bondMenu.length; i++) {
-                PDB.drawer.drawTextKB(PDB.GROUP_MENU_HBOND, new THREE.Vector3(x, y - i * 0.2, z), bondMenu[i][0], bondMenu[i][1], color, 135);
-              }
-              break;
+                var bondMenu = [
+                    ["Hide Bond", PDB.BOND_TYPE_NONE],
+                    ["Show HBond", PDB.BOND_TYPE_HBOND],
+                    ["Show SSBond", PDB.BOND_TYPE_SSBOND],
+                    ["Show Covalent", PDB.BOND_TYPE_COVALENT]
+                ];
+                for (var i = 0; i < bondMenu.length; i++) {
+                    PDB.drawer.drawTextKB(PDB.GROUP_MENU_HBOND, new THREE.Vector3(x, y - i * 0.2, z), bondMenu[i][0], bondMenu[i][1], color, 135);
+                }
+                break;
             case PDB.MENU_TYPE_DIRECTION:
                 var moveMenu = [
                     ["Move along the X axis", 2],
@@ -697,7 +697,7 @@ PDB.painter = {
         PDB.drawer.drawText(PDB.GROUP_INFO, pos1,
             message, "", showAtom.color, 180);
     },
-    showDFIREInfo: function (showAtom, message, color=0) {
+    showDFIREInfo: function (showAtom, message, color = 0) {
         // var message = showAtom.chainname.toUpperCase();
         var pos1;
 
@@ -1278,10 +1278,17 @@ PDB.painter = {
                 history[atom.id] = 1;
             }
             var midp = PDB.tool.midPoint(startAtom.pos_centered, atom.pos_centered);
-            PDB.drawer.drawStick(groupindex, startAtom.pos_centered, midp, sel ? startAtom.color : color, radius, startAtom);
-            PDB.GROUP[groupindex].children[PDB.GROUP[groupindex].children.length - 1].visible = isshow;
-            PDB.drawer.drawStick(groupindex, midp, atom.pos_centered, sel ? atom.color : color, radius, atom);
-            PDB.GROUP[groupindex].children[PDB.GROUP[groupindex].children.length - 1].visible = isshow;
+            const distance = startAtom.pos_centered.distanceTo(atom.pos_centered);
+            if (distance < 2) {
+                PDB.drawer.drawStick(groupindex, startAtom.pos_centered, midp, sel ? startAtom.color : color, radius, startAtom);
+                PDB.GROUP[groupindex].children[PDB.GROUP[groupindex].children.length - 1].visible = isshow;
+                PDB.drawer.drawStick(groupindex, midp, atom.pos_centered, sel ? atom.color : color, radius, atom);
+                PDB.GROUP[groupindex].children[PDB.GROUP[groupindex].children.length - 1].visible = isshow;
+            }
+            // PDB.drawer.drawStick(groupindex, startAtom.pos_centered, midp, sel ? startAtom.color : color, radius, startAtom);
+            // PDB.GROUP[groupindex].children[PDB.GROUP[groupindex].children.length - 1].visible = isshow;
+            // PDB.drawer.drawStick(groupindex, midp, atom.pos_centered, sel ? atom.color : color, radius, atom);
+            // PDB.GROUP[groupindex].children[PDB.GROUP[groupindex].children.length - 1].visible = isshow;
         }
     },
     showBallRodByStartEnd: function (startId, endId, isSelected) {

@@ -62,6 +62,11 @@ var DOING = 0;
 var STATE = {};
 
 
+// ball rod rotation
+let initialControllerQuaternion = new THREE.Quaternion();
+let currentControllerQuaternion = new THREE.Quaternion();
+let rotationGroup = new THREE.Group();
+
 function process_button(type, component) {
     if (component.values.state === Constants.ComponentState.DEFAULT && PDB.HANDLER_ROTATION !== 0) {
         switch (component.gamepadIndices.button) {
@@ -896,6 +901,8 @@ function onTriggerDown(event) {
     var object = intersection.object;
     var pos = intersection.pos;
 
+    var pos = intersection.pos;
+
     // rotation
 
     if (PDB.selection_mode === PDB.SELECTION_HELIX_SHEET) {
@@ -1192,26 +1199,71 @@ function onTriggerUp(event) {
 
 function objectTrans(controller, object, event) {
     if (PDB.config.mainMode === PDB.BALL_AND_ROD) {
-        if (object[0].object != undefined && (object[0].object.material != undefined || object[0].object.type === "Group")) {
-            var object_list = []
-            for (let objectListKey in object) {
-                object_list.push(object[objectListKey].object)
-            }
-            if (object_list.length > 0) {
 
-                for (let objMesh in object_list) {
-                    let new_object = object_list[objMesh];
-                    PDB.tool.colorIntersectObjectBlue(new_object, 1);
-                    var groupindex = new_object.userData["group"];
-                    var mtx = new THREE.Vector3()
-                    new_object.matrix.premultiply(tempMatrix);
-                    new_object.matrix.decompose(new_object.position, new_object.quaternion, new_object.scale);
-
-                    controller.add(new_object);
-                    controller.userData.selected = new_object;
+        var main_atom = ["n", "ca", "c", "o"]
+        if (main_atom.includes(object[0].center)) {
+            if (object[0].object != undefined && (object[0].object.material != undefined || object[0].object.type === "Group")) {
+                var object_list = []
+                for (let objectListKey in object) {
+                    object_list.push(object[objectListKey].object)
                 }
-                PDB.ProDESIGNPosition.push([PDB.pdbId, object_list[0].userData.presentAtom.chainname, object_list[0].userData.presentAtom.resid])
-                PDB.DFMATRIX1 = controller.matrixWorld.clone();
+                if (object_list.length > 0) {
+
+                    for (let objMesh in object_list) {
+                        let new_object = object_list[objMesh];
+                        PDB.tool.colorIntersectObjectBlue(new_object, 1);
+                        var groupindex = new_object.userData["group"];
+                        var mtx = new THREE.Vector3()
+                        new_object.matrix.premultiply(tempMatrix);
+                        new_object.matrix.decompose(new_object.position, new_object.quaternion, new_object.scale);
+                        controller.add(new_object);
+
+                    }
+                    controller.userData.selected = object[0].center;
+                    PDB.ProDESIGNPosition.push([PDB.pdbId, object_list[0].userData.presentAtom.chainname, object_list[0].userData.presentAtom.resid])
+                    PDB.DFMATRIX1 = controller.matrixWorld.clone();
+                }
+            }
+        } else {
+            if (object[0].object != undefined && (object[0].object.material != undefined || object[0].object.type === "Group")) {
+                rotationGroup = new THREE.Group();
+                initialControllerQuaternion.copy(controller.quaternion);
+
+                // N
+                PDB.firstMesh = '';
+                // next N
+                PDB.lastMesh = '';
+
+                for (const groupElementKey in PDB.GROUP[object[0].object.userData.group].children) {
+                    var each_mesh = PDB.GROUP[object[0].object.userData.group].children[groupElementKey]
+                    if (each_mesh.userData.presentAtom.resid === object[0].object.userData.presentAtom.resid) {
+                        if (each_mesh.userData.presentAtom.name === "n") {
+                            if (each_mesh.geometry.type === "SphereBufferGeometry") {
+                                PDB.firstMesh = each_mesh;
+                            }
+                        }
+                    }
+                    if (each_mesh.userData.presentAtom.resid === object[0].object.userData.presentAtom.resid + 1) {
+                        if (each_mesh.userData.presentAtom.name === "n") {
+                            if (each_mesh.geometry.type === "SphereBufferGeometry") {
+                                PDB.lastMesh = each_mesh;
+                            }
+                        }
+                    }
+                }
+
+                for (let objectListKey in object) {
+                    rotationGroup.add(object[objectListKey].object)
+                    PDB.tool.colorIntersectObjectBlue(object[objectListKey].object, 1);
+                }
+
+
+                if (rotationGroup.children.length > 0) {
+                    scene.add(rotationGroup)
+                    controller.userData.selected = object[0].center;
+                    // PDB.ProDESIGNPosition.push([PDB.pdbId, object_list[0].userData.presentAtom.chainname, object_list[0].userData.presentAtom.resid])
+                    PDB.DFMATRIX1 = controller.matrixWorld.clone();
+                }
             }
         }
         // PDB.tool.colorIntersectObjectBlue(object, 1);
@@ -1345,6 +1397,7 @@ function objectDeTrans(controller, object) {
             case PDB.SELECTION_HELIX_SHEET:
                 break;
             case PDB.SELECTION_RESIDUE:
+
                 break;
             default:
 
@@ -2145,8 +2198,9 @@ function intersectObjects(controller) {
                 var ob_selected = controller.userData.selected;
                 if (!PDB.DFMATRIX1.equals(controller.matrixWorld)) {
                     PDB.DFMATRIX1 = controller.matrixWorld.clone();
-                    // 如果选中的氨基酸是 N Ca C等 则计算Ca的坐标变换，做蛋白质位移
-                    if (ob_selected) {
+                    // 如果选中的氨基酸是 N Ca C O等 则计算Ca的坐标变换，做蛋白质位移
+                    var main_atom = ["n", "ca", "c", "o"]
+                    if (main_atom.includes(controller.userData.selected)) {
                         // 获取Ca的实时坐标
                         let caSelectedMesh = '';
                         for (const clNum in controller.children) {
@@ -2166,7 +2220,7 @@ function intersectObjects(controller) {
                                 ca_residue.pos_centered.y,
                                 ca_residue.pos_centered.z,
                             )
-                            console.log("ob_pos_center",ob_pos_center)
+                            console.log("ob_pos_center", ob_pos_center)
 
                             const ob_resid = ca_residue.resid;
 
@@ -2181,7 +2235,7 @@ function intersectObjects(controller) {
                             let cn = chainName.split("_")[1]
 
                             ob_pos_center.applyMatrix4(caSelectedMesh.matrixWorld);
-                            console.log("ob_pos_center",ob_pos_center)
+                            console.log("ob_pos_center", ob_pos_center)
                             let residue_x = (ob_pos_center.x - PDB.GeoCenterOffset.x).toFixed(3);
                             let residue_y = (ob_pos_center.y - PDB.GeoCenterOffset.y).toFixed(3);
                             let residue_z = (ob_pos_center.z - PDB.GeoCenterOffset.z).toFixed(3);
@@ -2212,6 +2266,34 @@ function intersectObjects(controller) {
                         }
                     }
                     // 如果是侧链蛋白，则以Ca为圆心，转动，转动后坐标更新到PDB中
+
+                    else {
+
+                        var axis = new THREE.Vector3();
+                        let axisCenter = new THREE.Vector3().addVectors(
+                            PDB.firstMesh.position, PDB.lastMesh.position).multiplyScalar(0.5);
+                        axis.subVectors(PDB.firstMesh.position, PDB.lastMesh.position).normalize();
+
+// 创建旋转矩阵
+                        var matrix = new THREE.Matrix4();
+                        matrix.makeRotationAxis(axis, rotationAngle);
+
+                        var euler = new THREE.Euler();
+                        euler.setFromQuaternion(controller.quaternion, 'XYZ');
+                        var rotationAngle = euler.y;
+
+                        // 创建旋转矩阵
+                        var matrixData = new THREE.Matrix4();
+                        matrixData.makeRotationAxis(axis, rotationAngle);
+
+                        for (const rotationAngleKey in rotationGroup.children) {
+                            var mesh = rotationGroup.children[rotationAngleKey]
+                            mesh.position.sub(axisCenter);
+                            mesh.applyMatrix4(matrixData);
+                            mesh.position.add(axisCenter);
+                        }
+
+                    }
                     // if () {
                     //     pass
                     // }

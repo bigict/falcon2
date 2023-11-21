@@ -24,6 +24,9 @@ PDB = {
     GLOBAL_ID:0,
     // rotation
     HANDLER_ROTATION: 0,
+    BALL_ROD_LIST: [],
+    firstMesh: 0,
+    lastMesh: 0,
 
     // ProDESIGN
     CHANGERESID: [],

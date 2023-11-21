@@ -786,13 +786,14 @@ PDB.controller = {
             // w3m.mol中有这个原子
             var caid = w3m.mol[PDB.pdbId].residueData[groupa][residue_replace.value].caid
             var res_id = parseInt(residue_replace.value)
+            var res_numbers = Object.keys(PDB.RESIDUEID[groupa]).find(key => PDB.RESIDUEID[groupa][key] === res_id)
             $.ajax({
                 url: "replace_residue",
                 type: "POST",
                 dataType: "json",
                 data: {
                     "pdb_text": PDB.textData,
-                    "res_id": res_id,
+                    "res_id": res_numbers,
                     "chain_id": groupa,
                     "res_atom": resTargetName,
                 },
