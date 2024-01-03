@@ -798,6 +798,48 @@ function OperatingInstructions() {
     PDB.OPERAINS.position.set(0, 0, -5);
 }
 
+function coord2TextData(atomData, coords) {
+    let PDBFormat = "\n";
+    if (PDB.textData.length > 0) {
+        const text = PDB.textData.split('\n');
+        let axis_x = 0;
+        let axis_y = 0;
+        let axis_z = 0;
+        for (let i = 0; i < text.length; i++) {
+            let line = text[i].toLowerCase();
+            switch (w3m_sub(line, 0, 6)) {
+                case 'atom':
+                    const residue_id = w3m_sub(line, 23, 26);
+                    var atom_name = w3m_sub(line, 13, 16);
+                    atom_name = atom_name.toLowerCase();
+                    var atom_chain = w3m_sub(line, 22) || 'x';
+                    atom_chain = atom_chain.toLowerCase();
+                    var newData = atom_chain + "_" + atom_name + "_" + residue_id
+                    if (atomData === newData) {
+                        line = line.replace(w3m_sub(line, 31, 38).padStart(8, ' '), coords.x.padStart(8, ' '));
+                        line = line.replace(w3m_sub(line, 39, 46).padStart(8, ' '), coords.y.padStart(8, ' '));
+                        line = line.replace(w3m_sub(line, 47, 54).padStart(8, ' '), coords.z.padStart(8, ' '));
+                    }
+                    // 添加侧链移动
+
+
+                    line = line.toUpperCase();
+                    PDBFormat = PDBFormat + line + "\n";
+                    break;
+                case 'hetatm':
+                    line = line.toUpperCase();
+                    PDBFormat = PDBFormat + line + "\n";
+                    break;
+                default:
+                    line = line.toUpperCase();
+                    PDBFormat = PDBFormat + line + "\n";
+                    break;
+            }
+        }
+    }
+    return PDBFormat;
+}
+
 
 // DINGWEI
 function PDBFormatEr(coords) {
@@ -1270,7 +1312,6 @@ function objectTrans(controller, object, event) {
     } else {
         if (object != undefined && (object.material != undefined || object.type === "Group")) {
 
-
             PDB.tool.colorIntersectObjectBlue(object, 1);
 
             // yangdanfeng ID说明功能
@@ -1328,10 +1369,8 @@ function objectTrans(controller, object, event) {
                                 PDB.FFDPosition.push(num);
                             }
                         }
-
                     }
                 }
-
 
                 // object.visible = false;
 
@@ -1377,7 +1416,6 @@ function objectTrans(controller, object, event) {
 
                     controller.add(PDB.GROUP[ot_index]);
                 }
-
             }
         }
     }
@@ -1397,7 +1435,27 @@ function objectDeTrans(controller, object) {
             case PDB.SELECTION_HELIX_SHEET:
                 break;
             case PDB.SELECTION_RESIDUE:
+                if (rotationGroup.children.length > 0) {
+                    // 同时修改pdb.textData
+                    for (const pdbTextKey in rotationGroup.children) {
+                        var mesh = rotationGroup.children[pdbTextKey]
+                        var atom_coord_x = (mesh.position.x - PDB.GeoCenterOffset.x).toFixed(3);
+                        var atom_coord_y = (mesh.position.y - PDB.GeoCenterOffset.y).toFixed(3);
+                        var atom_coord_z = (mesh.position.z - PDB.GeoCenterOffset.z).toFixed(3);
+                        let per_atom_coord = new THREE.Vector3(
+                            atom_coord_x,
+                            atom_coord_y,
+                            atom_coord_z);
+                        var atom_chain = mesh.userData.presentAtom.chainname;
+                        var atom_name = mesh.userData.presentAtom.name;
+                        var atom_resid = mesh.userData.presentAtom.resid;
+                        var res_numbers = Object.keys(PDB.RESIDUEID[atom_chain]).find(key => PDB.RESIDUEID[atom_chain][key] === atom_resid)
+                        var atom_data = atom_chain + "_" + atom_name + "_" + res_numbers
+                        PDB.textData = coord2TextData(atom_data, per_atom_coord)
 
+                        PDB.GROUP[mesh.userData.group].add(mesh)
+                    }
+                }
                 break;
             default:
 
@@ -1433,7 +1491,6 @@ function objectDeTrans(controller, object) {
                     }
 
                     let cdKey = chainName + "_" + ob_resid;
-                    console.log(cdKey);
                     coords[cdKey] = coord;
 
                 }
@@ -1493,8 +1550,6 @@ function objectDeTrans(controller, object) {
                 }
                 PDB.residueGroupObject[object.userData['presentAtom']['chainname']][object.userData['presentAtom']['resid']].moveVec.copy(object.position);
             }
-
-
         } else {
             if (object.userData["type"]) {
                 // -----------不运行-------------
@@ -2292,12 +2347,10 @@ function intersectObjects(controller) {
                             mesh.applyMatrix4(matrixData);
                             mesh.position.add(axisCenter);
                         }
-
                     }
                     // if () {
                     //     pass
                     // }
-
                 }
             }
         }
@@ -2344,8 +2397,6 @@ function intersectObjects(controller) {
                             let atom_color = object.userData.presentAtom.color
                             let new_color = new THREE.Color(1 - atom_color.r, 1 - atom_color.g, 1 - atom_color.b);
                             PDB.painter.showDFIREInfo(object.userData.presentAtom, message, new_color);
-
-
                         }, 100);
 
 

@@ -85,7 +85,6 @@ def additional(tensors, res_state, idx, chain_id):
     elif is_type == "Aromatic":
         index_dict = torch.tensor([13, 17, 18])
     select_pred = torch.index_select(tensors, 1, index_dict)
-    print(select_pred)
     return index_dict, select_pred
 
 
@@ -125,10 +124,7 @@ def falcon2_design(pdb_file,
 
     chains = list(model.get_chains())
     fasta_str = ''
-    # for i in range(10):
-    # random_seed = random.randint(1, 1000)
-    # torch.manual_seed(random_seed)
-    # fasta_str = ''
+
     for number in range(len(chains)):
         chain = chains[number]
         chain_id = chain.id
@@ -145,9 +141,8 @@ def falcon2_design(pdb_file,
 
             model = ProDesign(dim=args.dim, device=args.device)
             model.load_state_dict(
-                torch.load(f'/Users/danfeng/falcon2/web/ProDESIGN/{args.save_file}.pt',
+                torch.load(f'E:\\git-hub\\falcon2\\web\\ProDESIGN\\{args.save_file}.pt',
                            map_location=torch.device('cpu')))
-
             model.eval()
             with torch.no_grad():
                 for i in range(num):

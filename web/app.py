@@ -283,6 +283,7 @@ def ffd():
     pdb_content = request.values.get("pdb_file")
     pdb_position = request.values.get("pdb_position")
     pdb_chain = request.values.get("pdb_chain")
+    print(pdb_position)
     pdb_position = [int(i) for i in pdb_position]
     pdb_position.sort()
     pdb_file = 'ffd_temp.pdb'

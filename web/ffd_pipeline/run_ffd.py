@@ -782,9 +782,10 @@ if __name__ == '__main__':
     n_structs = 1
     pool_size = -1
     device = -1
-    number_a = [53, 54, 55, 56, ]
+    number_a = list(range(100, 107))
     start = time.time()
     data = get_ffd_from_numbers(pdb, number_a, n_structs, pool_size, device)
+
     end = time.time()
     print(end - start)
     print(data.tolist())

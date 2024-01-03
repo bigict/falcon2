@@ -373,6 +373,8 @@ var math = {
     hermiteFit : function(n, p0, p3, dp0, dp3) {
         var mat = [ 1,0,-3,2, 0,0,3,-2, 0,1,-2,1, 0,0,-1,1 ];
             c = mat4.x4points(mat, p0, p3, dp0, dp3);
+        // console.log("fit", this.fit(n, c),);
+        // console.log("p0", p0, p3, dp0, dp3);
         return this.fit(n, c);
     }
 }

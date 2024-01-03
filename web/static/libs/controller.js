@@ -1352,13 +1352,17 @@ PDB.controller = {
         });
         var b_export_pdb = document.getElementById("b_export_pdb");
         b_export_pdb.addEventListener('click', function (e) {
-            w3m.ajax.get(PDB.pdbId, function (text) {
-                //w3m.tool.clear();
-                PDB.exportPdb = true;
-                w3m.config.rep_mode_main = PDB.config.mainMode;
-                w3m.config.rep_mode_het = PDB.config.hetMode;
-                w3m.pdb(text);
-            });
+            // w3m.ajax.get(PDB.pdbId, function (text) {
+            //     //w3m.tool.clear();
+            //     PDB.exportPdb = true;
+            //     w3m.config.rep_mode_main = PDB.config.mainMode;
+            //     w3m.config.rep_mode_het = PDB.config.hetMode;
+            //     w3m.pdb(text);
+            // });
+            PDB.exportPdb = true;
+            w3m.config.rep_mode_main = PDB.config.mainMode;
+            w3m.config.rep_mode_het = PDB.config.hetMode;
+            w3m.pdb(PDB.textData);
         });
         //=============================== trigger =======================
         //

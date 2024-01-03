@@ -5,7 +5,7 @@
 from pyrosetta import *
 import tempfile
 import os
-
+init()
 
 def atom_name(pose, atom, res, statue):
     atom_id = AtomID(atom, res)
@@ -48,4 +48,6 @@ def pyrosetta_hbonds(pdb_data):
 
 
 if __name__ == '__main__':
-    pyrosetta_hbonds("/Users/danfeng/acer_rubrum/protein/dataset/7e3b.pdb")
+    with open("test.pdb", "r") as fr:
+        data = "".join(fr.readlines())
+    print(pyrosetta_hbonds(data))

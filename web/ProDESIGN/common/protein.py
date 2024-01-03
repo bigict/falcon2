@@ -138,21 +138,6 @@ def from_pdb_string(chain, modtype, modres, header) -> Protein:
                         str_seq += res_shortname
                         pre_res_idx += 1
         else:
-            # res_shortname = residue_constants.restype_3to1.get(res.resname, 'X')
-            # restype_idx = residue_constants.restype_order.get(
-            #     res_shortname, residue_constants.restype_num)
-            # pos = np.zeros((residue_constants.atom14_type_num, 3)) # atom14
-            # mask = np.zeros((residue_constants.atom14_type_num,))
-            # res_b_factors = np.zeros((residue_constants.atom14_type_num,))
-            # atom_types = residue_constants.restype_name_to_atom14_names.get(res.resname,
-            #     residue_constants.restype_name_to_atom14_names.get('UNK'))
-            # for atom in res:
-            #   if atom.name not in atom_types:
-            #     continue
-            #   idx = atom_types.index(atom.name)
-            #   pos[idx] = atom.coord
-            #   mask[idx] = 1.
-            #   res_b_factors[idx] = atom.bfactor
             res_shortname, restype_idx, pos, mask, res_b_factors = summary(res.resname, res)
             if np.sum(mask) < 0.5:
                 # If no known atom positions are reported for the residue then skip it.

@@ -7,9 +7,11 @@ import uuid
 import numpy as np
 import torch
 
+
 # helpers
 def exists(val):
     return val is not None
+
 
 def default(val, d):
     if exists(val):

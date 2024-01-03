@@ -456,7 +456,6 @@ w3m.ajax = (function () {
             callback = fn;
             this.open('GET', url, true);
             this.send();
-
         };
     io.getResidue = function (resName, fn) {
         resName = resName.toUpperCase();
@@ -539,6 +538,7 @@ w3m.tool = {
     /* Pipeline */
     // clear -> plugin -> fill ( main -> het -> ext -> label ) -> buffer -> adjust -> draw
     pipeline: function () {
+        console.log("aaaaaaa")
         this.clear();
         this.plugin();
         this.fill();
@@ -546,6 +546,7 @@ w3m.tool = {
         this.recycle();
     },
     pipelineInit: function () {
+        console.log("bbbbbbbb")
         this.clear();
         this.plugin();
         this.fill();
@@ -553,6 +554,7 @@ w3m.tool = {
         this.recycle();
     },
     pipelineGeometry: function () {
+        console.log("cccc")
         this.clearMain();
         this.clearHet();
         this.clearExt();
@@ -566,6 +568,7 @@ w3m.tool = {
         this.recycle();
     },
     pipelineMain: function () {
+        console.log("dddd")
         this.clearMain();
         this.clearExt();
         this.plugin();
@@ -576,6 +579,7 @@ w3m.tool = {
         this.recycle();
     },
     pipelineHet: function () {
+        console.log("eeeee")
         this.clearHet();
         this.clearExt();
         this.plugin();
@@ -586,6 +590,7 @@ w3m.tool = {
         this.recycle();
     },
     pipelineLabel: function () {
+        console.log("fffff")
         this.clearExt();
         this.clearLabel();
         this.plugin();
@@ -596,6 +601,7 @@ w3m.tool = {
         this.draw();
     },
     pipelineExt: function () {
+        console.log("gggg")
         this.clearExt();
         this.clearLabel();
         this.plugin();
@@ -719,7 +725,6 @@ w3m.tool = {
         }
         // fillqueue -> vertex
         w3m.fillqueue_main.forEach(function (q) {
-            //console.log(q);
             switch (q[1]) {
                 case w3m.DOT:
                     that.fillMainAsDot(q[2], q[3], q[4], q[5]);
@@ -1892,6 +1897,7 @@ w3m.tool = {
 
 
                     if (atom) {
+                        console.log(22222)
                         w3m.mol[w3m.global.mol].residueData[atom.chainname][atom.resid].path.push(new THREE.Vector3(xyz[0] + offset.x, xyz[1] + offset.y, xyz[2] + offset.z));
                     }
 
@@ -1902,6 +1908,8 @@ w3m.tool = {
 
     },
     naturalFrame: function (path, frame) {
+        console.log("path", path);
+        console.log("frame", frame);
         //console.log("naturalFrame: ");
         var offset = PDB.GeoCenterOffset;
         // var tempPathArray  = [],
@@ -4333,6 +4341,7 @@ w3m.tool = {
             /* Frame */
             var frame = [];
             if (path.length > 2) {
+                console.log(3333333)
                 this.naturalFrame(path, frame);
             } else if (path.length == 2) {
                 this.simpleFrame(path, frame);
@@ -6082,6 +6091,7 @@ w3m.pdb = function (text, drugname) {
     };
     switch (typeof text) {
         case 'string':
+            console.log("123321")
             parse(text);
             break;
         default:
