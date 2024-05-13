@@ -8,7 +8,10 @@ df.controller = {
             df.render.initVR();
         }
     },
-
+    // createMenu: function () {
+    //
+    //
+    // },
     createMenu: function () {
         // =============================== Mode for structure =======================
         // 上传文件

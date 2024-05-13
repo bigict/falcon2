@@ -40,7 +40,6 @@ df.loader = {
         // 处理 pdb
         df.pdbContent[pdbId] = content;
         w3m.pdb(content, pdbId);
-        console.log(2)
         w3m.api.switchRepModeMain(w3m.LINE);
         w3m.api.switchRepModeMain(w3m.BACKBONE);
         w3m.api.switchRepModeMain(w3m.CUBE);
@@ -49,9 +48,8 @@ df.loader = {
         df.GROUP[pdbId] = {};
         // init dict
         df.pdbInfoList.forEach(function (name) {
-            df.GROUP[pdbId][name] = {}
+            df.GROUP[pdbId][name] = {};
         });
-
         // df.GROUP_MAIN_INDEX[pdbId] = [];
         // df.GROUP_HET_INDEX[pdbId] = [];
         // df.GROUP_STRUCTURE_INDEX[pdbId] = [];
@@ -60,6 +58,7 @@ df.loader = {
             let firstAtomId = df.tool.getFirstAtomIdByChain(pdbId, chain);
             df.pdbInfoList.forEach(function (name) {
                 df.GROUP[pdbId][name][chain] = new THREE.Group();
+                df.GROUP[pdbId][name][chain].surface = new THREE.Group();
                 df.GROUP[pdbId][name][chain].name = pdbId+'_'+name+'_'+chain;
             });
             df.GROUP[pdbId]['main'][chain].userData["presentAtom"] = df.tool.getMainAtom(pdbId, firstAtomId);

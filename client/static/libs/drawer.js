@@ -1,9 +1,29 @@
 import * as THREE from '../js/three.module.js';
-import {w3m} from "./web3D/w3m.js";
+
 import {df} from './core.js';
-import {CubicBezierCurve3, QuadraticBezierCurve3} from "../js/three.module.js";
+import {camera, scene} from "./render.js";
+
 
 df.drawer = {
+    drawDot: function (pdbId, type, chain, point, atom) {
+        // 创建点的几何体
+        let geometry = new THREE.BufferGeometry();
+        const vertices = new Float32Array([
+            0.0, 0.0, 0.0,  // 点的坐标
+        ]);
+        geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
+
+        // 创建点的材料
+        let material = new THREE.PointsMaterial({color: 0xff0000, size: 0.01});
+        // 创建点对象
+        let mesh = new THREE.Points(geometry, material);
+        mesh.position.copy(point);
+        mesh.name = atom.name;
+        mesh.userData = {
+            presentAtom: atom
+        };
+        df.GROUP[pdbId][type][chain].add(mesh);
+    },
     drawSphere: function (pdbId, type, chain, point, color, radius, atom, w) {
         let alpha = 0.5;
         // 物体表面的反射率，控制镜面反射的强度，值范围一般在0到1之间
@@ -22,10 +42,9 @@ df.drawer = {
             reflectivity: beta,
             shininess: specularShininess
         });
-
         let mesh = new THREE.Mesh(geometry, material);
-        mesh.name = df.tool.atomCaId(atom);
         mesh.position.copy(point);
+        mesh.name = df.tool.atomCaId(atom);
         mesh.userData = {
             presentAtom: atom
         };
@@ -75,28 +94,28 @@ df.drawer = {
     },
     drawEllipse: function (path, radius, color, object, pdbId, type, chain, resId, step) {
         let Catmull = new THREE.CatmullRomCurve3(path);
+        // Catmull.closed = true
         let extrudeSettings = {
             steps: step,
             bevelEnabled: true,
             extrudePath: Catmull,
-            // frames: object
+            frames: object
         };
-        const shape = new THREE.Shape();
-        const width = 0.5, height = 2.5;
-        shape.moveTo(-width / 2, -height / 2);
-        shape.lineTo(-width / 2, height / 2);
-        shape.lineTo(width / 2, height / 2);
-        shape.lineTo(width / 2, -height / 2);
-        shape.lineTo(-width / 2, -height / 2);
-
-        // shape.curves.push(curve);
+        let t = df.config.ellipse_radius_multiple;
+        let curve = new THREE.EllipseCurve(
+            0, 0,            // 中心点
+            5 * radius, radius, // x轴半径和y轴半径
+            0, Math.PI * 2,  // 开始和结束角度
+            false,            // 是否逆时针方向
+            0
+        );
+        let shape = new THREE.Shape();
+        shape.curves.push(curve);
         let geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
-        let material = new THREE.MeshPhongMaterial({
+        let material = new THREE.MeshLambertMaterial({
             color: color,
             wireframe: false
         });
-        geometry.computeBoundingSphere();
-        geometry.computeVertexNormals();
         material.side = THREE.FrontSide;
         let mesh = new THREE.Mesh(geometry, material);
         let atom = df.tool.getMainAtom(pdbId, resId);
@@ -108,11 +127,9 @@ df.drawer = {
         df.GROUP[pdbId][type][chain].add(mesh);
     },
     drawArrowByPaths: function (pdbId, type, chain, paths, color, atomId) {
-
         let geometry = new THREE.BufferGeometry();
         let vertices = [];
         let indices = [];
-
         // 将路径点添加到顶点数组
         paths.forEach(function (path) {
             vertices.push(path.x, path.y, path.z);
@@ -158,7 +175,6 @@ df.drawer = {
             side: THREE.DoubleSide
         });
 
-
         let mesh = new THREE.Mesh(geometry, materials);
         mesh.name = atomId;
         let atom = df.tool.getMainAtom(pdbId, atomId);
@@ -168,8 +184,71 @@ df.drawer = {
             realType: "arrow"
         };
         df.GROUP[pdbId][type][chain].add(mesh);
+    },
+    // createMenu: function () {
+    //     let geometry = new THREE.PlaneGeometry(6.4, 3.2);
+    //     let material = new THREE.MeshBasicMaterial({
+    //         color: 0xffffff, // 白色
+    //         transparent: true, // 设置材质为半透明
+    //         opacity: 0.8 // 设置透明度
+    //     });
+    //     let mesh = new THREE.Mesh(geometry, material);
+    //     mesh.position.set(0, -1, -4);
+    //     if (df.GROUP['menu'] !== undefined) {
+    //         df.GROUP['menu'].add(mesh);
+    //     }
+    // },
+    createMenuButton: function () {
+        let textureLoader = new THREE.TextureLoader();
+        let texture = textureLoader.load('/static/imgs/cate.png'); // 替换为你的图像文件路径
 
-
-    }
+        let geometry = new THREE.CircleGeometry(0.1, 32);
+        let material = new THREE.MeshBasicMaterial({
+            color: 0xffffff, // 白色
+            transparent: true, // 设置材质为半透明
+            opacity: 0.5, // 设置透明度
+            map: texture
+        }); // 使用贴图
+        let mesh = new THREE.Mesh(geometry, material);
+        let offset = new THREE.Vector3(-0.8, 0.8, -4);
+        mesh.position.copy(offset);
+        mesh.name = 'menu-button';
+        camera.add(mesh);
+        return mesh;
+    },
+    createTextTexture: function (text) {
+        // canvas create text
+        const scale = window.devicePixelRatio;
+        let canvas = document.createElement('canvas');
+        canvas.width = scale * df.textContentWidth;
+        canvas.height = scale * df.textContentHeight;
+        let context = canvas.getContext('2d');
+        // bg color
+        context.fillStyle = df.textMenuBgColor;
+        context.fillRect(0, 0, canvas.width, canvas.height);
+        // text
+        context.font = 'Bold 100px "SAO"';
+        context.textAlign = 'center';
+        context.textBaseline = 'middle';
+        context.fillStyle = 'black'; // 文本颜色
+        context.fillText(text, canvas.width / 2, canvas.height / 2);
+        const texture = new THREE.Texture(canvas);
+        texture.needsUpdate = true;
+        return texture;
+    },
+    createTextButton: function (text) {
+        let geometry = new THREE.PlaneGeometry(df.textMenuWidth, df.textMenuHeight);
+        let texture = df.drawer.createTextTexture(text);
+        texture.minFilter = THREE.LinearFilter;
+        let material = new THREE.MeshBasicMaterial({
+            map: texture
+        });
+        let mesh = new THREE.Mesh(geometry, material);
+        mesh.position.set(0, -1, -4);
+        if (df.GROUP['menu'] !== undefined) {
+            df.GROUP['menu'].add(mesh);
+        }
+        return mesh;
+    },
 }
 

@@ -4,35 +4,72 @@
 
 var df;
 df = {
-    remoteUrl: ['https://www.rcsb.org/pdb/files/', 'data/'],
+    // remoteUrl: ['https://www.rcsb.org/pdb/files/'],
+    remoteUrl: ['/static/data/'],
     isShowWater: false,
 
     // SURFACE
     SURFACE: 14,
     SURFACE_TYPE: 1,
     CURRENT_SURFACE_TYPE: 1,
-    SURFACE_OPACITY: 1.0,
+    SURFACE_OPACITY: 0.4,
     SURFACE_WIREFRAME: false,
 
     // 重新加载时需要初始化的参数
     pdbId: [],
     SelectedPDBId: '',
-    pdbInfoList: ['main', 'het', 'water', 'surface'],
+    pdbInfoList: ['main', 'het', 'water', 'surface', 'dot'],
     pdbContent: {},
 
     // gamepad
-    selection: 0,
+    // selection: 0,
+    selection: 102,
     select_all: 100,
     select_main: 101,
     select_chain: 102,
-
+    select_residue: 103,
 
     // menu
-    showMenu: false,
-
+    showMenu: true,
+    menuList: [{
+        "Load": [
+            {"aaa": []},
+            {"bbb": []},
+        ],
+        "Drag Protein": [
+            {"aaaa": []},
+            {"bbbc": []},
+        ],
+        "Docking": [
+            {"aaa1": []},
+            {"bbb1": []},
+            {"aaa2": []},
+            {"bbb2": []},
+        ],
+        "Score Tools": [
+            {"aaa1": []},
+            {"bbb1": []},
+            {"aaa2": []},
+            {"bbb2": []},
+        ],
+        "ProDESIGN": [
+            {"aaa1": []},
+            {"bbb1": []},
+            {"aaa2": []},
+            {"bbb2": []},
+        ],
+        "Exit": []
+    }],
+    // menu text config
+    textMenuWidth: 2,
+    textContentWidth: 512,
+    textContentHeight: 128,
+    textMenuHeight: 0.5,
+    textMenuBgColor: '#ffffff',
 
     // all pdb info group, 这里包含 pdb 用于展示的全部属性
     GROUP: {},
+    GROUP_INDEX: ['menu',],
     GROUP_HET_INDEX: {},
     GROUP_MAIN_INDEX: {},
     GROUP_STRUCTURE_INDEX: {},
@@ -81,14 +118,17 @@ df = {
     HET_WATER: 55,
     HET_IRON: 56,
 
+    // type
+    GroupType: "Group",
+
     // docking
-    dockingDict: {'HDock': window.location.href+'hdock'},
+    dockingDict: {'HDock': window.location.href + 'hdock'},
 }
 
 // config
 df.config = {
     mainMode: df.CARTOON_SSE,
-    hetMode: df.HET_BALL_ROD,
+    hetMode: df.HET_STICK,
     water_sphere_w: 8,
     surface: df.SURFACE,
     stick_sphere_w: 12,

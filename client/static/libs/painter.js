@@ -1,5 +1,8 @@
 import {df} from './core.js';
 import {w3m} from "./web3D/w3m.js";
+import * as THREE from '../js/three.module.js';
+import {scene} from "./render.js";
+
 df.painter = {
     showHet: function (type, pdbId) {
         switch (type) {
@@ -187,7 +190,45 @@ df.painter = {
             case df.CARTOON_SSE:
                 df.painter.showCartoonSSEByResidue(pdbId, chainId, resId);
                 break;
+            case df.DOT:
+                df.painter.showDotByResidue(pdbId, chainId, resId);
+                break;
         }
+    },
+    // show dot
+    showDotByResidue: function (pdbId, chainId, resId) {
+        let w = df.config.stick_sphere_w;
+        let residue = w3m.mol[pdbId].residueData[chainId][resId];
+        let radius = 0.01;
+        let color = new THREE.Color('#CCC');
+        let lines = residue.lines;
+        let history = {};
+        for (let i = 0; i < lines.length; i++) {
+            let ids = lines[i];
+            let startAtom = df.tool.getMainAtom(pdbId, ids[0]);
+            let endAtom = df.tool.getMainAtom(pdbId, ids[1]);
+            if (!startAtom.caid) {
+                startAtom.caid = residue.caid;
+                endAtom.caid = residue.caid;
+            }
+            if (history[startAtom.id] === undefined) {
+                this.drawDotByResidue(pdbId, 'dot', startAtom);
+                history[startAtom.id] = 1;
+            }
+            if (history[endAtom.id] === undefined) {
+                this.drawDotByResidue(pdbId, 'dot', endAtom);
+                history[endAtom.id] = 1;
+            }
+        }
+    },
+    drawDotByResidue: function (pdbId, type, atom) {
+        df.drawer.drawDot(
+            pdbId,
+            type,
+            atom.chainName,
+            atom.posCentered,
+            atom);
+        df.GROUP[pdbId][type][atom.chainName].children[df.GROUP[pdbId][type][atom.chainName].children.length - 1].visible = false;
     },
     // show Ball & Rod
     drawSphereByResidue: function (pdbId, type, atom, radius, x, w) {
@@ -199,7 +240,8 @@ df.painter = {
             atom.color,
             x * atom.radius,
             atom,
-            w);
+            w,
+            true);
         df.GROUP[pdbId][type][atom.chainName].children[df.GROUP[pdbId][type][atom.chainName].children.length - 1].visible = true;
     },
     showBallRodByResidue: function (pdbId, chainId, resId) {
@@ -401,26 +443,32 @@ df.painter = {
     },
     showSurface: function (pdbId,
                            startId = 1,
-                           endId, isSelected = true,
-                           chain = false) {
+                           endId,
+                           isSelected = true,
+                           chain = []) {
         let mainAtom = w3m.mol[pdbId].atom.main;
         let atoms = {};
         let limit = w3m.global.limit;
+        let num = Math.random();
+
         for (let i in mainAtom) {
-            if (chain && mainAtom[i][4] !== chain) {
+            if (chain && !chain.includes(mainAtom[i][4].toLowerCase())) {
                 continue;
             }
-            let index = parseInt(i);
-            if (index < startId) continue;
-            if (index > endId) break;
+
             let atom = df.tool.getMainAtom(pdbId, i);
+            let index = parseInt(atom.resid);
+            // if (index < startId) continue;
+            // if (index > endId) break;
+
             let xyz = atom.posCentered;
             let color;
             if (isSelected) {
                 color = atom.color;
             } else {
-                color = new THREE.Color(0x17202A);
+                color = new THREE.Color(0xffffff);
             }
+            color = new THREE.Color(num * 0xffffff);
             atoms[atom.id] = {
                 coord: xyz,
                 name: atom.name,
@@ -445,34 +493,84 @@ df.painter = {
             atoms: atoms,
             type: df.SURFACE_TYPE,
         });
-        let vert = ps.verts;
-        let faces = ps.faces;
-        let geo = new THREE.Geometry();
-        geo.vertices = vert.map(function (v) {
-            let r = new THREE.Vector3(v.x, v.y, v.z);
-            r.atomid = v.atomid;
-            return r;
+
+        let geometry = new THREE.BufferGeometry();
+        let vertices = [];
+        let colors = [];
+        ps.verts.forEach((v) => {
+            vertices.push(v.x, v.y, v.z);
+            let color = atoms[v.atomid].color;
+            colors.push(color.r, color.g, color.b);
         });
-        geo.faces = faces.map(function (f) {
-            return new THREE.Face3(f.a, f.b, f.c);
+
+        let faces = [];
+        ps.faces.forEach((f) => {
+            faces.push(f.a, f.b, f.c);
         });
-        geo.computeFaceNormals();
-        geo.computeVertexNormals(false);
-        let geoC = geo.clone();
-        geoC.faces.forEach(function (f) {
-            f.vertexColors = ['a', 'b', 'c'].map(function (d) {
-                return atoms[geo.vertices[f[d]].atomid].color;
-            });
-        });
-        let mesh = new THREE.Mesh(geoC, new THREE.MeshPhongMaterial({
-            vertexColors: THREE.VertexColors,
+
+        geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+        geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+        geometry.setIndex(faces);
+        geometry.computeVertexNormals();
+
+        let material = new THREE.MeshPhongMaterial({
+            vertexColors: true,
             wireframe: df.SURFACE_WIREFRAME,
             opacity: df.SURFACE_OPACITY,
             transparent: true,
             specular: 0x888888,
-            shininess: 250
-        }));
-        df.GROUP[pdbId]['surface'].add(mesh);
-        df.GROUP[pdbId]['surface'].visible = true;
+            // specular: 0x000000,
+            // shininess: 250
+            shininess: 10
+        });
+
+        let mesh = new THREE.Mesh(geometry, material);
+        mesh.name = 'surface';
+        mesh.userData = {
+            presentAtom: {
+                pdbId: pdbId,
+                typeName: 'main',
+                chainName: chain[0],
+            }
+        }
+        df.GROUP[pdbId]['main'][chain[0]].add(mesh);
+        df.GROUP[pdbId]['main'][chain[0]].visible = true;
     },
+    showMenu: function () {
+        let first_number = 0
+        let row = 0
+        // show menu
+        for (let i in df.menuList) {
+            let menu_dict = df.menuList[i];
+            for (let firstKey in menu_dict) {
+                // 1st Menu
+                let mesh_1 = df.drawer.createTextButton(firstKey);
+                let height = -first_number * (df.textMenuHeight + 0.05);
+                mesh_1.position.y = -1 + height;
+                first_number += 1;
+                if (menu_dict[firstKey] && menu_dict[firstKey].length > 0) {
+                    let second_number = 0;
+                    row = 1
+                    for (let j in height) {
+
+                    }
+                    for (let secondKey in menu_dict[firstKey]) {
+                        let menu_dict_2 = menu_dict[firstKey][secondKey];
+                        let mesh_2 = df.drawer.createTextButton(secondKey);
+                        let height_2 = -second_number * (df.textMenuHeight + 0.05);
+                        let width = df.textMenuWidth * 2
+                        second_number += 1;
+                        mesh_2.position.y = -1 + height_2;
+                        mesh_2.position.x = width;
+                        if (menu_dict[secondKey] && menu_dict[secondKey].length > 0) {
+                            row = 2
+                            for (let thirdKey in menu_dict[secondKey]) {
+                                let mesh_3 = df.drawer.createTextButton(thirdKey);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
