@@ -569,8 +569,14 @@ w3m.tool = {
                 break;
             case w3m.COLOR_BY_CHAIN:
                 array = w3m.color.chain;
+                let array1 = {}
+                array1[w3m.LOOP] = array1[w3m.LOOP_HEAD] = array1[w3m.LOOP_BODY] = array1[w3m.LOOP_FOOT] = w3m.color.ss.loop;
                 mol.color.main = mol.atom.main.map(function (atom) {
-                    return array[atom[4]];
+                    if (array1[mol.ss[atom[4]][atom[5]][0]]) {
+                        return w3m.color.ss.loop + array[atom[4]];
+                    } else {
+                        return array[atom[4]];
+                    }
                 });
                 break;
             // 整体颜色
@@ -1570,7 +1576,7 @@ w3m.config = {
     rep_mode_main: w3m.TUBE,
     rep_mode_het: w3m.TUBE,
     // color
-    color_mode_main: w3m.COLOR_BY_ELEMENT,
+    color_mode_main: w3m.COLOR_BY_CHAIN,
     color_mode_het: w3m.COLOR_BY_ELEMENT,
 
     // smooth

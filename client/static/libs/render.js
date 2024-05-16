@@ -49,10 +49,16 @@ df.render = {
             let gName = df.GROUP_INDEX[idx];
             df.GROUP[gName] = new THREE.Group();
             df.GROUP[gName].name = gName;
-            if (gName === 'menu') {
-                camera.add(df.GROUP[gName]);
-            } else {
-                scene.add(df.GROUP[gName]);
+            switch (gName) {
+                case "menu":
+                    camera.add(df.GROUP[gName]);
+                    break;
+                case "score":
+                    camera.add(df.GROUP[gName]);
+                    break;
+                default:
+                    scene.add(df.GROUP[gName]);
+                    break
             }
         }
     },
@@ -131,18 +137,18 @@ df.render = {
         // 监听 vr
         let isImmersive = false;
         renderer.xr.addEventListener('sessionstart', () => {
-            // let combineBox = new THREE.Box3();
-            // //
-            // let scaleAmount = 0.02; // 缩小的倍数
-            // for (let key in df.GROUP['7fjc']['main']) {
-            //     let group = df.GROUP['7fjc']['main'][key];
+            let combineBox = new THREE.Box3();
             //
-            //     group.scale.set(scaleAmount, scaleAmount, scaleAmount);
-            //     combineBox.expandByObject(group);
-            //     // df.tool.nearToMesh(canon, group, key);
-            // }
-            // df.tool.vrCameraCenter(canon, combineBox, true);
-            // isImmersive = true;
+            let scaleAmount = 0.02; // 缩小的倍数
+            for (let key in df.GROUP['7fjc']['main']) {
+                let group = df.GROUP['7fjc']['main'][key];
+                group.scale.set(scaleAmount, scaleAmount, scaleAmount);
+                combineBox.expandByObject(group);
+                // df.tool.nearToMesh(canon, group, key);
+            }
+            df.tool.vrCameraCenter(canon, combineBox, true);
+
+            isImmersive = true;
         });
         renderer.xr.addEventListener('sessionend', () => {
             isImmersive = false;
@@ -186,8 +192,20 @@ df.render = {
         });
         window.addEventListener('resize', onWindowResize, false);
 
+        var number = 0
+
         // camera.updateProjectionMatrix();
         function animate() {
+            if (df.GROUP['7fjc'] && df.GROUP['7fjc']['main']) {
+                let score = df.tool.similarScore();
+                if (number !== score) {
+                    let score_str = "得分: " + score.toString() + "分！"
+                    df.drawer.updateText(score_str, df.GROUP["score"].children[0]);
+                    number = score
+                }
+            }
+
+
             camera.updateProjectionMatrix();
             renderer.render(scene, camera);
         }

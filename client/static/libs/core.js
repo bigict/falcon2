@@ -30,7 +30,7 @@ df = {
     select_residue: 103,
 
     // menu
-    showMenu: true,
+    showMenu: false,
     menuList: [{
         "Load": [
             {"aaa": []},
@@ -69,7 +69,7 @@ df = {
 
     // all pdb info group, 这里包含 pdb 用于展示的全部属性
     GROUP: {},
-    GROUP_INDEX: ['menu',],
+    GROUP_INDEX: ['menu', 'score'],
     GROUP_HET_INDEX: {},
     GROUP_MAIN_INDEX: {},
     GROUP_STRUCTURE_INDEX: {},
@@ -123,6 +123,11 @@ df = {
 
     // docking
     dockingDict: {'HDock': window.location.href + 'hdock'},
+
+    // score
+    SCORE_MESH: '',
+
+
 }
 
 // config

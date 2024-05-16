@@ -98,6 +98,7 @@ df.tool = {
             let N_color = w3m.rgb[rId][1];
             let O_color = w3m.rgb[rId][2];
             return new THREE.Color(C_color, N_color, O_color);
+
         } else {
             return new THREE.Color("#ccc");
         }
@@ -227,4 +228,66 @@ df.tool = {
         direction.multiplyScalar(distance);
         mesh2.position.copy(mesh1.position).add(direction);
     },
+    similarScore: function () {
+
+        let score_compare = [
+            16.293839910905366,
+            15.180229290437994,
+            13.389622324243334,
+            9.194340543904312,
+            8.715518545599428,
+            11.516203968813885,
+            12.758191878279273,
+            12.36486776209635,
+            14.264266018442765,
+            16.016765091063863
+        ];
+
+        function extractList(mesh, num0, num1, list) {
+            let resId = parseInt(mesh.userData.presentAtom.resId);
+            if (resId > num0 && resId < num1) {
+                // 抽取矩阵
+                let boundingBox = new THREE.Box3().setFromObject(mesh);
+                let center = new THREE.Vector3();
+                boundingBox.getCenter(center);
+                list.push([center.x, center.y, center.z]);
+            }
+        }
+
+        let hChainList = []
+        for (let num in df.GROUP['7fjc']['main']['h'].children) {
+            let mesh = df.GROUP['7fjc']['main']['h'].children[num];
+            if (mesh.userData) {
+                extractList(mesh, 99, 110, hChainList);
+            }
+        }
+        let eChainList = []
+        for (let num in df.GROUP['7fjc']['main']['e'].children) {
+            let mesh = df.GROUP['7fjc']['main']['e'].children[num];
+            if (mesh.userData) {
+                extractList(mesh, 344, 350, eChainList);
+                extractList(mesh, 444, 451, eChainList);
+            }
+        }
+
+        let sum = [];
+        for (let i = 0; i < hChainList.length; i++) {
+            let x = Math.pow(hChainList[i][0] - eChainList[i][0], 2);
+            let y = Math.pow(hChainList[i][1] - eChainList[i][1], 2);
+            let z = Math.pow(hChainList[i][2] - eChainList[i][2], 2);
+            let score = Math.sqrt(x + y + z) / 0.02;
+            sum.push(score);
+        }
+
+        let all_score = 0
+
+        for (let i = 0; i < sum.length; i++) {
+            let x1 = Math.pow(sum[i] - score_compare[i], 2);
+            let score1 = Math.sqrt(x1);
+            all_score = all_score + score1;
+        }
+        all_score = 100 - all_score / sum.length;
+        return all_score;
+    },
 }
+

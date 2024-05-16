@@ -468,7 +468,9 @@ df.painter = {
             } else {
                 color = new THREE.Color(0xffffff);
             }
-            color = new THREE.Color(num * 0xffffff);
+            // color = new THREE.Color(num * 0xffffff);
+            color = atom.color;
+
             atoms[atom.id] = {
                 coord: xyz,
                 name: atom.name,

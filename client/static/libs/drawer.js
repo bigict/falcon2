@@ -250,5 +250,31 @@ df.drawer = {
         }
         return mesh;
     },
+    createSprite: function () {
+        const spriteMaterial = new THREE.SpriteMaterial({color: 0xffffff});
+        const sprite = new THREE.Sprite(spriteMaterial);
+        let offset = new THREE.Vector3(0.9, 0.9, -2);
+        sprite.position.copy(offset);
+        sprite.visible = false;
+        if (df.GROUP["score"] !== undefined) {
+            df.GROUP["score"].add(sprite);
+        }
+        return sprite
+    },
+    // 更新文本内容的函数
+    updateText: function (text, mesh) {
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+        context.font = 'Bold 40px Arial';
+        context.fillStyle = 'white';
+        context.fillText(text, 0, 40);
+
+        const texture = new THREE.CanvasTexture(canvas);
+        mesh.material.map = texture;
+        texture.needsUpdate = true;
+        if (!mesh.visible) {
+            mesh.visible = true;
+        }
+    },
 }
 

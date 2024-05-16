@@ -22,24 +22,27 @@ function switchMenu(obj) {
 
 df.controller.init();
 
+var test = [new THREE.Vector3(1,2,3), new THREE.Vector3(4,5,6)];
+console.log(test);
+
 // 初始化menu菜单
 let menuOpen = false;
 df.painter.showMenu();
-for (let i in df.menuList) {
-    let mesh = df.drawer.createTextButton(df.menuList[i]);
-    let height = -i * (df.textMenuHeight + 0.05);
-    mesh.position.y = -1 + height;
-}
+// for (let i in df.menuList) {
+//     let mesh = df.drawer.createTextButton(df.menuList[i]);
+//     let height = -i * (df.textMenuHeight + 0.05);
+//     mesh.position.y = -1 + height;
+// }
 df.drawer.createMenuButton();
+df.SCORE = df.drawer.createSprite();
 df.GROUP['menu'].visible = df.showMenu;
 
 
 df.loader.load('7fjc', 'name', function () {
     df.controller.drawGeometry(df.config.mainMode, '7fjc');
     // df.controller.drawGeometry(df.DOT, '7fjc');
-
-    // df.painter.showSurface('7fjc', 300, 600, true, ['e']);
-    // df.painter.showSurface('7fjc', 300, 600, true, ['h', 'l']);
+    df.painter.showSurface('7fjc', 300, 600, true, ['e']);
+    df.painter.showSurface('7fjc', 300, 600, true, ['h', 'l']);
 });
 df.SelectedPDBId = '7fjc';
 

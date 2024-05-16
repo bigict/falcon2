@@ -24,7 +24,6 @@ function objectDeTrans(controller) {
             case df.GroupType:
                 child.matrix.premultiply(controller.matrixWorld);
                 child.matrix.decompose(child.position, child.quaternion, child.scale);
-                console.log(child.position, child.quaternion, child.scale);
                 df.tool.colorIntersectObjectRed(child, 0);
                 scene.add(child);
                 break;
@@ -56,6 +55,7 @@ function onTriggerDown(event, raster, tempMatrix) {
         return;
     }
     let interList = getIntersections(controller, raster, tempMatrix);
+    console.log(interList)
     let intersections = interList[0];
     let controllerTempMatrix = interList[1];
     if (intersections && intersections.length <= 0) {
@@ -126,11 +126,18 @@ function getIntersections(controller, raster, tempMatrix, onMenuButton = false) 
     let inters = [];
     // 打开 menu 菜单
     if (onMenuButton) {
-        let selected = raster.intersectObjects(camera.children);
-        for (let i = 0; i < selected.length; i++) {
-            if (selected[i] && selected[i].object.name === 'menu-button') {
-                inters.push(selected[i]);
-                return [inters, tempMatrix];
+        let selected = undefined;
+        for (let i = 0; i < camera.children.length; i++) {
+            let group = camera.children[i];
+            if (group.type === "mesh") {
+                selected = raster.intersectObjects([group], true);
+            }
+        }
+        if (selected) {
+            for (let i = 0; i < selected.length; i++) {
+                if (selected[i] && selected[i].object.name === 'menu-button') {
+                    inters.push(selected[i]);
+                }
             }
         }
         return [inters, tempMatrix];
