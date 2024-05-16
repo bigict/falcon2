@@ -120,4 +120,8 @@ df.loader = {
         io.open('GET', url, true);
         io.send();
     },
+    clear: function () {
+        w3m.mol = {};
+        df.pdbId = [];
+    }
 }

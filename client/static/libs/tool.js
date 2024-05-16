@@ -4,7 +4,7 @@
 import * as THREE from '../js/three.module.js';
 import {w3m} from "./web3D/w3m.js";
 import {df} from './core.js';
-import {camera, renderer} from "./render.js";
+import {camera, canon, renderer} from "./render.js";
 
 df.tool = {
     // color
@@ -181,7 +181,7 @@ df.tool = {
             return atom.id;
         }
     },
-    vrCameraCenter: function (camera, object, isBox = false) {
+    vrCameraCenter: function (canon, object, isBox = false) {
         let box;
         if (!isBox) {
             box = new THREE.Box3().setFromObject(object);
@@ -191,9 +191,14 @@ df.tool = {
         let center = box.getCenter(new THREE.Vector3());
         // distance
         let distance = 0.5;
-        let cameraPosition = new THREE.Vector3(center.x - 0.5, center.y - 1.5, center.z + distance);
-        df.tool.smoothMoveObject(camera.position, cameraPosition, camera);
+        // let cameraPosition = new THREE.Vector3(center.x - camera.position.x, center.y - camera.position.y, center.z - distance - camera.position.z);
+        let cameraPosition = new THREE.Vector3(center.x - camera.position.x, center.y - camera.position.y, center.z + distance  - camera.position.z);
+        // df.tool.smoothMoveObject(camera.position, cameraPosition, camera);
+        console.log(camera.position);
+        canon.position.copy(cameraPosition);
+        // canon.lookAt(center);
         camera.lookAt(center);
+
     },
     smoothMoveObject: function (stPos, edPos, object) {
         let duration = 1000;
@@ -228,8 +233,7 @@ df.tool = {
         direction.multiplyScalar(distance);
         mesh2.position.copy(mesh1.position).add(direction);
     },
-    similarScore: function () {
-
+    similarScore: function (pdbId) {
         let score_compare = [
             16.293839910905366,
             15.180229290437994,
@@ -255,32 +259,29 @@ df.tool = {
         }
 
         let hChainList = []
-        for (let num in df.GROUP['7fjc']['main']['h'].children) {
-            let mesh = df.GROUP['7fjc']['main']['h'].children[num];
+        for (let num in df.GROUP[pdbId]['main']['h'].children) {
+            let mesh = df.GROUP[pdbId]['main']['h'].children[num];
             if (mesh.userData) {
                 extractList(mesh, 99, 110, hChainList);
             }
         }
         let eChainList = []
-        for (let num in df.GROUP['7fjc']['main']['e'].children) {
-            let mesh = df.GROUP['7fjc']['main']['e'].children[num];
+        for (let num in df.GROUP[pdbId]['main']['e'].children) {
+            let mesh = df.GROUP[pdbId]['main']['e'].children[num];
             if (mesh.userData) {
                 extractList(mesh, 344, 350, eChainList);
                 extractList(mesh, 444, 451, eChainList);
             }
         }
-
         let sum = [];
         for (let i = 0; i < hChainList.length; i++) {
             let x = Math.pow(hChainList[i][0] - eChainList[i][0], 2);
             let y = Math.pow(hChainList[i][1] - eChainList[i][1], 2);
             let z = Math.pow(hChainList[i][2] - eChainList[i][2], 2);
-            let score = Math.sqrt(x + y + z) / 0.02;
+            let score = Math.sqrt(x + y + z) / df.GROUP['7fjc']['main']['h'].scale.x;
             sum.push(score);
         }
-
         let all_score = 0
-
         for (let i = 0; i < sum.length; i++) {
             let x1 = Math.pow(sum[i] - score_compare[i], 2);
             let score1 = Math.sqrt(x1);
@@ -289,5 +290,21 @@ df.tool = {
         all_score = 100 - all_score / sum.length;
         return all_score;
     },
+    initPDBView: function (pdbId) {
+        let combineBox = new THREE.Box3();
+        let combineList = [];
+        let scaleAmount = 0.01; // 缩小的倍数
+        for (let key in df.GROUP[pdbId]['main']) {
+            let group = df.GROUP[pdbId]['main'][key];
+            group.scale.set(scaleAmount, scaleAmount, scaleAmount);
+            combineBox.expandByObject(group);
+
+            // df.tool.nearToMesh(canon, group, key);
+        }
+
+        df.tool.vrCameraCenter(canon, combineBox, true);
+        // df.tool.vrCameraCenter(canon, combineList, true);
+    }
+
 }
 

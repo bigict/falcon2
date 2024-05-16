@@ -17,7 +17,7 @@ df = {
 
     // 重新加载时需要初始化的参数
     pdbId: [],
-    SelectedPDBId: '',
+    SelectedPDBId: undefined,
     pdbInfoList: ['main', 'het', 'water', 'surface', 'dot'],
     pdbContent: {},
 
@@ -31,35 +31,12 @@ df = {
 
     // menu
     showMenu: false,
-    menuList: [{
-        "Load": [
-            {"aaa": []},
-            {"bbb": []},
-        ],
-        "Drag Protein": [
-            {"aaaa": []},
-            {"bbbc": []},
-        ],
-        "Docking": [
-            {"aaa1": []},
-            {"bbb1": []},
-            {"aaa2": []},
-            {"bbb2": []},
-        ],
-        "Score Tools": [
-            {"aaa1": []},
-            {"bbb1": []},
-            {"aaa2": []},
-            {"bbb2": []},
-        ],
-        "ProDESIGN": [
-            {"aaa1": []},
-            {"bbb1": []},
-            {"aaa2": []},
-            {"bbb2": []},
-        ],
-        "Exit": []
-    }],
+    // menuList: [{
+    //     "4eu1": [],
+    //     "7fjc": [],
+    //     "Exit": []
+    // }],
+    menuList: ["4eul", "7fjc", "Exit"],
     // menu text config
     textMenuWidth: 2,
     textContentWidth: 512,

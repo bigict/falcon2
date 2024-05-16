@@ -244,6 +244,7 @@ df.drawer = {
             map: texture
         });
         let mesh = new THREE.Mesh(geometry, material);
+        mesh.name = text;
         mesh.position.set(0, -1, -4);
         if (df.GROUP['menu'] !== undefined) {
             df.GROUP['menu'].add(mesh);

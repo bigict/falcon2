@@ -14,7 +14,26 @@ var canon = new THREE.Object3D();
 var lightType = 0;
 // initVR -- controls
 var controls, leftController, leftControllerGrip, rightController, rightControllerGrip, leftHand, rightHand;
+var leftSqueezeStart = false;
+var rightSqueezeStart = false;
+var ScoreTemp = 0
 
+function ScalePDB() {
+    if (df.SelectedPDBId) {
+        if (leftSqueezeStart) {
+            for (let chain in df.GROUP[df.SelectedPDBId]['main']) {
+                let group = df.GROUP[df.SelectedPDBId]['main'][chain]
+                group.scale.multiplyScalar(1.01);
+            }
+        }
+        if (rightSqueezeStart) {
+            for (let chain in df.GROUP[df.SelectedPDBId]['main']) {
+                let group = df.GROUP[df.SelectedPDBId]['main'][chain]
+                group.scale.multiplyScalar(0.99);
+            }
+        }
+    }
+}
 
 df.render = {
     vrScene: function () {
@@ -137,16 +156,7 @@ df.render = {
         // 监听 vr
         let isImmersive = false;
         renderer.xr.addEventListener('sessionstart', () => {
-            let combineBox = new THREE.Box3();
-            //
-            let scaleAmount = 0.02; // 缩小的倍数
-            for (let key in df.GROUP['7fjc']['main']) {
-                let group = df.GROUP['7fjc']['main'][key];
-                group.scale.set(scaleAmount, scaleAmount, scaleAmount);
-                combineBox.expandByObject(group);
-                // df.tool.nearToMesh(canon, group, key);
-            }
-            df.tool.vrCameraCenter(canon, combineBox, true);
+            // df.tool.initPDBView(df.SelectedPDBId);
 
             isImmersive = true;
         });
@@ -180,6 +190,22 @@ df.render = {
             let leftTempMatrix = new THREE.Matrix4();
             onTriggerDown(event, rayCaster, leftTempMatrix);
         });
+        // 放大 缩小
+        leftController.addEventListener('squeezestart', function (event) {
+            leftSqueezeStart = true;
+        });
+        leftController.addEventListener('squeezeend', function (event) {
+            leftSqueezeStart = false;
+        });
+        rightController.addEventListener('squeezestart', function (event) {
+            if (!leftSqueezeStart) {
+                rightSqueezeStart = true;
+            }
+        });
+        rightController.addEventListener('squeezeend', function (event) {
+            rightSqueezeStart = false;
+        });
+
         rightController.addEventListener('selectstart', function (event) {
             let rightTempMatrix = new THREE.Matrix4();
             onTriggerDown(event, rayCaster, rightTempMatrix)
@@ -192,20 +218,11 @@ df.render = {
         });
         window.addEventListener('resize', onWindowResize, false);
 
-        var number = 0
 
         // camera.updateProjectionMatrix();
         function animate() {
-            if (df.GROUP['7fjc'] && df.GROUP['7fjc']['main']) {
-                let score = df.tool.similarScore();
-                if (number !== score) {
-                    let score_str = "得分: " + score.toString() + "分！"
-                    df.drawer.updateText(score_str, df.GROUP["score"].children[0]);
-                    number = score
-                }
-            }
 
-
+            ScalePDB();
             camera.updateProjectionMatrix();
             renderer.render(scene, camera);
         }
@@ -219,13 +236,26 @@ df.render = {
             renderer.setSize(window.innerWidth, window.innerHeight);
         }
     },
+    score: function (pdbId) {
+        if (df.SelectedPDBId === pdbId) {
+            if (df.GROUP[pdbId] && df.GROUP[pdbId]['main']) {
+                let score = df.tool.similarScore(pdbId);
+                if (ScoreTemp !== score) {
+                    let score_str = "得分: " + score.toString() + "分！"
+                    df.drawer.updateText(score_str, df.GROUP["score"].children[0]);
+                    ScoreTemp = score
+                }
+            }
+        }
+    },
     // todo
-    clear: function (mode, pdbId) {
+    clean: function (mode, pdbId) {
         THREE.Cache.clear();
+        // df.GROUP[df.SelectedPDBId] = {}
         switch (mode) {
             case 0:
-                for (let modeKey in df.GROUP_MAIN_INDEX[pdbId]) {
-                    df.tool.clearGroupIndex(df.GROUP_MAIN_INDEX[pdbId]);
+                for (let modeKey in df.GROUP[pdbId]) {
+                    df.tool.clearGroupIndex(df.GROUP[pdbId][modeKey]);
                 }
                 break;
             case 1:

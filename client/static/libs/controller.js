@@ -122,10 +122,10 @@ df.controller = {
     },
     refreshGeometryByMode: function (type) {
         if (type < df.HET) {
-            df.render.clear(0);
+            df.render.clean(0);
             df.controller.drawGeometry(type);
         } else {
-            df.render.clear(1);
+            df.render.clean(1);
             df.controller.drawGeometry(type);
         }
     },

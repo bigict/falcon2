@@ -49,14 +49,32 @@ function onTriggerDown(event, raster, tempMatrix) {
     // open menu
     let menuList = getIntersections(controller, raster, tempMatrix, true);
     let menuObject = menuList[0];
+    console.log(menuObject);
     if (menuObject.length > 0) {
         df.showMenu = !df.showMenu;
         df.GROUP['menu'].visible = df.showMenu;
         return;
     }
     let interList = getIntersections(controller, raster, tempMatrix);
-    console.log(interList)
     let intersections = interList[0];
+    if (typeof intersections === 'string') {
+        df.render.clean(0, df.SelectedPDBId);
+        df.loader.clear();
+        df.loader.load(intersections, 'name', function () {
+            df.controller.drawGeometry(df.config.mainMode, intersections);
+            df.tool.initPDBView(intersections);
+            // df.controller.drawGeometry(df.DOT, '7fjc');
+            // if (intersections === '7fjc') {
+            //     df.painter.showSurface('7fjc', 300, 600, true, ['e']);
+            //     df.painter.showSurface('7fjc', 300, 600, true, ['h', 'l']);
+            // }
+            df.showMenu = false;
+            df.GROUP['menu'].visible = df.showMenu;
+        });
+        df.SelectedPDBId = intersections;
+
+        return;
+    }
     let controllerTempMatrix = interList[1];
     if (intersections && intersections.length <= 0) {
         return;
@@ -76,6 +94,7 @@ function onTriggerUp(event) {
             objectDeTrans(controller);
             break;
     }
+    df.render.score("7fjc");
 }
 
 
@@ -127,9 +146,10 @@ function getIntersections(controller, raster, tempMatrix, onMenuButton = false) 
     // 打开 menu 菜单
     if (onMenuButton) {
         let selected = undefined;
+        console.log(camera)
         for (let i = 0; i < camera.children.length; i++) {
             let group = camera.children[i];
-            if (group.type === "mesh") {
+            if (group.type === "Mesh") {
                 selected = raster.intersectObjects([group], true);
             }
         }
@@ -143,7 +163,13 @@ function getIntersections(controller, raster, tempMatrix, onMenuButton = false) 
         return [inters, tempMatrix];
     }
     if (df.showMenu) {
-
+        let selected = raster.intersectObjects(df.GROUP['menu'].children, true);
+        console.log(selected)
+        if (selected) {
+            let selectedObject = selected[0].object;
+            let name = selectedObject.name;
+            return [name, selectedObject];
+        }
     } else {
         let selected = rayCasterIntersect(raster);
         if (selected.length <= 0) return [inters, tempMatrix];
