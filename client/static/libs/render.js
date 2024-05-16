@@ -156,8 +156,7 @@ df.render = {
         // 监听 vr
         let isImmersive = false;
         renderer.xr.addEventListener('sessionstart', () => {
-            // df.tool.initPDBView(df.SelectedPDBId);
-
+            df.tool.initPDBView(df.SelectedPDBId);
             isImmersive = true;
         });
         renderer.xr.addEventListener('sessionend', () => {
@@ -221,7 +220,7 @@ df.render = {
 
         // camera.updateProjectionMatrix();
         function animate() {
-
+            df.render.score("7fjc");
             ScalePDB();
             camera.updateProjectionMatrix();
             renderer.render(scene, camera);
@@ -237,9 +236,11 @@ df.render = {
         }
     },
     score: function (pdbId) {
+
         if (df.SelectedPDBId === pdbId) {
             if (df.GROUP[pdbId] && df.GROUP[pdbId]['main']) {
                 let score = df.tool.similarScore(pdbId);
+                        console.log(1)
                 if (ScoreTemp !== score) {
                     let score_str = "得分: " + score.toString() + "分！"
                     df.drawer.updateText(score_str, df.GROUP["score"].children[0]);

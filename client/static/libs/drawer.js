@@ -254,7 +254,7 @@ df.drawer = {
     createSprite: function () {
         const spriteMaterial = new THREE.SpriteMaterial({color: 0xffffff});
         const sprite = new THREE.Sprite(spriteMaterial);
-        let offset = new THREE.Vector3(0.9, 0.9, -2);
+        let offset = new THREE.Vector3(-camera.position.x, -camera.position.y + 0.5, -2);
         sprite.position.copy(offset);
         sprite.visible = false;
         if (df.GROUP["score"] !== undefined) {

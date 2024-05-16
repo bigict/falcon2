@@ -287,7 +287,8 @@ df.tool = {
             let score1 = Math.sqrt(x1);
             all_score = all_score + score1;
         }
-        all_score = 100 - all_score / sum.length;
+        all_score = 100 - (all_score / sum.length) * 2;
+        all_score = Math.round(all_score);
         return all_score;
     },
     initPDBView: function (pdbId) {

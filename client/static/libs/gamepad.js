@@ -94,7 +94,7 @@ function onTriggerUp(event) {
             objectDeTrans(controller);
             break;
     }
-    df.render.score("7fjc");
+    // df.render.score("7fjc");
 }
 
 
