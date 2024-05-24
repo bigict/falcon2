@@ -483,4 +483,41 @@ df.painter = {
         df.GROUP[pdbId]['main'][chain].surface.add(mesh);
         df.GROUP[pdbId]['main'][chain].surface.visible = true;
     },
+    showMenu: function () {
+        let first_number = 0
+        let row = 0
+        // show menu
+        for (let i in df.menuList) {
+            let menu_dict = df.menuList[i];
+            for (let firstKey in menu_dict) {
+                // 1st Menu
+                let mesh_1 = df.drawer.createTextButton(firstKey);
+                let height = -first_number * (df.textMenuHeight + 0.05);
+                mesh_1.position.y = -1 + height;
+                first_number += 1;
+                if (menu_dict[firstKey] && menu_dict[firstKey].length > 0) {
+                    let second_number = 0;
+                    row = 1
+                    for (let j in height) {
+
+                    }
+                    for (let secondKey in menu_dict[firstKey]) {
+                        let menu_dict_2 = menu_dict[firstKey][secondKey];
+                        let mesh_2 = df.drawer.createTextButton(secondKey);
+                        let height_2 = -second_number * (df.textMenuHeight + 0.05);
+                        let width = df.textMenuWidth * 2
+                        second_number += 1;
+                        mesh_2.position.y = -1 + height_2;
+                        mesh_2.position.x = width;
+                        if (menu_dict[secondKey] && menu_dict[secondKey].length > 0) {
+                            row = 2
+                            for (let thirdKey in menu_dict[secondKey]) {
+                                let mesh_3 = df.drawer.createTextButton(thirdKey);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 }

@@ -201,10 +201,69 @@ df.drawer = {
         mesh.name = 'menu-button';
         camera.add(mesh);
         return mesh;
-    }
+    },
+    createTextTexture: function (text) {
+        // canvas create text
+        const scale = window.devicePixelRatio;
+        let canvas = document.createElement('canvas');
+        canvas.width = scale * df.textContentWidth;
+        canvas.height = scale * df.textContentHeight;
+        let context = canvas.getContext('2d');
+        // bg color
+        context.fillStyle = df.textMenuBgColor;
+        context.fillRect(0, 0, canvas.width, canvas.height);
+        // text
+        context.font = 'Bold 100px "SAO"';
+        context.textAlign = 'center';
+        context.textBaseline = 'middle';
+        context.fillStyle = 'black'; // 文本颜色
+        context.fillText(text, canvas.width / 2, canvas.height / 2);
+        const texture = new THREE.Texture(canvas);
+        texture.needsUpdate = true;
+        return texture;
+    },
+    createTextButton: function (text) {
+        let geometry = new THREE.PlaneGeometry(df.textMenuWidth, df.textMenuHeight);
+        let texture = df.drawer.createTextTexture(text);
+        texture.minFilter = THREE.LinearFilter;
+        let material = new THREE.MeshBasicMaterial({
+            // color: 0xffffff, // 白色
+            map: texture
+        });
+        let mesh = new THREE.Mesh(geometry, material);
+        mesh.name = text;
+        mesh.position.set(0, -1, -4);
+        if (df.GROUP['menu'] !== undefined) {
+            df.GROUP['menu'].add(mesh);
+        }
+        return mesh
+    },
+    createSprite: function () {
+        const spriteMaterial = new THREE.SpriteMaterial({color: 0xffffff});
+        const sprite = new THREE.Sprite(spriteMaterial);
+        let offset = new THREE.Vector3(-camera.position.x, -camera.position.y + 0.5, -2);
+        sprite.position.copy(offset);
+        sprite.visible = false;
+        if (df.GROUP["score"] !== undefined) {
+            df.GROUP["score"].add(sprite);
+        }
+        return sprite
+    },
+    // 更新文本内容的函数
+    updateText: function (text, mesh) {
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+        context.font = 'Bold 40px Arial';
+        context.fillStyle = 'white';
+        context.fillText(text, 0, 40);
 
-    // createTextButton: function () {
-    //     let geometry = new THREE
-    // }
+        const texture = new THREE.CanvasTexture(canvas);
+        mesh.material.map = texture;
+        texture.needsUpdate = true;
+        if (!mesh.visible) {
+            mesh.visible = true;
+        }
+    },
+
 }
 

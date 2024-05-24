@@ -18,7 +18,8 @@ function objectTransform(object, controller, tempMatrix) {
 }
 
 function objectDeTrans(controller) {
-    controller.children.forEach(function (child) {
+    for (let i = controller.children.length - 1; i >= 0; i--) {
+        let child = controller.children[i];
         switch (child.type) {
             case df.GroupType:
                 child.matrix.premultiply(controller.matrixWorld);
@@ -27,7 +28,7 @@ function objectDeTrans(controller) {
                 scene.add(child);
                 break;
         }
-    });
+    }
 }
 
 function onTriggerDown(event, raster, tempMatrix) {
@@ -109,6 +110,12 @@ function getIntersections(controller, raster, tempMatrix, onMenuButton = false) 
         return [inters, tempMatrix];
     }
     if (df.showMenu) {
+        let selected = raster.intersectObjects(df.GROUP['menu'].children, true);
+        if (selected) {
+            let selectedObject = selected[0].object;
+            let name = selectedObject.name;
+            return [name, selectedObject];
+        }
     } else {
         let selected = rayCasterIntersect(raster);
         if (selected.length <= 0) return [inters, tempMatrix];
@@ -155,6 +162,27 @@ function getIntersections(controller, raster, tempMatrix, onMenuButton = false) 
         }
         return [inters, tempMatrix];
     }
+}
+
+function dealWithMenu(firstName, SecondName) {
+    switch (firstName) {
+        case 'Load PDB':
+            df.loader.load(SecondName, 'name', function () {
+                df.controller.drawGeometry(df.config.mainMode, SecondName);
+                df.tool.initPDBView(SecondName);
+                df.showMenu = false;
+                df.GROUP['menu'].visible = df.showMenu;
+            });
+            break;
+        case 'Sequence':
+            // get SecondName pdb text
+            let pdb_text = df.pdbText[SecondName];
+            // api
+            let tools = df.SELECTED_DESIGN;
+            df.tool.designAPI(df.DESIGN_TOOLS[tools], SecondName, pdb_text);
+            break;
+    }
+
 }
 
 

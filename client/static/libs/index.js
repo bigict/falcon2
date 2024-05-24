@@ -24,8 +24,13 @@ df.controller.init();
 
 // 初始化menu菜单
 let menuOpen = false;
-df.drawer.createMenu();
+// df.drawer.createMenu();
 df.drawer.createMenuButton();
+for (let i in df.menuList) {
+    let mesh = df.drawer.createTextButton(df.menuList[i]);
+    let height = -i * (df.textMenuHeight + 0.05);
+    mesh.position.y = -1 + height;
+}
 df.GROUP['menu'].visible = df.showMenu;
 
 df.loader.load('1cbs', 'name', function () {

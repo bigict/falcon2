@@ -4,7 +4,7 @@
 import * as THREE from '../js/three.module.js';
 import {w3m} from "./web3D/w3m.js";
 import {df} from './core.js';
-import {renderer} from "./render.js";
+import {camera, canon, renderer} from "./render.js";
 
 df.tool = {
     // color
@@ -206,7 +206,41 @@ df.tool = {
                 renderer.xr.getSession().requestAnimationFrame(animate);
             }
         }
+
         // 启动动画循环
         renderer.xr.getSession().requestAnimationFrame(animate);
+    },
+    initPDBView: function (pdbId) {
+        let combineBox = new THREE.Box3();
+        let scaleAmount = 0.01; // 缩小的倍数
+        for (let key in df.GROUP[pdbId]['main']) {
+            let group = df.GROUP[pdbId]['main'][key];
+            group.scale.set(scaleAmount, scaleAmount, scaleAmount);
+            combineBox.expandByObject(group);
+        }
+        df.tool.vrCameraCenter(canon, combineBox, true);
+    },
+    designAPI: function (path, pdbId, pdb_data) {
+        fetch(path, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                "pdbId": pdbId,
+                "pdbData": pdb_data
+            })
+        })
+            .then(response => response.json())
+            .then(data => {
+                let designData = data["result"];
+                let blob = new Blob([designData], {type: 'text/plain;charset=UTF-8'});
+                let url = URL.createObjectURL(blob);
+                let link = document.createElement('a');
+                link.href = url;
+                link.download = pdbId + '.fasta'; // 下载的文件名，可以根据需要进行修改
+                link.click();
+            })
+            .catch(error => console.log("Design Error:", error));
     },
 }

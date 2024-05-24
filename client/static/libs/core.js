@@ -18,8 +18,9 @@ df = {
 
     // 重新加载时需要初始化的参数
     pdbId: [],
-    SelectedPDBId: '',
-    pdbInfoList: ['main', 'het', 'water', 'surface'],
+    pdbText: {},
+    SelectedPDBId: undefined,
+    pdbInfoList: ['main', 'het', 'water', 'surface', 'dot'],
     pdbContent: {},
 
     // gamepad
@@ -30,12 +31,20 @@ df = {
     select_chain: 102,
     select_residue: 103,
 
+
     // menu
     showMenu: false,
+    menuList: ["Load PDB", "Protein", "Sequence", "PDB"],
+    // menu text config
+    textMenuWidth: 2,
+    textContentWidth: 512,
+    textContentHeight: 128,
+    textMenuHeight: 0.5,
+    textMenuBgColor: '#ffffff',
 
     // all pdb info group, 这里包含 pdb 用于展示的全部属性
     GROUP: {},
-    GROUP_INDEX: ['menu',],
+    GROUP_INDEX: ['menu', 'score'],
     GROUP_HET_INDEX: {},
     GROUP_MAIN_INDEX: {},
     GROUP_STRUCTURE_INDEX: {},
@@ -86,6 +95,10 @@ df = {
 
     // type
     GroupType: "Group",
+
+    // design
+    DESIGN_TOOLS: {'ProDESIGN': window.location.href},
+    SELECTED_DESIGN: 'ProDESIGN',
 
     // docking
     dockingDict: {'HDock': window.location.href+'hdock'},
