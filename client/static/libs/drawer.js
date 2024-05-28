@@ -222,17 +222,18 @@ df.drawer = {
         texture.needsUpdate = true;
         return texture;
     },
-    createTextButton: function (text) {
+    createTextButton: function (text, position, label) {
         let geometry = new THREE.PlaneGeometry(df.textMenuWidth, df.textMenuHeight);
         let texture = df.drawer.createTextTexture(text);
         texture.minFilter = THREE.LinearFilter;
         let material = new THREE.MeshBasicMaterial({
-            // color: 0xffffff, // 白色
             map: texture
         });
         let mesh = new THREE.Mesh(geometry, material);
         mesh.name = text;
-        mesh.position.set(0, -1, -4);
+        mesh.title = label;
+        // mesh.position.set(0, -1, -4);
+        mesh.position.copy(position);
         if (df.GROUP['menu'] !== undefined) {
             df.GROUP['menu'].add(mesh);
         }

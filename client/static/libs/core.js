@@ -33,8 +33,32 @@ df = {
 
 
     // menu
+
     showMenu: false,
+    // menu label
+    MAIN_MENU: 0,
+    SUB_MENU: 1,
+    TRD_MENU: 2,
+    // menu content {name: (list)}
+    menu_content: {
+        "Load PDB": [],
+        "Structure": [],
+        "Surface": [],
+        "Color": [],
+        "Beautify": [],
+        "Drag": [],
+        "Edit": [],
+        "Design": [],
+        "Docking": [],
+        "Align": [],
+        "Hydrogen Bond": [],
+        "Energy": [],
+        "Export": [],
+        "Exit": []
+    },
+
     menuList: ["Load PDB", "Protein", "Sequence", "PDB"],
+    SequenceMenuList: ["tools"],
     // menu text config
     textMenuWidth: 2,
     textContentWidth: 512,

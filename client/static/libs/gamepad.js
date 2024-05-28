@@ -42,16 +42,22 @@ function onTriggerDown(event, raster, tempMatrix) {
         df.GROUP['menu'].visible = df.showMenu;
         return;
     }
-    let interList = getIntersections(controller, raster, tempMatrix);
-    let intersections = interList[0];
-    let controllerTempMatrix = interList[1];
-    if (intersections && intersections.length <= 0) {
-        return;
-    }
-    controllerTempMatrix.copy(controller.matrixWorld).invert();
-    // 说明：intersections = [group, group, group...]
-    for (let per in intersections) {
-        objectTransform(intersections[per], controller, controllerTempMatrix);
+    // 操作 Menu 模块
+    if (df.showMenu) {
+        dealWithMenu(object);
+    } else {
+        // 拖拽蛋白功能
+        let interList = getIntersections(controller, raster, tempMatrix);
+        let intersections = interList[0];
+        let controllerTempMatrix = interList[1];
+        if (intersections && intersections.length <= 0) {
+            return;
+        }
+        controllerTempMatrix.copy(controller.matrixWorld).invert();
+        // 说明：intersections = [group, group, group...]
+        for (let per in intersections) {
+            objectTransform(intersections[per], controller, controllerTempMatrix);
+        }
     }
 }
 
@@ -164,24 +170,46 @@ function getIntersections(controller, raster, tempMatrix, onMenuButton = false) 
     }
 }
 
-function dealWithMenu(firstName, SecondName) {
-    switch (firstName) {
-        case 'Load PDB':
-            df.loader.load(SecondName, 'name', function () {
-                df.controller.drawGeometry(df.config.mainMode, SecondName);
-                df.tool.initPDBView(SecondName);
-                df.showMenu = false;
-                df.GROUP['menu'].visible = df.showMenu;
-            });
-            break;
-        case 'Sequence':
-            // get SecondName pdb text
-            let pdb_text = df.pdbText[SecondName];
-            // api
-            let tools = df.SELECTED_DESIGN;
-            df.tool.designAPI(df.DESIGN_TOOLS[tools], SecondName, pdb_text);
-            break;
+// function f() {
+//
+// }
+
+function dealWithMenu(object) {
+    // if click main-menu
+    if (object.title && object.title === df.MAIN_MENU) {
+        // get content
+        let name = object.name;
+        // show sub-menu
+        // 1. sub-menu trd-menu visible false
+        // 2. show sub-menu
+
+
+
+
     }
+
+
+
+
+    // switch (firstName) {
+    //     case 'Load PDB':
+    //         df.loader.load(SecondName, 'name', function () {
+    //             df.controller.drawGeometry(df.config.mainMode, SecondName);
+    //             df.tool.initPDBView(SecondName);
+    //             df.showMenu = false;
+    //             df.GROUP['menu'].visible = df.showMenu;
+    //         });
+    //         break;
+    //     case 'Sequence':
+    //         if (!SecondName) {
+    //         }
+    //         // get SecondName pdb text
+    //         let pdb_text = df.pdbText[SecondName];
+    //         // api
+    //         let tools = df.SELECTED_DESIGN;
+    //         df.tool.designAPI(df.DESIGN_TOOLS[tools], SecondName, pdb_text);
+    //         break;
+    // }
 
 }
 

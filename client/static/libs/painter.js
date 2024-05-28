@@ -1,6 +1,7 @@
 import {df} from './core.js';
 import {w3m} from "./web3D/w3m.js";
 import * as THREE from '../js/three.module.js';
+import {Group} from "../js/three.module.js";
 
 df.painter = {
     showHet: function (type, pdbId) {
@@ -519,5 +520,22 @@ df.painter = {
                 }
             }
         }
+    },
+    constructMenu: function () {
+        // 1.构建 main-menu
+        let mainGroup = new Group();
+        let subGroup = new Group();
+        let trdGroup = new Group();
+        for (let i in df.menu_content) {
+            let pos = new THREE.Vector3(0, -1, -4);
+            let height = -i * (df.textMenuHeight + 0.05);
+            // pos.y = -1 + height;
+            // let label = df.MAIN_MENU;
+            let mesh = df.drawer.createTextButton(df.menuList[i], pos, label);
+
+        }
+
+
+        df.GROUP["menu"].add(mainGroup);
     }
 }
