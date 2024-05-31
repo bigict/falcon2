@@ -522,20 +522,46 @@ df.painter = {
         }
     },
     constructMenu: function () {
-        // 1.构建 main-menu
+        // 1.构建 menu
         let mainGroup = new Group();
         let subGroup = new Group();
-        let trdGroup = new Group();
+        // let trdGroup = new Group();
+        //
+        let number = 0;
         for (let i in df.menu_content) {
             let pos = new THREE.Vector3(0, -1, -4);
-            let height = -i * (df.textMenuHeight + 0.05);
-            // pos.y = -1 + height;
-            // let label = df.MAIN_MENU;
-            let mesh = df.drawer.createTextButton(df.menuList[i], pos, label);
-
+            let height = -number * (df.textMenuHeight + 0.05);
+            pos.y = -1 + height;
+            number += 1;
+            let label = df.MAIN_MENU;
+            let mesh = df.drawer.createTextButton(i, pos, label);
+            mainGroup.add(mesh);
+            let subList = df.menu_content[i];
+            if (subList.length > 0) {
+                df.painter.createSubMenu(1, subList, df.SUB_MENU, subGroup);
+            }
         }
-
-
         df.GROUP["menu"].add(mainGroup);
-    }
+        df.GROUP["menu"].add(subGroup);
+    },
+    createSubMenu: function (x,
+                             subList,
+                             subLabel,
+                             subGroup) {
+        let number = 0;
+        // 判断 subList 类型
+        for (let j in subList) {
+            let subPos = new THREE.Vector3(x, -1, -4);
+            if (Array.isArray(subList)) {
+                let subHeight = -j * (df.textMenuHeight + 0.05);
+                subPos.y = -1 + subHeight;
+            } else {
+                let subHeight = -number * (df.textMenuHeight + 0.05);
+                subPos.y = -1 + subHeight;
+                number += 1;
+            }
+            let subMesh = df.drawer.createTextButton(subList[j], subPos, subLabel);
+            subGroup.add(subMesh);
+        }
+    },
 }

@@ -26,14 +26,15 @@ df.controller.init();
 let menuOpen = false;
 // df.drawer.createMenu();
 df.drawer.createMenuButton();
+df.painter.constructMenu();
 
-for (let i in df.menuList) {
-    let pos = new THREE.Vector3(0, -1, -4);
-    let height = -i * (df.textMenuHeight + 0.05);
-    pos.y = -1 + height;
-    let label = df.MAIN_MENU;
-    let mesh = df.drawer.createTextButton(df.menuList[i], pos, label);
-}
+// for (let i in df.menuList) {
+//     let pos = new THREE.Vector3(0, -1, -4);
+//     let height = -i * (df.textMenuHeight + 0.05);
+//     pos.y = -1 + height;
+//     let label = df.MAIN_MENU;
+//     let mesh = df.drawer.createTextButton(df.menuList[i], pos, label);
+// }
 df.GROUP['menu'].visible = df.showMenu;
 
 df.loader.load('1cbs', 'name', function () {
