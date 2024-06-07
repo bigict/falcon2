@@ -169,7 +169,6 @@ df.painter = {
         }
         return [startAtom, endAtom];
     },
-
     showAllResidues: function (type, pdbId) {
         if (type === df.config.surface) {
             df.painter.showSurface(pdbId, 1, w3m.mol[pdbId].atom.main.length, true);

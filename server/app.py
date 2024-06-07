@@ -62,4 +62,3 @@ async def h_dock(response: HDock):
 
     return JSONResponse(content=context)
 
-
