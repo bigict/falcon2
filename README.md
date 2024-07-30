@@ -42,6 +42,7 @@ pip install -r requirements.txt
 
 ## Quickstart
 ```
+cd server
 uvicorn app:app --host ip_address --port port
 ```
 
