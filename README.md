@@ -1,7 +1,7 @@
 # Falcon-VR
 ## Introduction
 
----
+
 Falcon-VR 是一个基于 Three.js 开发的先进蛋白质设计工具，旨在为研究人员和生物学家提供沉浸式的虚拟现实体验。通过利用最新的 WebVR 技术，Falcon-VR 提供了一个功能强大的平台，使用户能够在无限的虚拟环境中直观地设计和可视化蛋白质结构。
 
 ### 主要功能
@@ -16,16 +16,16 @@ Falcon-VR 因其致力于提供一个易于访问、用户友好的平台，将 
 
 ## News
 
----
+
 
 ## Documentation
 
 
----
+
 ## Video Tutorials
 
 
----
+
 ## Requirements
 ```
 git clone https://github.com/bigict/falcon2.git
@@ -41,7 +41,7 @@ pip install -r requirements.txt
 uvicorn app:app --host ip_address --port port
 ```
 
----
+
 ## Citation
 ```
 @article{10.1093/bioinformatics/btaa696,
