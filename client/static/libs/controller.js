@@ -3,15 +3,12 @@ import {df} from './core.js';
 
 df.controller = {
     init: function () {
+        df.w3m = w3m;
         this.createMenu();
         if (df.mode === df.MODE_VR) {
-            df.render.initVR();
+            df.dfRender.initVR();
         }
     },
-    // createMenu: function () {
-    //
-    //
-    // },
     createMenu: function () {
         // =============================== Mode for structure =======================
         // 上传文件
@@ -100,6 +97,7 @@ df.controller = {
             console.log("responseData", responseData)
         });
     },
+
     popSelectOption: function (selectId, options) {
         selectId.innerHTML = '';
         options.forEach(option => {
@@ -119,14 +117,5 @@ df.controller = {
             }
             df.tool.showSegmentHolder(false, 0);
         });
-    },
-    refreshGeometryByMode: function (type) {
-        if (type < df.HET) {
-            df.render.clean(0);
-            df.controller.drawGeometry(type);
-        } else {
-            df.render.clean(1);
-            df.controller.drawGeometry(type);
-        }
     },
 }

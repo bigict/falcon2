@@ -1,7 +1,7 @@
 import {df} from './core.js';
 import {w3m} from "./web3D/w3m.js";
 import * as THREE from '../js/three.module.js';
-import {scene} from "./render.js";
+import {Group} from "../js/three.module.js";
 
 df.painter = {
     showHet: function (type, pdbId) {
@@ -169,12 +169,12 @@ df.painter = {
         }
         return [startAtom, endAtom];
     },
-
     showAllResidues: function (type, pdbId) {
         if (type === df.config.surface) {
-            df.painter.showSurface(pdbId, 1, w3m.mol[pdbId].atom.main.length, true);
+            df.painter.showSurface(pdbId, 'a',1, w3m.mol[pdbId].atom.main.length, true);
         } else {
             let residueData = w3m.mol[pdbId].residueData;
+
             for (let chain in residueData) {
                 for (let resId in residueData[chain]) {
                     df.painter.showResidue(pdbId, chain, resId, type);
@@ -190,45 +190,7 @@ df.painter = {
             case df.CARTOON_SSE:
                 df.painter.showCartoonSSEByResidue(pdbId, chainId, resId);
                 break;
-            case df.DOT:
-                df.painter.showDotByResidue(pdbId, chainId, resId);
-                break;
         }
-    },
-    // show dot
-    showDotByResidue: function (pdbId, chainId, resId) {
-        let w = df.config.stick_sphere_w;
-        let residue = w3m.mol[pdbId].residueData[chainId][resId];
-        let radius = 0.01;
-        let color = new THREE.Color('#CCC');
-        let lines = residue.lines;
-        let history = {};
-        for (let i = 0; i < lines.length; i++) {
-            let ids = lines[i];
-            let startAtom = df.tool.getMainAtom(pdbId, ids[0]);
-            let endAtom = df.tool.getMainAtom(pdbId, ids[1]);
-            if (!startAtom.caid) {
-                startAtom.caid = residue.caid;
-                endAtom.caid = residue.caid;
-            }
-            if (history[startAtom.id] === undefined) {
-                this.drawDotByResidue(pdbId, 'dot', startAtom);
-                history[startAtom.id] = 1;
-            }
-            if (history[endAtom.id] === undefined) {
-                this.drawDotByResidue(pdbId, 'dot', endAtom);
-                history[endAtom.id] = 1;
-            }
-        }
-    },
-    drawDotByResidue: function (pdbId, type, atom) {
-        df.drawer.drawDot(
-            pdbId,
-            type,
-            atom.chainName,
-            atom.posCentered,
-            atom);
-        df.GROUP[pdbId][type][atom.chainName].children[df.GROUP[pdbId][type][atom.chainName].children.length - 1].visible = false;
     },
     // show Ball & Rod
     drawSphereByResidue: function (pdbId, type, atom, radius, x, w) {
@@ -240,8 +202,7 @@ df.painter = {
             atom.color,
             x * atom.radius,
             atom,
-            w,
-            true);
+            w);
         df.GROUP[pdbId][type][atom.chainName].children[df.GROUP[pdbId][type][atom.chainName].children.length - 1].visible = true;
     },
     showBallRodByResidue: function (pdbId, chainId, resId) {
@@ -442,35 +403,32 @@ df.painter = {
         }
     },
     showSurface: function (pdbId,
+                           chain = false,
                            startId = 1,
-                           endId,
+                           endId = false,
                            isSelected = true,
-                           chain = []) {
+                           ) {
         let mainAtom = w3m.mol[pdbId].atom.main;
         let atoms = {};
         let limit = w3m.global.limit;
-        let num = Math.random();
 
         for (let i in mainAtom) {
-            if (chain && !chain.includes(mainAtom[i][4].toLowerCase())) {
+            if (chain && mainAtom[i][4] !== chain) {
                 continue;
             }
-
+            let index = parseInt(i);
+            if (index < startId) continue;
+            if (endId) {
+                if (index > endId) break;
+            }
             let atom = df.tool.getMainAtom(pdbId, i);
-            let index = parseInt(atom.resid);
-            // if (index < startId) continue;
-            // if (index > endId) break;
-
             let xyz = atom.posCentered;
             let color;
             if (isSelected) {
                 color = atom.color;
             } else {
-                color = new THREE.Color(0xffffff);
+                color = new THREE.Color(0xff00ff);
             }
-            // color = new THREE.Color(num * 0xffffff);
-            color = atom.color;
-
             atoms[atom.id] = {
                 coord: xyz,
                 name: atom.name,
@@ -521,22 +479,14 @@ df.painter = {
             opacity: df.SURFACE_OPACITY,
             transparent: true,
             specular: 0x888888,
-            // specular: 0x000000,
-            // shininess: 250
-            shininess: 10
+            shininess: 250
         });
 
         let mesh = new THREE.Mesh(geometry, material);
-        mesh.name = 'surface';
-        mesh.userData = {
-            presentAtom: {
-                pdbId: pdbId,
-                typeName: 'main',
-                chainName: chain[0],
-            }
-        }
-        df.GROUP[pdbId]['main'][chain[0]].add(mesh);
-        df.GROUP[pdbId]['main'][chain[0]].visible = true;
+        df.tool.alignMeshes(df.GROUP[pdbId]['main'][chain], mesh);
+        df.GROUP[pdbId]['main'][chain].surface.add(mesh);
+        df.GROUP[pdbId]['main'][chain].surface.visible = true;
+        df.SURFACE_STORE[pdbId + '_' + chain] = mesh;
     },
     showMenu: function () {
         let first_number = 0
@@ -547,31 +497,102 @@ df.painter = {
             for (let firstKey in menu_dict) {
                 // 1st Menu
                 let mesh_1 = df.drawer.createTextButton(firstKey);
-                let height = -first_number * (df.textMenuHeight + 0.05);
+                let height = -first_number * (df.textMenuHeight + df.letterSpacing);
                 mesh_1.position.y = -1 + height;
                 first_number += 1;
-                // if (menu_dict[firstKey] && menu_dict[firstKey].length > 0) {
-                //     let second_number = 0;
-                //     row = 1
-                //     for (let j in height) {
-                //     }
-                //     for (let secondKey in menu_dict[firstKey]) {
-                //         let menu_dict_2 = menu_dict[firstKey][secondKey];
-                //         let mesh_2 = df.drawer.createTextButton(secondKey);
-                //         let height_2 = -second_number * (df.textMenuHeight + 0.05);
-                //         let width = df.textMenuWidth * 2
-                //         second_number += 1;
-                //         mesh_2.position.y = -1 + height_2;
-                //         mesh_2.position.x = width;
-                //         if (menu_dict[secondKey] && menu_dict[secondKey].length > 0) {
-                //             row = 2
-                //             for (let thirdKey in menu_dict[secondKey]) {
-                //                 let mesh_3 = df.drawer.createTextButton(thirdKey);
-                //             }
-                //         }
-                //     }
-                // }
+                if (menu_dict[firstKey] && menu_dict[firstKey].length > 0) {
+                    let second_number = 0;
+                    row = 1
+                    for (let j in height) {
+
+                    }
+                    for (let secondKey in menu_dict[firstKey]) {
+                        let menu_dict_2 = menu_dict[firstKey][secondKey];
+                        let mesh_2 = df.drawer.createTextButton(secondKey);
+                        let height_2 = -second_number * (df.textMenuHeight + df.letterSpacing);
+                        let width = df.textMenuWidth * 2
+                        second_number += 1;
+                        mesh_2.position.y = -1 + height_2;
+                        mesh_2.position.x = width;
+                        if (menu_dict[secondKey] && menu_dict[secondKey].length > 0) {
+                            row = 2
+                            for (let thirdKey in menu_dict[secondKey]) {
+                                let mesh_3 = df.drawer.createTextButton(thirdKey);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    constructMenu: function () {
+        // 1.构建 menu
+        let mainGroup = new Group();
+        let subGroup = new Group();
+        // let trdGroup = new Group();
+        //
+        let number = 0;
+        for (let i in df.menu_content) {
+            let pos = new THREE.Vector3(0, -1, -4);
+            let height = -number * (df.textMenuHeight + df.letterSpacing);
+            pos.y = -1 + height;
+            number += 1;
+            let label = df.MAIN_MENU;
+            let mesh = df.drawer.createTextButton(i, pos, label);
+            mainGroup.add(mesh);
+            let subList = df.menu_content[i];
+            if (subList.length > 0) {
+                df.painter.createSubMenu(1, subList, df.SUB_MENU, subGroup);
+            }
+        }
+        df.GROUP["menu"].add(mainGroup);
+        df.GROUP["menu"].add(subGroup);
+    },
+    createSubMenu: function (x,
+                             subList,
+                             subLabel,
+                             subGroup) {
+        let number = 0;
+        // 判断 subList 类型
+        for (let j in subList) {
+            let subPos = new THREE.Vector3(x, -1, -4);
+            if (Array.isArray(subList)) {
+                let subHeight = -j * (df.textMenuHeight + df.letterSpacing);
+                subPos.y = -1 + subHeight;
+            } else {
+                let subHeight = -number * (df.textMenuHeight + df.letterSpacing);
+                subPos.y = -1 + subHeight;
+                number += 1;
+            }
+            let subMesh = df.drawer.createTextButton(subList[j], subPos, subLabel);
+            subGroup.add(subMesh);
+        }
+    },
+    refreshGeometryByMode: function (type) {
+        if (type < df.HET) {
+            df.dfRender.clear(0);
+            df.controller.drawGeometry(type, df.SelectedPDBId);
+        } else {
+            df.dfRender.clear(1);
+            df.controller.drawGeometry(type, df.SelectedPDBId);
+        }
+    },
+    refreshSurface: function (opacity) {
+        df.SURFACE_OPACITY = opacity;
+        if (df.SURFACE_STORE.length > 0) {
+            for (let index in df.SURFACE_STORE) {
+                if (df.SURFACE_STORE[index] instanceof THREE.Mesh) {
+                    let mesh = df.SURFACE_STORE[index];
+                    if (mesh.material !== undefined) {
+                        mesh.material.opacity = opacity;
+                    }
+                }
+            }
+        } else {
+            for (const opacityKey in df.GROUP[df.SelectedPDBId]['main']) {
+                df.painter.showSurface(df.SelectedPDBId, opacityKey, 1 );
             }
         }
     }
+
 }

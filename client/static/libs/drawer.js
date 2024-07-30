@@ -5,25 +5,44 @@ import {camera, scene} from "./render.js";
 
 
 df.drawer = {
-    drawDot: function (pdbId, type, chain, point, atom) {
-        // 创建点的几何体
-        let geometry = new THREE.BufferGeometry();
-        const vertices = new Float32Array([
-            0.0, 0.0, 0.0,  // 点的坐标
-        ]);
-        geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
+    // drawSphere: function (pdbId, type, chain, point, color, radius, atom, w) {
+    //     let alpha = 0.5;
+    //     let beta = 0.5;
+    //     let bumpScale = 1;
+    //     let specularShininess = Math.pow(2, alpha * 10);
+    //     let specularColor = new THREE.Color(beta * 0.2, beta * 0.2, beta * 0.2);
+    //
+    //     // 创建不同细节级别的几何体
+    //     let highDetailGeometry = new THREE.SphereGeometry(radius, w, w);
+    //     let mediumDetailGeometry = new THREE.SphereGeometry(radius, w / 2, w / 2);
+    //     let lowDetailGeometry = new THREE.SphereGeometry(radius, w / 4, w / 4);
+    //
+    //     let material = new THREE.MeshPhongMaterial({
+    //         bumpScale: bumpScale,
+    //         color: color,
+    //         specular: specularColor,
+    //         reflectivity: beta,
+    //         shininess: specularShininess
+    //     });
+    //
+    //     // 创建 LOD 对象
+    //     let lod = new THREE.LOD();
+    //
+    //     // 添加不同细节级别的网格到 LOD 对象
+    //     lod.addLevel(new THREE.Mesh(highDetailGeometry, material), 0); // 最高细节，距离为0
+    //     lod.addLevel(new THREE.Mesh(mediumDetailGeometry, material), 5); // 中等细节，距离为50
+    //     lod.addLevel(new THREE.Mesh(lowDetailGeometry, material), 10); // 最低细节，距离为100
+    //
+    //     lod.position.copy(point);
+    //     lod.name = df.tool.atomCaId(atom);
+    //     lod.userData = {
+    //         presentAtom: atom
+    //     };
+    //
+    //     // 添加 LOD 对象到场景
+    //     df.GROUP[pdbId][type][chain].add(lod);
+    // },
 
-        // 创建点的材料
-        let material = new THREE.PointsMaterial({color: 0xff0000, size: 0.01});
-        // 创建点对象
-        let mesh = new THREE.Points(geometry, material);
-        mesh.position.copy(point);
-        mesh.name = atom.name;
-        mesh.userData = {
-            presentAtom: atom
-        };
-        df.GROUP[pdbId][type][chain].add(mesh);
-    },
     drawSphere: function (pdbId, type, chain, point, color, radius, atom, w) {
         let alpha = 0.5;
         // 物体表面的反射率，控制镜面反射的强度，值范围一般在0到1之间
@@ -42,9 +61,10 @@ df.drawer = {
             reflectivity: beta,
             shininess: specularShininess
         });
+
         let mesh = new THREE.Mesh(geometry, material);
-        mesh.position.copy(point);
         mesh.name = df.tool.atomCaId(atom);
+        mesh.position.copy(point);
         mesh.userData = {
             presentAtom: atom
         };
@@ -93,6 +113,7 @@ df.drawer = {
         df.GROUP[pdbId][type][chain].add(mesh);
     },
     drawEllipse: function (path, radius, color, object, pdbId, type, chain, resId, step) {
+
         let Catmull = new THREE.CatmullRomCurve3(path);
         // Catmull.closed = true
         let extrudeSettings = {
@@ -112,6 +133,7 @@ df.drawer = {
         let shape = new THREE.Shape();
         shape.curves.push(curve);
         let geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
+
         let material = new THREE.MeshLambertMaterial({
             color: color,
             wireframe: false
@@ -127,9 +149,11 @@ df.drawer = {
         df.GROUP[pdbId][type][chain].add(mesh);
     },
     drawArrowByPaths: function (pdbId, type, chain, paths, color, atomId) {
+
         let geometry = new THREE.BufferGeometry();
         let vertices = [];
         let indices = [];
+
         // 将路径点添加到顶点数组
         paths.forEach(function (path) {
             vertices.push(path.x, path.y, path.z);
@@ -185,19 +209,19 @@ df.drawer = {
         };
         df.GROUP[pdbId][type][chain].add(mesh);
     },
-    // createMenu: function () {
-    //     let geometry = new THREE.PlaneGeometry(6.4, 3.2);
-    //     let material = new THREE.MeshBasicMaterial({
-    //         color: 0xffffff, // 白色
-    //         transparent: true, // 设置材质为半透明
-    //         opacity: 0.8 // 设置透明度
-    //     });
-    //     let mesh = new THREE.Mesh(geometry, material);
-    //     mesh.position.set(0, -1, -4);
-    //     if (df.GROUP['menu'] !== undefined) {
-    //         df.GROUP['menu'].add(mesh);
-    //     }
-    // },
+    createMenu: function () {
+        let geometry = new THREE.PlaneGeometry(6.4, 3.2);
+        let material = new THREE.MeshBasicMaterial({
+            color: 0xffffff, // 白色
+            transparent: true, // 设置材质为半透明
+            opacity: 0.8 // 设置透明度
+        });
+        let mesh = new THREE.Mesh(geometry, material);
+        mesh.position.set(0, -1, -4);
+        if (df.GROUP['menu'] !== undefined) {
+            df.GROUP['menu'].add(mesh);
+        }
+    },
     createMenuButton: function () {
         let textureLoader = new THREE.TextureLoader();
         let texture = textureLoader.load('/static/imgs/cate.png'); // 替换为你的图像文件路径
@@ -227,29 +251,36 @@ df.drawer = {
         context.fillStyle = df.textMenuBgColor;
         context.fillRect(0, 0, canvas.width, canvas.height);
         // text
-        context.font = 'Bold 100px "SAO"';
+        context.font = 'Bold 250px "SAO"';
         context.textAlign = 'center';
         context.textBaseline = 'middle';
         context.fillStyle = 'black'; // 文本颜色
         context.fillText(text, canvas.width / 2, canvas.height / 2);
         const texture = new THREE.Texture(canvas);
         texture.needsUpdate = true;
+        // 设置纹理过滤器
+        texture.minFilter = THREE.LinearMipMapLinearFilter;
+        // texture.magFilter = THREE.LinearFilter;
         return texture;
     },
-    createTextButton: function (text) {
+    createTextButton: function (text, position, label) {
         let geometry = new THREE.PlaneGeometry(df.textMenuWidth, df.textMenuHeight);
         let texture = df.drawer.createTextTexture(text);
-        texture.minFilter = THREE.LinearFilter;
+        // texture.minFilter = THREE.LinearFilter;
         let material = new THREE.MeshBasicMaterial({
-            map: texture
+            map: texture,
+            // transparent: true, // 使材质透明
+            // opacity: 0.9 // 调整不透明度
         });
         let mesh = new THREE.Mesh(geometry, material);
         mesh.name = text;
-        mesh.position.set(0, -1, -4);
+        mesh.title = label;
+        // mesh.position.set(0, -1, -4);
+        mesh.position.copy(position);
         if (df.GROUP['menu'] !== undefined) {
             df.GROUP['menu'].add(mesh);
         }
-        return mesh;
+        return mesh
     },
     createSprite: function () {
         const spriteMaterial = new THREE.SpriteMaterial({color: 0xffffff});
@@ -277,5 +308,6 @@ df.drawer = {
             mesh.visible = true;
         }
     },
+
 }
 

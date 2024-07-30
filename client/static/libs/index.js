@@ -2,6 +2,7 @@ import * as THREE from '../js/three.module.js';
 import {df} from './core.js';
 import {w3m} from "./web3D/w3m.js";
 import {camera, canon, scene} from "./render.js";
+import {createMenuButton} from "./menu.js";
 
 // hide submenu
 function switchMenu(obj) {
@@ -25,23 +26,21 @@ df.controller.init();
 
 // 初始化menu菜单
 let menuOpen = false;
-// df.painter.showMenu();
-
 df.drawer.createMenuButton();
-for (let i in df.menuList) {
-    let mesh = df.drawer.createTextButton(df.menuList[i]);
-    let height = -i * (df.textMenuHeight + 0.05);
-    mesh.position.y = -1 + height;
-}
-df.SCORE = df.drawer.createSprite();
+
+// for (let i in df.menuList) {
+//     let pos = new THREE.Vector3(0, -1, -4);
+//     let height = -i * (df.textMenuHeight + df.letterSpacing);
+//     pos.y = -1 + height;
+//     let label = df.MAIN_MENU;
+//     let mesh = df.drawer.createTextButton(df.menuList[i], pos, label);
+// }
 df.GROUP['menu'].visible = df.showMenu;
+createMenuButton();
 
+df.loader.load('1cbs', 'name', function () {
+    df.controller.drawGeometry(df.config.mainMode, '1cbs');
 
-df.loader.load('7fjc', 'name', function () {
-    df.controller.drawGeometry(df.config.mainMode, '7fjc');
-    // df.controller.drawGeometry(df.DOT, '7fjc');
-    // df.painter.showSurface('7fjc', 300, 600, true, ['e']);
-    // df.painter.showSurface('7fjc', 300, 600, true, ['h', 'l']);
 });
-df.SelectedPDBId = '7fjc';
+df.SelectedPDBId = '1cbs';
 

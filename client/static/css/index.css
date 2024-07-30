@@ -1,7 +1,3 @@
-@font-face {
-    font-family: 'SAO';
-    src: url('../font/SAOUITT-Bold.ttf') format('truetype');
-}
 #DockingTab {
     position: absolute;
     top: 24%;
@@ -31,7 +27,7 @@ select, button {
     color: #00aaff;
     padding: 2px;
     cursor: pointer;
-    font-family: 'SAO', 'Microsoft YaHei', sans-serif;
+    font-family: 'Microsoft YaHei', sans-serif;
 }
 
 button:hover, select:hover {

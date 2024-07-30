@@ -14,35 +14,40 @@ var canon = new THREE.Object3D();
 var lightType = 0;
 // initVR -- controls
 var controls, leftController, leftControllerGrip, rightController, rightControllerGrip, leftHand, rightHand;
-var leftSqueezeStart = false;
-var rightSqueezeStart = false;
-var ScoreTemp = 0
 
-function ScalePDB() {
-    if (df.SelectedPDBId) {
-        if (leftSqueezeStart) {
-            for (let chain in df.GROUP[df.SelectedPDBId]['main']) {
-                let group = df.GROUP[df.SelectedPDBId]['main'][chain]
-                group.scale.multiplyScalar(1.01);
-            }
-        }
-        if (rightSqueezeStart) {
-            for (let chain in df.GROUP[df.SelectedPDBId]['main']) {
-                let group = df.GROUP[df.SelectedPDBId]['main'][chain]
-                group.scale.multiplyScalar(0.99);
-            }
-        }
-    }
-}
 
-df.render = {
+const createGrid = (size, divisions, position, rotation, grids, scene) => {
+    const gridHelper = new THREE.GridHelper(size, divisions);
+    gridHelper.position.copy(position);
+    gridHelper.rotation.set(rotation.x, rotation.y, rotation.z);
+    // gridHelper.visible = false;
+    scene.add(gridHelper);
+    grids.push(gridHelper);
+};
+
+
+df.dfRender = {
     vrScene: function () {
         let newScene = new THREE.Scene();
         // 背景: 深蓝色
-        newScene.background = new THREE.Color(0x17202A);
+        // newScene.background = new THREE.Color(0x17202A);
+        newScene.background = new THREE.Color(0xcccccc);
         // 创建一个半球光源 HemisphereLight(skyColor, groundColor)
-        let hemisphereLight = new THREE.HemisphereLight(0x74B9FF, 0x2C3E50);
+        const hemisphereLight = new THREE.HemisphereLight(0x74B9FF, 0x2C3E50);
         newScene.add(hemisphereLight);
+        // 创建网格背景
+        const size = 20;
+        const divisions = 20;
+        // const gridHelper = new THREE.GridHelper(size, divisions);
+        // newScene.add(gridHelper);
+        let grids = []
+        // 添加各个方向的网格
+        createGrid(size, divisions, new THREE.Vector3(0, 0, 0), new THREE.Euler(0, 0, 0), grids, newScene);
+        createGrid(size, divisions, new THREE.Vector3(0, size, 0), new THREE.Euler(0, 0, 0), grids, newScene);
+        createGrid(size, divisions, new THREE.Vector3(size / 2, size / 2, 0), new THREE.Euler(0, 0, Math.PI / 2), grids, newScene);
+        createGrid(size, divisions, new THREE.Vector3(-size / 2, size / 2, 0), new THREE.Euler(0, 0, -Math.PI / 2), grids, newScene);
+        createGrid(size, divisions, new THREE.Vector3(0, size / 2, size / 2), new THREE.Euler(-Math.PI / 2, 0, 0), grids, newScene);
+        createGrid(size, divisions, new THREE.Vector3(0, size / 2, -size / 2), new THREE.Euler(Math.PI / 2, 0, 0), grids, newScene);
         return newScene;
     },
     vrCamera: function () {
@@ -57,7 +62,8 @@ df.render = {
     },
     addLightsByType: function (lightType) {
         if (lightType === 0) {
-            let light = new THREE.DirectionalLight(0xF8D5A3, 1.2);
+            // let light = new THREE.DirectionalLight(0xF8D5A3, 1.2);
+            let light = new THREE.DirectionalLight(0xFFFFFF, 1.2);
             light.position.copy(camera.position);
             camera.add(light);
         }
@@ -68,16 +74,10 @@ df.render = {
             let gName = df.GROUP_INDEX[idx];
             df.GROUP[gName] = new THREE.Group();
             df.GROUP[gName].name = gName;
-            switch (gName) {
-                case "menu":
-                    camera.add(df.GROUP[gName]);
-                    break;
-                case "score":
-                    camera.add(df.GROUP[gName]);
-                    break;
-                default:
-                    scene.add(df.GROUP[gName]);
-                    break
+            if (gName === 'menu') {
+                camera.add(df.GROUP[gName]);
+            } else {
+                scene.add(df.GROUP[gName]);
             }
         }
     },
@@ -156,7 +156,13 @@ df.render = {
         // 监听 vr
         let isImmersive = false;
         renderer.xr.addEventListener('sessionstart', () => {
-            df.tool.initPDBView(df.SelectedPDBId);
+            df.scale = 0.01
+            // df.scale = 1
+            for (let i in df.GROUP[df.SelectedPDBId]['main']) {
+                let aaa = df.GROUP[df.SelectedPDBId]['main'][i];
+                aaa.scale.set(df.scale, df.scale, df.scale);
+                // df.tool.vrCameraCenter(camera, aaa.children[10]);
+            }
             isImmersive = true;
         });
         renderer.xr.addEventListener('sessionend', () => {
@@ -187,24 +193,9 @@ df.render = {
 
         leftController.addEventListener('selectstart', function (event) {
             let leftTempMatrix = new THREE.Matrix4();
+            // df.tool.vrCameraCenter(canon, df.GROUP['1cbs']['main']['a'].children[10]);
             onTriggerDown(event, rayCaster, leftTempMatrix);
         });
-        // 放大 缩小
-        leftController.addEventListener('squeezestart', function (event) {
-            leftSqueezeStart = true;
-        });
-        leftController.addEventListener('squeezeend', function (event) {
-            leftSqueezeStart = false;
-        });
-        rightController.addEventListener('squeezestart', function (event) {
-            if (!leftSqueezeStart) {
-                rightSqueezeStart = true;
-            }
-        });
-        rightController.addEventListener('squeezeend', function (event) {
-            rightSqueezeStart = false;
-        });
-
         rightController.addEventListener('selectstart', function (event) {
             let rightTempMatrix = new THREE.Matrix4();
             onTriggerDown(event, rayCaster, rightTempMatrix)
@@ -217,11 +208,48 @@ df.render = {
         });
         window.addEventListener('resize', onWindowResize, false);
 
-
         // camera.updateProjectionMatrix();
         function animate() {
-            df.render.score("7fjc");
-            ScalePDB();
+            // 选中 residue 并拖拽
+            if (df.selection === df.select_residue) {
+                if (df.SELECTED_RESIDUE.type === df.MeshType) {
+                    if (df.config.mainMode === df.CARTOON_SSE) {
+                        // 根据 select residue 获取 residue信息
+                        let meshInfo = df.SELECTED_RESIDUE.userData.presentAtom
+                        let meshId = meshInfo.id;
+                        let meshPos = meshInfo.pos;
+                        let molId = meshInfo.pdbId;
+                        let controller_mesh = df.SELECTED_RESIDUE.matrixWorld;
+                        if (df.SELECTED_RESIDUE.controller) {
+                            controller_mesh = df.SELECTED_RESIDUE.controller
+                        }
+                        meshPos.applyMatrix4(controller_mesh.matrixWorld);
+                        let x = meshPos.x / ((df.scale));
+                        let y = meshPos.y / ((df.scale));
+                        let z = meshPos.z / ((df.scale));
+                        // console.log("xyz", x, y, z)
+                        // 修改 df.PathList 对应坐标
+                        for (let k in df.PathList[0]) {
+                            if (df.PathList[0][k][0] === meshId) {
+                                df.PathList[0][k][1][0] = parseFloat(x.toFixed(3));
+                                df.PathList[0][k][1][1] = parseFloat(y.toFixed(3));
+                                df.PathList[0][k][1][2] = parseFloat(z.toFixed(3));
+                            }
+                        }
+                        df.render.changePDBData(df.SELECTED_RESIDUE);
+                        df.tool.changeFrame(molId, meshId);
+                        df.dfRender.clear(0);
+                        // 重新生成 residue 结构
+                        // df.painter.showAllResidues(df.config.mainMode, df.SelectedPDBId);
+                        df.controller.drawGeometry(df.config.mainMode, df.SelectedPDBId);
+                        for (let i in df.GROUP[df.SelectedPDBId]['main']) {
+                            let aaa = df.GROUP[df.SelectedPDBId]['main'][i];
+                            aaa.scale.set(df.scale, df.scale, df.scale);
+                            // df.tool.vrCameraCenter(camera, aaa.children[10]);
+                        }
+                    }
+                }
+            }
             camera.updateProjectionMatrix();
             renderer.render(scene, camera);
         }
@@ -235,28 +263,13 @@ df.render = {
             renderer.setSize(window.innerWidth, window.innerHeight);
         }
     },
-    score: function (pdbId) {
-
-        if (df.SelectedPDBId === pdbId) {
-            if (df.GROUP[pdbId] && df.GROUP[pdbId]['main']) {
-                let score = df.tool.similarScore(pdbId);
-                        console.log(1)
-                if (ScoreTemp !== score) {
-                    let score_str = "得分: " + score.toString() + "分！"
-                    df.drawer.updateText(score_str, df.GROUP["score"].children[0]);
-                    ScoreTemp = score
-                }
-            }
-        }
-    },
     // todo
-    clean: function (mode, pdbId) {
+    clear: function (mode, pdbId) {
         THREE.Cache.clear();
-        // df.GROUP[df.SelectedPDBId] = {}
         switch (mode) {
             case 0:
-                for (let modeKey in df.GROUP[pdbId]) {
-                    df.tool.clearGroupIndex(df.GROUP[pdbId][modeKey]);
+                for (let modeKey in df.GROUP[df.SelectedPDBId]) {
+                    df.tool.clearGroupIndex(df.GROUP[df.SelectedPDBId][modeKey]);
                 }
                 break;
             case 1:
@@ -264,8 +277,48 @@ df.render = {
                 break;
         }
     },
+    changePDBData: function (resDict) {
+        let key = Object.keys(resDict)
+        if (!key || key.length === 0) {
+            return ''
+        }
+        let pdbId = key[0].split("_")[0];
+        let PDBFormat = "";
+        if (df.pdbText[pdbId].length > 0) {
+            const text = df.pdbText[pdbId].split('\n');
+            for (let i = 0; i < text.length; i++) {
+                let line = text[i];
+                let line_atom = w3m_sub(line, 0, 6).toLowerCase();
+                switch (line_atom) {
+                    case 'atom':
+                        const residue_id = w3m_sub(line, 23, 27);
+                        const atom_name = w3m_sub(line, 13, 16).toLowerCase();
+                        const atom_chain = w3m_sub(line, 22) || 'x';
+                        let keys = pdbId + "_" + atom_chain + "_" + residue_id + "_" + atom_name;
+                        if (resDict.hasOwnProperty(keys)) {
+                            const b_x = (resDict[keys].x / df.scale).toFixed(3);
+                            const b_y = (resDict[keys].y / df.scale).toFixed(3);
+                            const b_z = (resDict[keys].z / df.scale).toFixed(3);
+                            line = line.replace(w3m_sub(line, 31, 38).padStart(8, ' '), b_x.padStart(8, ' '));
+                            line = line.replace(w3m_sub(line, 39, 46).padStart(8, ' '), b_y.padStart(8, ' '));
+                            line = line.replace(w3m_sub(line, 47, 54).padStart(8, ' '), b_z.padStart(8, ' '));
+                        }
+                        PDBFormat = PDBFormat + line + "\n";
+                        break;
+                    case 'hetatm':
+                        PDBFormat = PDBFormat + line + "\n";
+                        break;
+                    default:
+                        PDBFormat = PDBFormat + line + "\n";
+                        break;
+                }
+            }
+        }
+        df.pdbText[pdbId] = PDBFormat;
+        console.log(PDBFormat);
+        return PDBFormat;
+    }
 }
-
 
 window.df = df;
 
@@ -284,4 +337,3 @@ export {
     leftHand,
     rightHand
 }
-

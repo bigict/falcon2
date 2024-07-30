@@ -7,12 +7,48 @@ import * as THREE from '../js/three.module.js';
 
 function objectTransform(object, controller, tempMatrix) {
     switch (df.selection) {
-        case df.select_residue:
-            break;
         default:
-            object.matrix.premultiply(tempMatrix);
-            object.matrix.decompose(object.position, object.quaternion, object.scale);
-            controller.add(object);
+            df.tool.colorIntersectObjectRed(object, 1);
+            if (object.type === df.MeshType) {
+                df.SELECTED_RESIDUE = object;
+                df.SELECTED_RESIDUE.visible = false
+                df.SELECTED_RESIDUE_POS = new THREE.Vector3();
+                df.SELECTED_RESIDUE.controller = controller;
+                object.getWorldPosition(df.SELECTED_RESIDUE_POS);
+                controller.attach(object);
+            } else {
+                object.matrix.premultiply(tempMatrix);
+                object.matrix.decompose(object.position, object.quaternion, object.scale);
+                object.controller = controller;
+                controller.add(object);
+            }
+            break;
+        case df.select_region:
+            // start
+            if (df.scubaResScope.length === 0) {
+                // get start residue
+                df.scubaResScope.push(object);
+            } else if (df.scubaResScope.length === 1) {
+                // end
+                df.scubaResScope.push(object);
+                df.scubaScope.push([df.scubaResScope[0], df.scubaResScope[1]]);
+                // change color
+                let mesh1Name = df.scubaResScope[0].name;
+                let mesh2Name = df.scubaResScope[1].name;
+                let pdbId = object.userData.presentAtom.pdbId;
+                let pdbType = object.userData.presentAtom.typeName;
+                let chain = object.userData.presentAtom.chainName;
+                let meshGroup = df.GROUP[pdbId][pdbType][chain].children;
+                if (meshGroup.length > 0) {
+                    for (let ids in meshGroup) {
+                        let ms = meshGroup[ids];
+                        if ((parseInt(ms.name) >= parseInt(mesh1Name)) && (parseInt(ms.name) <= parseInt(mesh2Name))) {
+                            df.tool.colorIntersectObjectRed(ms, 1);
+                        }
+                    }
+                }
+                df.scubaResScope = [];
+            }
             break;
     }
 }
@@ -26,63 +62,49 @@ function objectDeTrans(controller) {
                 child.matrix.decompose(child.position, child.quaternion, child.scale);
                 df.tool.colorIntersectObjectRed(child, 0);
                 scene.add(child);
+                let posDict = df.tool.forAllAtom(child);
+                df.dfRender.changePDBData(posDict);
+                break;
+            case df.MeshType:
+                df.tool.colorIntersectObjectRed(child, 0);
+                child.group.attach(child);
                 break;
         }
     }
 }
-
-function getGlobalMeshCoordinates(scene) {
-    scene.traverse(function (object) {
-        if (object.isMesh) {
-            // 创建一个新的Vector3对象，默认为(0, 0, 0)
-            // 计算相对于世界坐标系的位置
-            // 确保世界矩阵是最新的
-            console.log(object.matrixWorld);
-        }
-    });
-}
-
 
 function onTriggerDown(event, raster, tempMatrix) {
 
     let controller = event.target;
     // open menu
     let menuList = getIntersections(controller, raster, tempMatrix, true);
-    let menuObject = menuList[0];
-    console.log(menuObject);
+    let menuObject = menuList[0]
     if (menuObject.length > 0) {
         df.showMenu = !df.showMenu;
         df.GROUP['menu'].visible = df.showMenu;
+        df.GROUP['menu'].lookAt(camera.position)
         return;
     }
-    let interList = getIntersections(controller, raster, tempMatrix);
-    let intersections = interList[0];
-    if (typeof intersections === 'string') {
-        df.render.clean(0, df.SelectedPDBId);
-        df.loader.clear();
-        df.loader.load(intersections, 'name', function () {
-            df.controller.drawGeometry(df.config.mainMode, intersections);
-            df.tool.initPDBView(intersections);
-            // df.controller.drawGeometry(df.DOT, '7fjc');
-            // if (intersections === '7fjc') {
-            //     df.painter.showSurface('7fjc', 300, 600, true, ['e']);
-            //     df.painter.showSurface('7fjc', 300, 600, true, ['h', 'l']);
-            // }
-            df.showMenu = false;
-            df.GROUP['menu'].visible = df.showMenu;
-        });
-        df.SelectedPDBId = intersections;
-
-        return;
-    }
-    let controllerTempMatrix = interList[1];
-    if (intersections && intersections.length <= 0) {
-        return;
-    }
-    controllerTempMatrix.copy(controller.matrixWorld).invert();
-    // 说明：intersections = [group, group, group...]
-    for (let per in intersections) {
-        objectTransform(intersections[per], controller, controllerTempMatrix);
+    // 操作 Menu 模块
+    if (df.showMenu) {
+        let menuList = getIntersections(controller, raster, tempMatrix);
+        if (menuList) {
+            let menuObject = menuList[1]
+            dealWithMenu(menuObject);
+        }
+    } else {
+        // 拖拽蛋白功能
+        let interList = getIntersections(controller, raster, tempMatrix);
+        let intersections = interList[0];
+        let controllerTempMatrix = interList[1];
+        if (intersections && intersections.length <= 0) {
+            return;
+        }
+        controllerTempMatrix.copy(controller.matrixWorld).invert();
+        // 说明：intersections = [group, group, group...]
+        for (let per in intersections) {
+            objectTransform(intersections[per], controller, controllerTempMatrix);
+        }
     }
 }
 
@@ -93,8 +115,21 @@ function onTriggerUp(event) {
         case df.select_chain:
             objectDeTrans(controller);
             break;
+        case df.select_all:
+            objectDeTrans(controller);
+            break;
+        case df.select_main:
+            objectDeTrans(controller);
+            break;
+        case df.select_multi_chain:
+            objectDeTrans(controller);
+            break;
+        case df.select_residue:
+            objectDeTrans(controller);
+            df.SELECTED_RESIDUE = '';
+            df.SELECTED_RESIDUE_POS = new THREE.Vector3();
+            break;
     }
-    // df.render.score("7fjc");
 }
 
 
@@ -106,29 +141,16 @@ function rayCasterIntersect(raster) {
             for (let chain in df.GROUP[pdbId][name]) {
                 if (!df.GROUP[pdbId][name][chain].visible) continue;
                 let objects = df.GROUP[pdbId][name][chain].children;
-
                 let intersected = raster.intersectObjects(objects, true);
                 if (intersected.length > 0) {
-
                     let selectedObject = intersected[0].object;
                     let selectInfo = selectedObject.userData.presentAtom;
                     let selectedPDBId = selectInfo.pdbId;
                     let selectedType = selectInfo.typeName;
                     let selectedChain = selectInfo.chainName;
-                    if (df.selection === df.select_chain) {
-                        if (selectedChain === 'h' && selectedChain === 'l') {
-                            df.tool.colorIntersectObjectRed(
-                                df.GROUP[selectedPDBId][selectedType]['h'],
-                                1);
-                            df.tool.colorIntersectObjectRed(
-                                df.GROUP[selectedPDBId][selectedType]['l'],
-                                1);
-                        }
-                    } else {
-                        df.tool.colorIntersectObjectRed(
-                            df.GROUP[selectedPDBId][selectedType][selectedChain],
-                            1);
-                    }
+                    // df.tool.colorIntersectObjectRed(
+                    //     df.GROUP[selectedPDBId][selectedType][selectedChain],
+                    //     1);
                     return intersected;
                 }
             }
@@ -145,28 +167,24 @@ function getIntersections(controller, raster, tempMatrix, onMenuButton = false) 
     let inters = [];
     // 打开 menu 菜单
     if (onMenuButton) {
-        let selected = undefined;
-        console.log(camera)
-        for (let i = 0; i < camera.children.length; i++) {
-            let group = camera.children[i];
-            if (group.type === "Mesh") {
-                selected = raster.intersectObjects([group], true);
-            }
-        }
-        if (selected) {
-            for (let i = 0; i < selected.length; i++) {
-                if (selected[i] && selected[i].object.name === 'menu-button') {
-                    inters.push(selected[i]);
-                }
+        let selected = raster.intersectObjects(camera.children);
+        for (let i = 0; i < selected.length; i++) {
+            if (selected[i] && selected[i].object.name === 'menu-button') {
+                inters.push(selected[i]);
+                return [inters, tempMatrix];
             }
         }
         return [inters, tempMatrix];
     }
     if (df.showMenu) {
         let selected = raster.intersectObjects(df.GROUP['menu'].children, true);
-        console.log(selected)
-        if (selected) {
+        if (selected && selected[0]) {
             let selectedObject = selected[0].object;
+            for (let key in selected) {
+                if (selected[key].object.visible) {
+                    selectedObject = selected[key].object;
+                }
+            }
             let name = selectedObject.name;
             return [name, selectedObject];
         }
@@ -207,21 +225,86 @@ function getIntersections(controller, raster, tempMatrix, onMenuButton = false) 
                 break;
             case df.select_chain:
                 if (df.tool.isDictEmpty(df.GROUP[selectedPDBId][selectedType])) return;
-                if (selectedChain === 'h' || selectedChain === 'l') {
-                    let objectsH = df.GROUP[selectedPDBId][selectedType]['h'];
-                    inters.push(objectsH);
-                    let objectsL = df.GROUP[selectedPDBId][selectedType]['l'];
-                    inters.push(objectsL);
+                let objects = df.GROUP[selectedPDBId][selectedType][selectedChain];
+                objects.group = objects.parent;
+                inters.push(objects);
+                break;
+            case df.select_multi_chain:
+                if (df.tool.isDictEmpty(df.GROUP[selectedPDBId][selectedType])) return;
+                if (selectedChain === "h" || selectedChain === "l") {
+                    let select_obj_h = df.GROUP[selectedPDBId][selectedType]["h"];
+                    let select_obj_l = df.GROUP[selectedPDBId][selectedType]["l"];
+                    select_obj_h.group = select_obj_h.parent;
+                    select_obj_l.group = select_obj_l.parent;
+                    inters.push(select_obj_h);
+                    inters.push(select_obj_l);
                 } else {
-                    let objects = df.GROUP[selectedPDBId][selectedType][selectedChain];
-                    inters.push(objects);
+                    let select_obj = df.GROUP[selectedPDBId][selectedType][selectedChain];
+                    select_obj.group = select_obj.parent;
+                    inters.push(select_obj);
                 }
                 break;
             case df.select_residue:
-                // 拖拽氨基酸 略过
+                console.log(inters);
+                if (selectedObject.userData.repType === "tube") {
+                    let objects = getChildrenByName(df.GROUP[selectedPDBId][selectedType][selectedChain], selectedObject.name);
+                    for (var a = 0; a < objects.length; a++) {
+                        // 更改坐标
+                        // objects[a].group = df.GROUP[selectedPDBId][selectedType][selectedChain];
+                        objects[a].group = objects[a].parent;
+                        inters.push(objects[a]);
+                    }
+                }
+                break;
+            case df.select_region:
+                if (df.tool.isDictEmpty(df.GROUP[selectedPDBId][selectedType])) return;
+                let region_object = selected[0].object;
+                inters.push(region_object);
                 break;
         }
         return [inters, tempMatrix];
+    }
+}
+
+function getChildrenByName(group, name) {
+    let result = [];
+    for (let i = 0, l = group.children.length; i < l; i++) {
+        let child = group.children[i];
+        if (child.name === name) {
+            result.push(child);
+        }
+    }
+    return result;
+}
+
+
+function dealWithMenu(object) {
+    // if click main-menu
+    if (object.title && object.title === df.MAIN_MENU) {
+        // get content
+
+        // show sub-menu
+        // 1. sub-menu trd-menu visible false
+        // 2. show sub-menu
+    }
+    df.DFBUTTONS.forEach(button => {
+        if (button.mesh === object) {
+            // 执行按钮的 onSelect 方法
+            button.onSelect();
+        }
+    });
+}
+
+
+function scubaCommit() {
+    if (df.scubaScope.length > 0) {
+        // url
+        let url = "";
+        let data = JSON.stringify(df.scubaScope);
+        let response = df.api.apiRequest(url, data, false);
+        if (typeof response === 'string') {
+            // todo
+        }
     }
 }
 

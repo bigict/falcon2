@@ -5,3 +5,10 @@ class HDock(BaseModel):
     receptor: str
     ligand: str
 
+
+class Design(BaseModel):
+    pdb_string: str
+
+
+class Energy(BaseModel):
+    pdb_string: str

@@ -39,7 +39,10 @@ df.loader = {
         }
         // 处理 pdb
         df.pdbContent[pdbId] = content;
+        df.pdbText[pdbId] = content;
+        df.loader.loadSaveCoord(pdbId, content);
         w3m.pdb(content, pdbId);
+        console.log(2)
         w3m.api.switchRepModeMain(w3m.LINE);
         w3m.api.switchRepModeMain(w3m.BACKBONE);
         w3m.api.switchRepModeMain(w3m.CUBE);
@@ -48,7 +51,7 @@ df.loader = {
         df.GROUP[pdbId] = {};
         // init dict
         df.pdbInfoList.forEach(function (name) {
-            df.GROUP[pdbId][name] = {};
+            df.GROUP[pdbId][name] = {}
         });
         // df.GROUP_MAIN_INDEX[pdbId] = [];
         // df.GROUP_HET_INDEX[pdbId] = [];
@@ -59,7 +62,8 @@ df.loader = {
             df.pdbInfoList.forEach(function (name) {
                 df.GROUP[pdbId][name][chain] = new THREE.Group();
                 df.GROUP[pdbId][name][chain].surface = new THREE.Group();
-                df.GROUP[pdbId][name][chain].name = pdbId+'_'+name+'_'+chain;
+                scene.add(df.GROUP[pdbId][name][chain].surface);
+                df.GROUP[pdbId][name][chain].name = pdbId + '_' + name + '_' + chain;
             });
             df.GROUP[pdbId]['main'][chain].userData["presentAtom"] = df.tool.getMainAtom(pdbId, firstAtomId);
             if (!df.pptShow) {
@@ -120,8 +124,23 @@ df.loader = {
         io.open('GET', url, true);
         io.send();
     },
-    clear: function () {
-        w3m.mol = {};
-        df.pdbId = [];
+    loadSaveCoord: function (pdbId, text) {
+        df.PDBPOS[pdbId] = {}
+        const pdb_text = text.split('\n');
+        for (let i = 0; i < pdb_text.length; i++) {
+            let line = pdb_text[i];
+            let a = w3m_sub(line, 0, 6).toLowerCase()
+            switch (a) {
+                case 'atom':
+                    const residue_id = w3m_sub(line, 23, 26) || 0;
+                    const atom_name = w3m_sub(line, 13, 16).toLowerCase();
+                    const atom_chain = w3m_sub(line, 22) || 'x';
+                    const residueKey = atom_chain + "_" + residue_id + "_" + atom_name;
+                    const pdb_x = parseFloat(w3m_sub(line, 31, 38));
+                    const pdb_y = parseFloat(w3m_sub(line, 39, 46));
+                    const pdb_z = parseFloat(w3m_sub(line, 47, 54));
+                    df.PDBPOS[pdbId][residueKey] = [pdb_x, pdb_y, pdb_z];
+            }
+        }
     }
 }

@@ -3,7 +3,8 @@ from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import JSONResponse
 from fastapi import FastAPI, Request
-from items import HDock
+from items import HDock, Design, Energy
+from dfire.calene import DFIRE
 import subprocess
 import tempfile
 import config
@@ -13,6 +14,18 @@ import os
 app = FastAPI()
 templates = Jinja2Templates(directory="../client/templates")
 app.mount("/static", StaticFiles(directory="../client/static"), name="static")
+
+
+# dfire
+dfire_model = DFIRE()
+
+
+@app.post("/dfire")
+async def h_dock(response: Energy):
+    pdb_str = response.pdb_string
+    energy = dfire_model.calc_energy(pdb_str)
+    score = "{:.3f}".format(energy)
+    return JSONResponse(content=score)
 
 
 def h_dock_cmd(receptor, ligand):
@@ -61,5 +74,30 @@ async def h_dock(response: HDock):
     context = {"filePath": file_path}
 
     return JSONResponse(content=context)
+
+
+@app.post("/design")
+async def abacus(response: Design):
+    pdb_string = response.pdb_string
+    test_list = ''
+    with tempfile.NamedTemporaryFile(dir=test_list, delete=False) as pdb_file:
+        pdb_file.write(pdb_string.encode())
+    # scuba-d
+    command = [
+        'python3.8', 'inference_par.py',
+        '--test_list', test_list,
+        '--write_pdbfile',
+        '--batch_size', '1',
+        '--sample_from_raw_pdbfile',
+        '--diff_noising_scale', '0.1'
+    ]
+    # 运行命令
+    subprocess.run(command)
+    input_pdb = ""
+    output_pdb = ""
+    log_file = ""
+    # abacus
+    subprocess.run(['ABACUS-DesignSeq', '-in', input_pdb, '-out', output_pdb, '-log', log_file])
+    pass
 
 

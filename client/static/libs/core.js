@@ -4,44 +4,93 @@
 
 var df;
 df = {
+    // w3m
+    PathList: [],
+    t: false,
+
     // remoteUrl: ['https://www.rcsb.org/pdb/files/'],
     remoteUrl: ['/static/data/'],
     isShowWater: false,
 
+    // transfer rotate scale
+    PDBPOS: {},
+
+
     // SURFACE
+    SURFACE_STORE: {},
     SURFACE: 14,
     SURFACE_TYPE: 1,
     CURRENT_SURFACE_TYPE: 1,
-    SURFACE_OPACITY: 0.4,
+    SURFACE_OPACITY: 1.0,
     SURFACE_WIREFRAME: false,
 
     // 重新加载时需要初始化的参数
     pdbId: [],
+    pdbText: {},
     SelectedPDBId: undefined,
     pdbInfoList: ['main', 'het', 'water', 'surface', 'dot'],
     pdbContent: {},
 
     // gamepad
     // selection: 0,
-    selection: 102,
+    selection: 101,
     select_all: 100,
     select_main: 101,
     select_chain: 102,
     select_residue: 103,
+    select_atom: 104,
+    select_ligand: 105,
+    select_multi_chain: 106,
+    select_region: 200,
+    SELECT_RESIDUE_MESH: [],
+
+    // scuba
+    scubaState: false,
+    scubaScope: [],
+    scubaResScope: [],
 
     // menu
+
+    // button
+    DEFBUTTON: 0,
+    DFBUTTONS: [],
+    LASTSELECTEDBUTTON: '',
+
     showMenu: false,
-    // menuList: [{
-    //     "4eu1": [],
-    //     "7fjc": [],
-    //     "Exit": []
-    // }],
-    menuList: ["4eul", "7fjc", "Exit"],
+    // menu label
+    MAIN_MENU: 0,
+    SUB_MENU: 1,
+    TRD_MENU: 2,
+    // menu content {name: (list)}
+    menu_content: {
+        "Load PDB": [],
+        "Structure": [],
+        "Surface": [],
+        "Color": [],
+        "Beautify": [],
+        "Drag": [],
+        "Edit": [],
+        "Design": [],
+        "Docking": [],
+        "Align": [],
+        "Hydrogen Bond": [],
+        "Energy": [],
+        "Export": [],
+        "Exit": []
+    },
+
+    menuList: ["Load PDB", "Protein", "Sequence", "PDB"],
+    SequenceMenuList: ["tools"],
     // menu text config
-    textMenuWidth: 2,
-    textContentWidth: 512,
-    textContentHeight: 128,
-    textMenuHeight: 0.5,
+    textMenuWidth: 0.36,
+    textMenuHeight: 0.09,
+    textContentWidth: 2048,
+    textContentHeight: 512,
+    letterSpacing: 0.01,
+    lineSpacing: 0.45,
+
+    scale: 0,
+
     textMenuBgColor: '#ffffff',
 
     // all pdb info group, 这里包含 pdb 用于展示的全部属性
@@ -63,6 +112,7 @@ df = {
 
     // residue
     residue: '',
+    SELECTED_RESIDUE: '',
 
     exportPDB: false,
     // 0: 3D mode, 1: vr mode,
@@ -97,13 +147,28 @@ df = {
 
     // type
     GroupType: "Group",
+    MeshType: "Mesh",
+
+    // align
+    ALIGN_TOOLS: {"tm-align": window.location.href},
+    ALIGN_RECEPTOR: '',
+    ALIGN_LIGAND: '',
+    SELECTED_ALIGN: 'tm-align',
+
+    // design
+    DESIGN_TOOLS: {'ProDESIGN': window.location.href, 'SCUBA+ABACUS': window.location.href},
+    SELECTED_DESIGN: 'ProDESIGN',
 
     // docking
     dockingDict: {'HDock': window.location.href + 'hdock'},
+    DOCKING_RECEPTOR: '',
+    DOCKING_LIGAND: '',
+    SELECTED_DOCKING: 'HDock',
+    // energy
+    ENERGY_TOOLS: {"dDfire": window.location.href},
+    SELECTED_ENERGY: 'dDfire',
 
-    // score
-    SCORE_MESH: '',
-
+    // Refine Structure
 
 }
 

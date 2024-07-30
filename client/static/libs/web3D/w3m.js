@@ -1,6 +1,7 @@
 /* Global */
 import {df} from '../core.js';
 import * as THREE from '../../js/three.module.js';
+
 var w3m, canvas, gl;
 var drug = false;
 
@@ -161,8 +162,10 @@ w3m.pdb = function (text, pdbId) {
             // load PDB file
             text = text.split('\n');
             for (let i = 0; i < text.length; i++) {
-                let s = text[i].toLowerCase();
-                switch (w3m_sub(s, 0, 6)) {
+                // let s = text[i].toLowerCase();
+                let s = text[i];
+                let s_head = w3m_sub(s, 0, 6).toLowerCase();
+                switch (s_head) {
                     case 'atom':
                         doAtom(s);
                         break;
@@ -206,21 +209,21 @@ w3m.pdb = function (text, pdbId) {
     }
     let doAtom = function (s) {
         // ignore certain extra amino acids in the atom
-        let atom_alt = w3m_sub(s, 17);
+        let atom_alt = w3m_sub(s, 17).toLowerCase();
         if (atom_alt !== '' && atom_alt !== 'a') {
             return;
         }
 
         // if not AA or NA
-        let chain_type = w3m.tool.getChainType(w3m_sub(s, 18, 20));
+        let chain_type = w3m.tool.getChainType(w3m_sub(s, 18, 20).toLowerCase());
         if (chain_type === w3m.CHAIN_UNK) {
             doHet(s);
             return;
         }
 
         let atom_id = parseInt(w3m_sub(s, 7, 11));
-        let atom_name = w3m_sub(s, 13, 16);
-        let residue_name = w3m_sub(s, 18, 20) || 'xxx';
+        let atom_name = w3m_sub(s, 13, 16).toLowerCase();
+        let residue_name = w3m_sub(s, 18, 20).toLowerCase() || 'xxx';
         let chain_id = w3m_sub(s, 22) || 'x';
         let residue_id = w3m_sub(s, 23, 27);
         let xyz = [
@@ -229,7 +232,7 @@ w3m.pdb = function (text, pdbId) {
             parseFloat(w3m_sub(s, 47, 54))];
         let occupancy = parseFloat(w3m_sub(s, 55, 60));
         let b_factor = parseFloat(w3m_sub(s, 61, 66)) || 0.0;
-        let element = w3m_sub(s, 77, 78);
+        let element = w3m_sub(s, 77, 78).toLowerCase();
         if (residue_id === '') return;
         math.limit(xyz[0], w3m.global.limit.x);
         math.limit(xyz[1], w3m.global.limit.y);
@@ -308,14 +311,14 @@ w3m.pdb = function (text, pdbId) {
     }
     let doHet = function (s) {
         let atom_id = parseInt(w3m_sub(s, 7, 11)),
-            atom_name = w3m_sub(s, 13, 16),
-            residue_name = w3m_sub(s, 18, 20) || 'xxx',
+            atom_name = w3m_sub(s, 13, 16).toLowerCase(),
+            residue_name = w3m_sub(s, 18, 20).toLowerCase() || 'xxx',
             chain_id = w3m_sub(s, 22) || 'x',
             residue_id = w3m_sub(s, 23, 27),
             xyz = [parseFloat(w3m_sub(s, 31, 38)), parseFloat(w3m_sub(s, 39, 46)), parseFloat(w3m_sub(s, 47, 54))],
             occupancy = parseFloat(w3m_sub(s, 55, 60)),
             b_factor = parseFloat(w3m_sub(s, 61, 66)) || 0.0,
-            element = w3m_sub(s, 77, 78);
+            element = w3m_sub(s, 77, 78).toLowerCase();
         if (residue_id === '') return;
         math.limit(xyz[0], w3m.global.limit.x);
         math.limit(xyz[1], w3m.global.limit.y);
@@ -569,14 +572,8 @@ w3m.tool = {
                 break;
             case w3m.COLOR_BY_CHAIN:
                 array = w3m.color.chain;
-                let array1 = {}
-                array1[w3m.LOOP] = array1[w3m.LOOP_HEAD] = array1[w3m.LOOP_BODY] = array1[w3m.LOOP_FOOT] = w3m.color.ss.loop;
                 mol.color.main = mol.atom.main.map(function (atom) {
-                    if (array1[mol.ss[atom[4]][atom[5]][0]]) {
-                        return w3m.color.ss.loop + array[atom[4]];
-                    } else {
-                        return array[atom[4]];
-                    }
+                    return array[atom[4].toLowerCase()];
                 });
                 break;
             // 整体颜色
@@ -597,7 +594,7 @@ w3m.tool = {
                 array[w3m.ARROW] = array_raw.arrow;
                 array[w3m.SPHERE] = array_raw.sphere;
                 mol.color.main = mol.atom.main.map(function (atom) {
-                    return array[mol.rep[atom[4]][atom[5]]]; // depends on rep
+                    return array[mol.rep[atom[4].toLowerCase()][atom[5]]]; // depends on rep
                 });
                 break;
             case w3m.COLOR_BY_B_FACTOR:
@@ -614,7 +611,7 @@ w3m.tool = {
                 }
                 break;
             case w3m.COLOR_BY_SPECTRUM:
-                var len = w3m_find_last(mol.atom.main),
+                var len = mol.atom.main.length,
                     token = 100 / len;
                 mol.color.main = mol.atom.main.map(function (atom, i) {
                     return 1100 - Math.round(i * token);
@@ -670,7 +667,7 @@ w3m.tool = {
             case w3m.COLOR_BY_CHAIN:
                 array = w3m.color.chain;
                 mol.color.het = mol.atom.het.map(function (atom) {
-                    return array[atom[4]];
+                    return array[atom[4].toLowerCase()];
                 });
                 break;
             case w3m.COLOR_BY_REP:
@@ -876,6 +873,7 @@ w3m.tool = {
                 w3m.fillqueue_main.push([w3m.ATOM_MAIN, rep, mol_id, i, start, stop]);
             }
         }
+
     },
 
     fillMainAsLine: function (mol_id, chain_id, start, stop) {
@@ -1512,6 +1510,7 @@ w3m.tool = {
             }
             let frame = [];
             if (path.length > 2) {
+                df.PathList.push(path);
                 this.naturalFrame(path, frame, mol_id);
             }
             switch (rep) {
@@ -1576,7 +1575,7 @@ w3m.config = {
     rep_mode_main: w3m.TUBE,
     rep_mode_het: w3m.TUBE,
     // color
-    color_mode_main: w3m.COLOR_BY_CHAIN,
+    color_mode_main: w3m.COLOR_BY_SPECTRUM,
     color_mode_het: w3m.COLOR_BY_ELEMENT,
 
     // smooth

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="eac6e912-5265-429d-adcc-80aecc451d66" name="criait">
+        <fileTransfer accessType="SFTP" host="ssh.paracloud.com" port="2222" sshConfigId="72f5db44-5d36-4549-a560-645f4f4e886e" sshConfig="criait_yangdf@ssh.paracloud.com:2222 password">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" keepAliveTimeout="0" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>
