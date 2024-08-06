@@ -33,17 +33,50 @@ Quick Start
 
 ### Dependencies
 
-### Installing Falcon2-VR
+## Installing Falcon2-VR
+### Requirements
+```
+git clone https://github.com/bigict/falcon2.git
+```
 
-### Running Falcon2-VR
+```
+
+pip install -r requirements.txt
+```
+
+## Running Falcon2-VR
+
+### Quickstart
+```
+cd server
+uvicorn app:app --host ip_address --port port
+```
+使用头盔直接访问 ip_address
 
 ### Implement
 
-| 参数      |                 示例                  |                                                                                                 描述 |
-|:--------|:-----------------------------------:|---------------------------------------------------------------------------------------------------:|
-| Tools   | "design","docking","energy","align" |                    该参数表示工具所实现的特定功能或工作目标。例如，“design”蛋白质设计；“docking”对接工具；“energy”能量计算工具；“align”对齐工具。 |
-| Name    |       "ProDESIGN","HDock"...        |                                         该参数代表工具的具体名称，如“ProDESIGN”或“HDock”等。每个名称对应一个特定的工具，能够执行相应的功能 |
-| Address |    "https://0.0.0.0:9098/design"    | 该参数表示工具对应的网络地址或访问路径，例如"https://0.0.0.0:9098/design" 。这个地址用于在网络环境中访问和使用相应的工具，确保用户能够通过浏览器或API接口进行操作。 |
+<table>
+  <tr>
+    <th style="text-align: left;">参数</th>
+    <th style="text-align: left;">示例</th>
+    <th style="text-align: left;">描述</th>
+  </tr>
+  <tr>
+    <td style="text-align: left;">Tools</td>
+    <td style="text-align: left;">"design","docking","energy","align"</td>
+    <td style="text-align: left;">该参数表示工具所实现的特定功能或工作目标。例如，“design”蛋白质设计；“docking”对接工具；“energy”能量计算工具；“align”对齐工具。</td>
+  </tr>
+  <tr>
+    <td style="text-align: left;">Name</td>
+    <td style="text-align: left;">"ProDESIGN","HDock"</td>
+    <td style="text-align: left;">该参数代表工具的具体名称，如“ProDESIGN”或“HDock”等。每个名称对应一个特定的工具，能够执行相应的功能。</td>
+  </tr>
+  <tr>
+    <td style="text-align: left;">Address</td>
+    <td style="text-align: left;">"https://0.0.0.0:9098/design"</td>
+    <td style="text-align: left;">该参数表示工具对应的网络地址或访问路径，例如"https://0.0.0.0:9098/design" 。这个地址用于在网络环境中访问和使用相应的工具，确保用户能够通过浏览器或API接口进行操作。</td>
+  </tr>
+</table>
 
 ## Geting Start VR Mode
 
@@ -53,7 +86,6 @@ VR设备：
 |:--------------------------------------------------------------------|
 | <img src="images/gamepad.png" alt="Cate" width="400" height="auto"> |
 | <img src="images/quest.jpg" alt="Cate" width="400" height="auto">   |
-
 
 ### Enter VR Scene
 
@@ -126,13 +158,14 @@ Drag按钮用于在PDB结构中拖动特定的元素。通过选择"Drag Chain"�
 
 ### Color
 
-通过VR Menu的颜色的菜单，可以根据`元素（Element）`、`残基（Residue）`、`二级结构（SecStructure）`、`链（Chain）`、`蛋白质（PDB）`、`疏水性（HYDROPHOBICITY）`等方式进行多样化修改颜色。
+通过VR
+Menu的颜色的菜单，可以根据`元素（Element）`、`残基（Residue）`、`二级结构（SecStructure）`、`链（Chain）`、`蛋白质（PDB）`、`疏水性（HYDROPHOBICITY）`
+等方式进行多样化修改颜色。
 
-|`蛋白质（PDB）`| `元素（Element）`                        | `残基（Residue）`                          | `二级结构（SecStructure）`            |
-|:--------------------------------|:-------------------------------------|:---------------------------------------|:--------------------------------|
-| 使用`Spectrum`从冷色调到暖色调的颜色渐变。| 使用`Spectrum`从冷色调到暖色调的颜色渐变。           | 使用`Spectrum`从冷色调到暖色调的颜色渐变。             | 使用`Spectrum`从冷色调到暖色调的颜色渐变。      |
-| ![img.png](images/color_pdb.png)| ![img.png](images/color_element.png) | ![img_1.png](images/color_residue.png) | ![img.png](images/color_ss.png) | 
-
+| `蛋白质（PDB）`                       | `元素（Element）`                        | `残基（Residue）`                          | `二级结构（SecStructure）`            |
+|:---------------------------------|:-------------------------------------|:---------------------------------------|:--------------------------------|
+| 使用`Spectrum`从冷色调到暖色调的颜色渐变。       | 使用`Spectrum`从冷色调到暖色调的颜色渐变。           | 使用`Spectrum`从冷色调到暖色调的颜色渐变。             | 使用`Spectrum`从冷色调到暖色调的颜色渐变。      |
+| ![img.png](images/color_pdb.png) | ![img.png](images/color_element.png) | ![img_1.png](images/color_residue.png) | ![img.png](images/color_ss.png) | 
 
 ### Align
 
@@ -140,13 +173,12 @@ Drag按钮用于在PDB结构中拖动特定的元素。通过选择"Drag Chain"�
 
 ### Docking
 
-蛋白质对接`Docking`是一种计算方法，用于预测两个蛋白质如何结合在一起以形成稳定的复合物。首先，选择合适的蛋白质对接工具，例如 HDOCK 等。接着，选定两个蛋白质——一个作为受体，另一个作为配体，并将它们提交给对接服务进行分析。最终，您将获得蛋白质对接的结果。
-
-
+蛋白质对接`Docking`是一种计算方法，用于预测两个蛋白质如何结合在一起以形成稳定的复合物。首先，选择合适的蛋白质对接工具，例如
+HDOCK 等。接着，选定两个蛋白质——一个作为受体，另一个作为配体，并将它们提交给对接服务进行分析。最终，您将获得蛋白质对接的结果。
 
 ### Energy
-采用dfire等蛋白质打分工具，对蛋白质结构做打分。
 
+采用dfire等蛋白质打分工具，对蛋白质结构做打分。
 
 ### RefineStructure
 
