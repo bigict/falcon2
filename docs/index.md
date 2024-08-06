@@ -1,11 +1,25 @@
 Contents
 ====
 
-* [Overview](#overview)
-* [Quick Start](#quick-start)
-        * [Dependencies](#dependencies)
-        * [Installing Falcon2-VR](#installing-siga)
-        * [Running Falcon2-VR](#running-siga)
+- [Overview](#Overview)
+- [Quick Start](#quick-start)
+    - [Dependencies](#dependencies)
+    - [Installing Falcon2-VR](#installing-siga)
+    - [Running Falcon2-VR](#Running-Falcon2-VR)
+    - [Implement](#Implement)
+- [Geting Start VR Mode](#Geting-Start-VR-Mode)
+    - [Enter VR Scene](#Enter-VR-Scene)
+    - [VR Menu](#VR-Menu)
+    - [Loading PDB](#Loading-PDB)
+    - [Drag PDB](#Drag-PDB)
+    - [Design PDB](#Design-PDB)
+    - [Surface](#Surface)
+    - [Color](#color)
+    - [Align](#align)
+    - [Docking](#docking)
+    - [Energy](#energy)
+    - [RefineStructure](#refineStructure)
+
 * [Citation](#citation)
 * [FAQ](#faq)
 * [Support](#support)
@@ -25,14 +39,134 @@ Quick Start
 
 ### Implement
 
-| 参数      |                  示例                  |                                                                                                 描述 |
-|:--------|:------------------------------------:|---------------------------------------------------------------------------------------------------:|
-| Tools   | "design","docking","energy","align"  |                    该参数表示工具所实现的特定功能或工作目标。例如，“design”蛋白质设计；“docking”对接工具；“energy”能量计算工具；“align”对齐工具。 |
-| Name    |        "ProDESIGN","HDock"...        |                                         该参数代表工具的具体名称，如“ProDESIGN”或“HDock”等。每个名称对应一个特定的工具，能够执行相应的功能 |
-| Address |  "https://0.0.0.0:9098/design"       | 该参数表示工具对应的网络地址或访问路径，例如"https://0.0.0.0:9098/design" 。这个地址用于在网络环境中访问和使用相应的工具，确保用户能够通过浏览器或API接口进行操作。 |
+| 参数      |                 示例                  |                                                                                                 描述 |
+|:--------|:-----------------------------------:|---------------------------------------------------------------------------------------------------:|
+| Tools   | "design","docking","energy","align" |                    该参数表示工具所实现的特定功能或工作目标。例如，“design”蛋白质设计；“docking”对接工具；“energy”能量计算工具；“align”对齐工具。 |
+| Name    |       "ProDESIGN","HDock"...        |                                         该参数代表工具的具体名称，如“ProDESIGN”或“HDock”等。每个名称对应一个特定的工具，能够执行相应的功能 |
+| Address |    "https://0.0.0.0:9098/design"    | 该参数表示工具对应的网络地址或访问路径，例如"https://0.0.0.0:9098/design" 。这个地址用于在网络环境中访问和使用相应的工具，确保用户能够通过浏览器或API接口进行操作。 |
+
+## Geting Start VR Mode
+
+VR设备：
+
+| Oculus Quest                                                        |
+|:--------------------------------------------------------------------|
+| <img src="images/gamepad.png" alt="Cate" width="400" height="auto"> |
+| <img src="images/quest.jpg" alt="Cate" width="400" height="auto">   |
+
+
+### Enter VR Scene
+
+首先：VR程序启动，需要一个支持WebXR的浏览器。例如Google Chrome、Microsoft Edge、Firefox Reality等。
+
+点击屏幕上`ENTER VR`按钮，进入VR模式。如图：
+![ENTER VR](images/img.png)
+
+### VR Menu
+
+点击VR屏幕中的<img src="images/cate.png" alt="Cate" width="25" height="auto">,弹出VR中的菜单，实现VR的功能交互：
+![MENU](images/menu.png)
+
+### Loading PDB
+
+点击`Menu`菜单中的`load PDB`按钮，加载PDB。PDB文件需提前放至`client/static/data`目录下, PDB ID会在点击`load PDB`
+后，显示出来。选择目标PDB ID，加载PDB。
+
+### Drag PDB
+
+Drag按钮用于在PDB结构中拖动特定的元素。通过选择"Drag Chain"、"Drag Residue"、"Drag Residue"或"Drag Residue"，可以在 VR
+场景中拖动结构中的单个链、配体、残基或药物。
+
+### Design PDB
+
+蛋白质设计 提供了一套强大的工具，用于在分子水平上修改蛋白质结构。这一特性允许您定制氨基酸序列和结构以达到所需的功能或性质。请按照以下步骤设计您的蛋白质：
+
+访问蛋白质设计工具：
+
+从主 VR 菜单进入 设计 模式。
+从子菜单中选择 设计 PDB ，这将提供选项以选择要修改的蛋白质区域。
+
+选择设计区域：
+
+使用激光指针突出显示您希望设计的蛋白质区域。
+按下扳机键选择此区域。所选区域将会被高亮显示，表明它已准备好进行修改。
+
+修改氨基酸序列：
+
+在选定区域后，您可以选择插入、删除或替换该区域内氨基酸。
+若要替换一个氨基酸，请返回到 VR 菜单中的 编辑 选项。
+从 20 种标准氨基酸列表中选择目标氨基酸。
+将激光指针对准您想要替换的残基并按下扳机键以完成更改。
+
+优化结构：
+
+在修改序列之后，使用 优化 工具来完善蛋白质结构。
+这个工具有助于调整键角和距离，确保修改后的结构稳定可行。
+
+审查更改：
+
+审查所做的修改，确保它们符合设计标准。
+使用 可视化 工具查看蛋白质的不同表示形式，并分析其属性。
+
+导出新结构：
+
+当您对设计满意时，将新的蛋白质结构导出为 PDB 文件。
+导航至 VR 菜单中的 导出 选项并选择 导出 PDB 。
+系统会提示您保存文件，允许您命名并存储新设计的蛋白质。
+
+保存并退出：
+
+完成工作后保存并退出设计模式。
+
+### Surface
+
+`Surface`使用的是范德华力表面。通过调整透明度0.2-1.0，有0.2、0.4、0.6、0.8、1.0
+
+![surface.png](images/surface.png)
+
+### Color
+
+通过VR Menu的颜色的菜单，可以根据`元素（Element）`、`残基（Residue）`、`二级结构（SecStructure）`、`链（Chain）`、`蛋白质（PDB）`、`疏水性（HYDROPHOBICITY）`等方式进行多样化修改颜色。
+
+|`蛋白质（PDB）`| `元素（Element）`                        | `残基（Residue）`                          | `二级结构（SecStructure）`            |
+|:--------------------------------|:-------------------------------------|:---------------------------------------|:--------------------------------|
+| 使用`Spectrum`从冷色调到暖色调的颜色渐变。| 使用`Spectrum`从冷色调到暖色调的颜色渐变。           | 使用`Spectrum`从冷色调到暖色调的颜色渐变。             | 使用`Spectrum`从冷色调到暖色调的颜色渐变。      |
+| ![img.png](images/color_pdb.png)| ![img.png](images/color_element.png) | ![img_1.png](images/color_residue.png) | ![img.png](images/color_ss.png) | 
+
+
+### Align
+
+蛋白质对齐`Align`首先执行序列比对，在做结构上的比对，用于对蛋白质结构做对比。
+
+### Docking
+
+蛋白质对接`Docking`是一种计算方法，用于预测两个蛋白质如何结合在一起以形成稳定的复合物。首先，选择合适的蛋白质对接工具，例如 HDOCK 等。接着，选定两个蛋白质——一个作为受体，另一个作为配体，并将它们提交给对接服务进行分析。最终，您将获得蛋白质对接的结果。
+
+
+
+### Energy
+采用dfire等蛋白质打分工具，对蛋白质结构做打分。
+
+
+### RefineStructure
 
 Citation
 ========
+
+```
+@article{10.1093/bioinformatics/btaa696,
+    author = {Xu, Kui and Liu, Nan and Xu, Jingle and Guo, Chunlong and Zhao, Lingyun and Wang, Hong-Wei and Zhang, Qiangfeng Cliff},
+    title = "{VRmol: an Integrative Web-Based Virtual Reality System to Explore Macromolecular Structure}",
+    journal = {Bioinformatics},
+    year = {2020},
+    month = {08},
+    issn = {1367-4803},
+    doi = {10.1093/bioinformatics/btaa696},
+    url = {https://doi.org/10.1093/bioinformatics/btaa696},
+    note = {btaa696},
+    eprint = {https://academic.oup.com/bioinformatics/advance-article-pdf/doi/10.1093/bioinformatics/btaa696/33560033/btaa696.pdf},
+}
+```
 
 FAQ
 ====
