@@ -316,7 +316,7 @@ function createMenuButton(group) {
     // Structure
     number += 1;
     let ligand = buttonFactory.createButton(df.DEFBUTTON, {
-        text: "ligand",
+        text: "Ligand",
         position: new THREE.Vector3(x, y + (-number * (df.textMenuHeight + df.letterSpacing)), z),
         label: "ligand",
         length: 1,
@@ -338,7 +338,7 @@ function createMenuButton(group) {
     });
     number += 1;
     let toolkits = buttonFactory.createButton(df.DEFBUTTON, {
-        text: "toolkits",
+        text: "Toolkits",
         position: new THREE.Vector3(x, y + (-number * (df.textMenuHeight + df.letterSpacing)), z),
         label: "toolkits",
         length: 1,

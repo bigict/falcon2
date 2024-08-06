@@ -45,6 +45,7 @@ pip install -r requirements.txt
 cd server
 uvicorn app:app --host ip_address --port port
 ```
+使用头盔直接访问 ip_address
 
 ## Citation
 ```

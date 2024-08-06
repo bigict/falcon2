@@ -30,8 +30,8 @@ df.dfRender = {
     vrScene: function () {
         let newScene = new THREE.Scene();
         // 背景: 深蓝色
-        // newScene.background = new THREE.Color(0x17202A);
-        newScene.background = new THREE.Color(0xcccccc);
+        newScene.background = new THREE.Color(0x17202A);
+        // newScene.background = new THREE.Color(0xcccccc);
         // 创建一个半球光源 HemisphereLight(skyColor, groundColor)
         const hemisphereLight = new THREE.HemisphereLight(0x74B9FF, 0x2C3E50);
         newScene.add(hemisphereLight);
@@ -54,7 +54,8 @@ df.dfRender = {
         // 创建透视相机，参数分别是：视场角，宽高比，近剪裁面距离，远剪裁面距离
         let newCamera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 50000);
         // 设置相机初始位置
-        newCamera.position.set(0, 1.6, 300);
+        // newCamera.position.set(0, 1.6, 300);
+        newCamera.position.set(0, 1.6, 3);
         return newCamera;
     },
     nonVrControls: function (cameras, divs) {
@@ -62,8 +63,8 @@ df.dfRender = {
     },
     addLightsByType: function (lightType) {
         if (lightType === 0) {
-            // let light = new THREE.DirectionalLight(0xF8D5A3, 1.2);
-            let light = new THREE.DirectionalLight(0xFFFFFF, 1.2);
+            let light = new THREE.DirectionalLight(0xF8D5A3, 1.2);
+            // let light = new THREE.DirectionalLight(0xFFFFFF, 1.2);
             light.position.copy(camera.position);
             camera.add(light);
         }
