@@ -142,10 +142,10 @@ Drag按钮用于在PDB结构中拖动特定的元素。通过选择"Drag Chain"�
 Menu的颜色的菜单，可以根据`元素（Element）`、`残基（Residue）`、`二级结构（SecStructure）`、`链（Chain）`、`蛋白质（PDB）`、`疏水性（HYDROPHOBICITY）`
 等方式进行多样化修改颜色。
 
-| `蛋白质（PDB）`| `元素（Element）` | `残基（Residue）` | `二级结构（SecStructure）`|
+| `蛋白质（PDB）`                                                           | `元素（Element）`                                                            | `残基（Residue）`                                                            | `二级结构（SecStructure）`                                                |
 |:---------------------------------------------------------------------|:-------------------------------------------------------------------------|:-------------------------------------------------------------------------|:--------------------------------------------------------------------|
-| 使用`Spectrum`从冷色调到暖色调的颜色渐变。| 使用`Spectrum`从冷色调到暖色调的颜色渐变。| 使用`Spectrum`从冷色调到暖色调的颜色渐变。| 使用`Spectrum`从冷色调到暖色调的颜色渐变。|
-| <img src="images/color_pdb.png" alt="Cate" width="50" height="auto"> | <img src="images/color_element.png" alt="Cate" width="50" height="auto"> | <img src="images/color_residue.png" alt="Cate" width="50" height="auto"> | <img src="images/color_ss.png" alt="Cate" width="50" height="auto"> | 
+| 使用`Spectrum`从冷色调到暖色调的颜色渐变。                                           | 使用`Spectrum`从冷色调到暖色调的颜色渐变。                                               | 使用`Spectrum`从冷色调到暖色调的颜色渐变。                                               | 使用`Spectrum`从冷色调到暖色调的颜色渐变。                                          |
+| <img src="images/color_pdb.png" alt="Cate" width="80" height="auto"> | <img src="images/color_element.png" alt="Cate" width="80" height="auto"> | <img src="images/color_residue.png" alt="Cate" width="80" height="auto"> | <img src="images/color_ss.png" alt="Cate" width="80" height="auto"> | 
 
 ### Align
 
