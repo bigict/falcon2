@@ -237,7 +237,7 @@ df.dfRender = {
                                 df.PathList[0][k][1][2] = parseFloat(z.toFixed(3));
                             }
                         }
-                        df.render.changePDBData(df.SELECTED_RESIDUE);
+                        df.dfRender.changePDBData(df.SELECTED_RESIDUE);
                         df.tool.changeFrame(molId, meshId);
                         df.dfRender.clear(0);
                         // 重新生成 residue 结构
