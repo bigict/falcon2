@@ -108,6 +108,8 @@ VR设备：
 Drag按钮用于在PDB结构中拖动特定的元素。通过选择"Drag Chain"、"Drag Residue"、"Drag Residue"或"Drag Residue"，可以在 VR
 场景中拖动结构中的单个链、配体、残基或药物。
 
+[dragPDB.mp4](images/dragPDB.mp4)
+
 ### Design PDB
 
 蛋白质设计提供了一套强大的工具，用于在分子水平上修改蛋白质结构。请按照以下步骤设计您的蛋白质：

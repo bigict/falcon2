@@ -20,4 +20,4 @@ favicon: "favicon.png"
 github: [metadata]
 
 # Build settings
-theme: jekyll-theme-slate
+theme: jekyll-theme-cayman
