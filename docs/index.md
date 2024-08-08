@@ -147,7 +147,7 @@ Menu的颜色的菜单，可以根据`元素（Element）`、`残基（Residue�
 | `蛋白质（PDB）`                                                            | `元素（Element）`                                                             | `残基（Residue）`                                                             | `二级结构（SecStructure）`                                                 |
 |:----------------------------------------------------------------------|:--------------------------------------------------------------------------|:--------------------------------------------------------------------------|:---------------------------------------------------------------------|
 | 使用`Spectrum`从冷色调到暖色调的颜色渐变。                                            | 使用`Spectrum`从冷色调到暖色调的颜色渐变。                                                | 使用`Spectrum`从冷色调到暖色调的颜色渐变。                                                | 使用`Spectrum`从冷色调到暖色调的颜色渐变。                                           |
-| <img src="images/color_pdb.png" alt="Cate" width="150" height="auto"> | <img src="images/color_element.png" alt="Cate" width="150" height="auto"> | <img src="images/color_residue.png" alt="Cate" width="150" height="auto"> | <img src="images/color_ss.png" alt="Cate" width="150" height="auto"> | 
+| <img src="images/color_pdb.png" alt="Cate" width="300" height="auto"> | <img src="images/color_element.png" alt="Cate" width="300" height="auto"> | <img src="images/color_residue.png" alt="Cate" width="300" height="auto"> | <img src="images/color_ss.png" alt="Cate" width="300" height="auto"> | 
 
 ### Align
 
