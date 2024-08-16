@@ -11,7 +11,7 @@ function objectTransform(object, controller, tempMatrix) {
             df.tool.colorIntersectObjectRed(object, 1);
             if (object.type === df.MeshType) {
                 df.SELECTED_RESIDUE = object;
-                df.SELECTED_RESIDUE.visible = false
+                // df.SELECTED_RESIDUE.visible = false
                 df.SELECTED_RESIDUE_POS = new THREE.Vector3();
                 df.SELECTED_RESIDUE.controller = controller;
                 object.getWorldPosition(df.SELECTED_RESIDUE_POS);
@@ -82,7 +82,7 @@ function onTriggerDown(event, raster, tempMatrix) {
     if (menuObject.length > 0) {
         df.showMenu = !df.showMenu;
         df.GROUP['menu'].visible = df.showMenu;
-        df.GROUP['menu'].lookAt(camera.position)
+        // df.GROUP['menu'].lookAt(camera.position)
         return;
     }
     // 操作 Menu 模块

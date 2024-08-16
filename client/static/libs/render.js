@@ -157,12 +157,14 @@ df.dfRender = {
         // 监听 vr
         let isImmersive = false;
         renderer.xr.addEventListener('sessionstart', () => {
-            df.scale = 0.01
+            df.scale = 0.015;
             // df.scale = 1
-            for (let i in df.GROUP[df.SelectedPDBId]['main']) {
-                let aaa = df.GROUP[df.SelectedPDBId]['main'][i];
-                aaa.scale.set(df.scale, df.scale, df.scale);
-                // df.tool.vrCameraCenter(camera, aaa.children[10]);
+            for (let argumentsKey in df.pdbText) {
+                for (let i in df.GROUP[argumentsKey]['main']) {
+                    let aaa = df.GROUP[argumentsKey]['main'][i];
+                    aaa.scale.set(df.scale, df.scale, df.scale);
+                    // df.tool.vrCameraCenter(canon, camera, aaa);
+                }
             }
             isImmersive = true;
         });
@@ -194,6 +196,7 @@ df.dfRender = {
 
         leftController.addEventListener('selectstart', function (event) {
             let leftTempMatrix = new THREE.Matrix4();
+            df.tool.initPDBView(df.SelectedPDBId);
             // df.tool.vrCameraCenter(canon, df.GROUP['1cbs']['main']['a'].children[10]);
             onTriggerDown(event, rayCaster, leftTempMatrix);
         });
@@ -228,6 +231,7 @@ df.dfRender = {
                         let x = meshPos.x / ((df.scale));
                         let y = meshPos.y / ((df.scale));
                         let z = meshPos.z / ((df.scale));
+
                         // console.log("xyz", x, y, z)
                         // 修改 df.PathList 对应坐标
                         for (let k in df.PathList[0]) {
@@ -237,7 +241,7 @@ df.dfRender = {
                                 df.PathList[0][k][1][2] = parseFloat(z.toFixed(3));
                             }
                         }
-                        df.dfRender.changePDBData(df.SELECTED_RESIDUE);
+                        // df.dfRender.changePDBData(df.SELECTED_RESIDUE);
                         df.tool.changeFrame(molId, meshId);
                         df.dfRender.clear(0);
                         // 重新生成 residue 结构
@@ -316,7 +320,6 @@ df.dfRender = {
             }
         }
         df.pdbText[pdbId] = PDBFormat;
-        console.log(PDBFormat);
         return PDBFormat;
     }
 }

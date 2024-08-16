@@ -40,7 +40,12 @@ createMenuButton();
 
 df.loader.load('1cbs', 'name', function () {
     df.controller.drawGeometry(df.config.mainMode, '1cbs');
-
+    df.SelectedPDBId = '1cbs';
 });
-df.SelectedPDBId = '1cbs';
+
+// df.loader.load('7fjc', 'name', function () {
+//     df.controller.drawGeometry(df.config.mainMode, '7fjc');
+//     df.SelectedPDBId = '7fjc';
+// });
+
 

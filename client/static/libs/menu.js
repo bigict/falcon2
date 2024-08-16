@@ -1,6 +1,7 @@
 import * as THREE from '../js/three.module.js';
 import {df} from "./core.js";
 import {w3m} from "./web3D/w3m.js";
+import {camera} from "./render.js";
 
 
 class ButtonFactory {
@@ -20,7 +21,7 @@ class ButtonFactory {
 class Button {
     constructor(options) {
         this.text = options.text;
-        this.position = options.position;
+        this.position = new THREE.Vector3(options.position.x, options.position.y, options.position.z);
         this.action = options.action || null;
         this.label = options.label;
         this.length = options.length;
@@ -102,12 +103,34 @@ class SubMenu {
 
 let buttonFactory = new ButtonFactory();
 
-function submitAPI(data, url) {
+function submitAPI(data, url, ligand) {
     data = JSON.stringify(data);
     df.api.apiRequest(url, data, (response) => {
-        let pdbId = response['pdbId'];
-        df.loader.load(pdbId, 'name', function () {
-            df.controller.drawGeometry(df.config.mainMode, pdbId);
+        df.pdbText[ligand] = response['rotation'];
+        df.loader.loadFromString(ligand, response['rotation'], function () {
+            df.controller.drawGeometry(df.config.mainMode, ligand);
+        });
+    });
+}
+
+
+function submitAlign(data, url, ligand) {
+    data = JSON.stringify(data);
+    df.SelectedPDBId = ligand;
+    THREE.Cache.clear();
+    df.dfRender.clear(0);
+    delete df.w3m.mol[ligand];
+    df.api.apiRequest(url, data, (response) => {
+        console.log(ligand)
+        console.log(response['rotation'])
+        df.loader.loadFromString(ligand, response['rotation'], function () {
+            df.controller.drawGeometry(df.config.mainMode, ligand);
+            df.SelectedPDBId = ligand;
+            for (let i in df.GROUP[ligand]['main']) {
+                let aaa = df.GROUP[ligand]['main'][i];
+                console.log('333')
+                aaa.scale.set(df.scale, df.scale, df.scale);
+            }
         });
     });
 }
@@ -133,8 +156,8 @@ df.actionManager = {
         df.actionManager.closeMenu();
         let url = df.dockingDict[df.SELECTED_DOCKING];
         let data = {
-            'receptor': df.DOCKING_RECEPTOR,
-            'ligand': df.DOCKING_LIGAND
+            'receptor': df.pdbText[df.ALIGN_RECEPTOR],
+            'ligand': df.pdbText[df.ALIGN_LIGAND]
         };
         submitAPI(data, url);
     },
@@ -153,11 +176,10 @@ df.actionManager = {
         df.actionManager.closeMenu();
         let url = df.ALIGN_TOOLS[df.SELECTED_ALIGN];
         let data = {
-            'receptor': df.ALIGN_RECEPTOR,
-            'ligand': df.ALIGN_LIGAND
+            'receptor': df.pdbText[df.ALIGN_RECEPTOR],
+            'ligand': df.pdbText[df.ALIGN_LIGAND]
         };
-        data = JSON.stringify(data);
-        submitAPI(data, url);
+        submitAlign(data, url, df.ALIGN_LIGAND);
     },
     alignToolsAction: function (param) {
         df.SELECTED_ALIGN = param;
@@ -256,8 +278,10 @@ function createThirdButton(dicts, position, action, parentButton, length) {
     } else {
         parentButton.subMenu = new SubMenu({buttons: [], parent: parentButton});
     }
+    let number = 0
     // position.x = position.x + (length - 2) * df.lineSpacing;
     for (let dkt in dicts) {
+        position.y = position.y - number * (df.textMenuHeight + df.letterSpacing);
         let button = buttonFactory.createButton(df.DEFBUTTON, {
             text: dkt,
             position: position,
@@ -268,6 +292,7 @@ function createThirdButton(dicts, position, action, parentButton, length) {
             length: length,
             parentButton: parentButton
         });
+        number += 1
         parentButton.subMenu.addButton(button);
     }
     return parentButton.subMenu
@@ -278,7 +303,7 @@ function createMenuButton(group) {
     // 创建初始化 button
     let x = -0.5,
         y = 0.25,
-        z = -1;
+        z = -1.5;
     let number = 0;
 
     // length 1
@@ -415,7 +440,6 @@ function createMenuButton(group) {
         ],
         parent: structure
     });
-
 
 
     // init sub-button
@@ -760,7 +784,8 @@ function createMenuButton(group) {
             colorByChain,
             colorByPDB,
             colorByHYDROPHOBICITY,
-        ]
+        ],
+        parent: color,
     });
     // docking
     let dockingTools = buttonFactory.createButton(df.DEFBUTTON, {
@@ -915,7 +940,7 @@ function createMenuButton(group) {
     });
     // docking tool sub
     createThirdButton(
-        df.dockingDict,
+        df.ALIGN_TOOLS,
         new THREE.Vector3(x, y, z),
         df.actionManager.alignToolsAction,
         alignTools,

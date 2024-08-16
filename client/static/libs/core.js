@@ -33,7 +33,7 @@ df = {
 
     // gamepad
     // selection: 0,
-    selection: 101,
+    selection: 103,
     select_all: 100,
     select_main: 101,
     select_chain: 102,
@@ -150,7 +150,7 @@ df = {
     MeshType: "Mesh",
 
     // align
-    ALIGN_TOOLS: {"tm-align": window.location.href},
+    ALIGN_TOOLS: {"tm-align": window.location.href+ 'align'},
     ALIGN_RECEPTOR: '',
     ALIGN_LIGAND: '',
     SELECTED_ALIGN: 'tm-align',

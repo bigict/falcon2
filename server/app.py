@@ -4,6 +4,8 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import JSONResponse
 from fastapi import FastAPI, Request
 from items import HDock, Design, Energy
+from alignment import pymol_align_global
+from dssp import get_ss_from_pymol
 from dfire.calene import DFIRE
 import subprocess
 import tempfile
@@ -100,4 +102,22 @@ async def abacus(response: Design):
     subprocess.run(['ABACUS-DesignSeq', '-in', input_pdb, '-out', output_pdb, '-log', log_file])
     pass
 
+
+@app.post("/align")
+async def align(response: HDock):
+    receptor = response.receptor
+    ligand = response.ligand
+
+    path_data = "./data/"
+
+    with open(path_data+'receptor.pdb', 'w', encoding='utf-8') as fw1:
+        fw1.writelines(receptor)
+    with open(path_data+'ligand.pdb', 'w', encoding='utf-8') as fw2:
+        fw2.writelines(ligand)
+
+    pymol_align_global(path_data+'receptor.pdb', path_data+'ligand.pdb')
+    # result = ligand
+    result = get_ss_from_pymol(path_data + 'aligned_mobile.pdb')
+    print(result)
+    return JSONResponse(content={"rotation": result})
 

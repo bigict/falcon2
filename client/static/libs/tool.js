@@ -183,14 +183,17 @@ df.tool = {
     vrCameraZoom: function () {
 
     },
-    vrCameraCenter: function (camera, object) {
+    vrCameraCenter: function (canon, camera, object) {
+        // object.position.copy(camera.position);
         let box = new THREE.Box3().setFromObject(object);
         let center = box.getCenter(new THREE.Vector3());
+        // console.log(center)
         // distance
-        let distance = 5;
-        let cameraPosition = new THREE.Vector3(center.x, center.y, center.z + distance);
-        df.tool.smoothMoveObject(camera.position, cameraPosition, camera);
-        camera.lookAt(object.position);
+        let distance = 0.5;
+        let cameraPosition = new THREE.Vector3(center.x - camera.position.x, center.y - camera.position.y, center.z - camera.position.z + distance);
+        // canon.position.set(cameraPosition.x - camera.position.x, cameraPosition.y - camera.position.y, cameraPosition.z - camera.position.z + distance)
+        df.tool.smoothMoveObject(canon.position, cameraPosition, canon);
+        // canon.lookAt(camera);
     },
     smoothMoveObject: function (stPos, edPos, object) {
         let duration = 1000;
@@ -210,14 +213,10 @@ df.tool = {
         renderer.xr.getSession().requestAnimationFrame(animate);
     },
     initPDBView: function (pdbId) {
-        let combineBox = new THREE.Box3();
-        let scaleAmount = 0.01; // 缩小的倍数
         for (let key in df.GROUP[pdbId]['main']) {
             let group = df.GROUP[pdbId]['main'][key];
-            group.scale.set(scaleAmount, scaleAmount, scaleAmount);
-            combineBox.expandByObject(group);
+            df.tool.vrCameraCenter(canon, camera, group);
         }
-        df.tool.vrCameraCenter(canon, combineBox, true);
     },
     designAPI: function (path, pdbId, pdb_data) {
         fetch(path, {

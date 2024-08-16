@@ -25,13 +25,38 @@ df.loader = {
                 break;
         }
     },
-    // todo 需要想一想 如何限制空间
-    getCenterOffset: function () {
-        let limit = w3m.global.limit;
-        let x = -(limit.x[0] + limit.x[1]) / 2;
-        let y = -(limit.y[0] + limit.y[1]) / 2;
-        let z = -(limit.z[0] + limit.z[1]) / 2;
-        df.GeoCenterOffset = new THREE.Vector3(x, y, z);
+    loadFromString: function (pdbId, content, callback) {
+        df.pdbContent[pdbId] = content;
+        df.pdbText[pdbId] = content;
+        df.loader.loadSaveCoord(pdbId, content);
+        w3m.pdb(content, pdbId);
+        w3m.api.switchRepModeMain(w3m.LINE);
+        w3m.api.switchRepModeMain(w3m.BACKBONE);
+        w3m.api.switchRepModeMain(w3m.CUBE);
+        w3m.api.switchRepModeMain(w3m.CARTOON);
+
+        df.GROUP[pdbId] = {};
+        // init dict
+        df.pdbInfoList.forEach(function (name) {
+            df.GROUP[pdbId][name] = {}
+        });
+
+        for (let chain in w3m.mol[pdbId].chain) {
+            let firstAtomId = df.tool.getFirstAtomIdByChain(pdbId, chain);
+            df.pdbInfoList.forEach(function (name) {
+                df.GROUP[pdbId][name][chain] = new THREE.Group();
+                df.GROUP[pdbId][name][chain].surface = new THREE.Group();
+                scene.add(df.GROUP[pdbId][name][chain].surface);
+                df.GROUP[pdbId][name][chain].name = pdbId + '_' + name + '_' + chain;
+            });
+            df.GROUP[pdbId]['main'][chain].userData["presentAtom"] = df.tool.getMainAtom(pdbId, firstAtomId);
+            if (!df.pptShow) {
+                df.pdbInfoList.forEach(function (name) {
+                    scene.add(df.GROUP[pdbId][name][chain]);
+                });
+            }
+        }
+        callback();
     },
     callBackLoading: function (pdbId, error, content, callback) {
         if (error) {
@@ -53,9 +78,6 @@ df.loader = {
         df.pdbInfoList.forEach(function (name) {
             df.GROUP[pdbId][name] = {}
         });
-        // df.GROUP_MAIN_INDEX[pdbId] = [];
-        // df.GROUP_HET_INDEX[pdbId] = [];
-        // df.GROUP_STRUCTURE_INDEX[pdbId] = [];
 
         for (let chain in w3m.mol[pdbId].chain) {
             let firstAtomId = df.tool.getFirstAtomIdByChain(pdbId, chain);
@@ -71,24 +93,7 @@ df.loader = {
                     scene.add(df.GROUP[pdbId][name][chain]);
                 });
             }
-            // df.GROUP_MAIN_INDEX[pdbId].push(chain);
-            // df.GROUP_STRUCTURE_INDEX[pdbId].push(chain);
         }
-        // Main Het
-        // df.GROUP_MAIN_INDEX[pdbId].push(df.GROUP_MAIN);
-        // df.GROUP_HET_INDEX[pdbId].push(df.GROUP_HET);
-        // df.GROUP_HET_INDEX[pdbId].push(df.GROUP_WATER);
-        // structure
-        // df.GROUP_STRUCTURE_INDEX[pdbId].push(df.GROUP_MAIN);
-        // df.GROUP_STRUCTURE_INDEX[pdbId].push(df.GROUP_WATER);
-        // df.GROUP_STRUCTURE_INDEX[pdbId].push(df.GROUP_HET);
-        // df.GROUP_STRUCTURE_INDEX[pdbId].push(df.GROUP_SURFACE);
-        // df.GROUP_STRUCTURE_INDEX[pdbId].push(df.GROUP_AXIS);
-        // df.GROUP_STRUCTURE_INDEX[pdbId].push(df.GROUP_INFO);
-        // df.GROUP_STRUCTURE_INDEX[pdbId].push(df.GROUP_MUTATION);
-        // df.GROUP_STRUCTURE_INDEX[pdbId].push(df.GROUP_DRUG);
-        // df.GROUP_STRUCTURE_INDEX[pdbId].push(df.GROUP_SLICE);
-        // df.GROUP_STRUCTURE_INDEX[pdbId].push(df.GROUP_BOND);
         callback();
     },
     loadTextFromPDB: function (pdbId, file, callback, loadBack) {
