@@ -157,7 +157,7 @@ df.dfRender = {
         // 监听 vr
         let isImmersive = false;
         renderer.xr.addEventListener('sessionstart', () => {
-            df.scale = 0.015;
+            df.scale = 1;
             // df.scale = 1
             for (let argumentsKey in df.pdbText) {
                 for (let i in df.GROUP[argumentsKey]['main']) {
@@ -221,13 +221,13 @@ df.dfRender = {
                         // 根据 select residue 获取 residue信息
                         let meshInfo = df.SELECTED_RESIDUE.userData.presentAtom
                         let meshId = meshInfo.id;
-                        let meshPos = meshInfo.pos;
+                        let meshPos = new THREE.Vector3(meshInfo.pos.x, meshInfo.pos.y, meshInfo.pos.z);
                         let molId = meshInfo.pdbId;
                         let controller_mesh = df.SELECTED_RESIDUE.matrixWorld;
-                        if (df.SELECTED_RESIDUE.controller) {
-                            controller_mesh = df.SELECTED_RESIDUE.controller
-                        }
-                        meshPos.applyMatrix4(controller_mesh.matrixWorld);
+                        // if (df.SELECTED_RESIDUE.controller) {
+                        //     controller_mesh = df.SELECTED_RESIDUE.controller
+                        // }
+                        meshPos.applyMatrix4(controller_mesh);
                         let x = meshPos.x / ((df.scale));
                         let y = meshPos.y / ((df.scale));
                         let z = meshPos.z / ((df.scale));
@@ -241,7 +241,10 @@ df.dfRender = {
                                 df.PathList[0][k][1][2] = parseFloat(z.toFixed(3));
                             }
                         }
-                        // df.dfRender.changePDBData(df.SELECTED_RESIDUE);
+                        // let posDIct = {'matrixWorld': df.SELECTED_RESIDUE.matrixWorld}
+                        let posDIct = {}
+                        posDIct = df.tool.getResidueNewPos(df.SELECTED_RESIDUE, posDIct)
+                        df.dfRender.changePDBData(posDIct);
                         df.tool.changeFrame(molId, meshId);
                         df.dfRender.clear(0);
                         // 重新生成 residue 结构
@@ -284,6 +287,7 @@ df.dfRender = {
     },
     changePDBData: function (resDict) {
         let key = Object.keys(resDict)
+        console.log("resDict", resDict)
         if (!key || key.length === 0) {
             return ''
         }
@@ -317,6 +321,48 @@ df.dfRender = {
                         PDBFormat = PDBFormat + line + "\n";
                         break;
                 }
+                // switch (df.config.mainMode) {
+                //     case df.BALL_AND_ROD:
+                //
+                //         break;
+                //     case df.CARTOON_SSE:
+                //         switch (line_atom) {
+                //             case 'atom':
+                //                 const residue_id = w3m_sub(line, 23, 27);
+                //                 const atom_name = w3m_sub(line, 13, 16).toLowerCase();
+                //                 const atom_chain = w3m_sub(line, 22) || 'x';
+                //                 let keys = pdbId + "_" + atom_chain + "_" + residue_id + "_" + atom_name;
+                //                 let subkeys = pdbId + "_" + atom_chain + "_" + residue_id;
+                //                 if (resDict.hasOwnProperty(keys)) {
+                //                     const b_x = (resDict[keys].x / df.scale).toFixed(3);
+                //                     const b_y = (resDict[keys].y / df.scale).toFixed(3);
+                //                     const b_z = (resDict[keys].z / df.scale).toFixed(3);
+                //                     line = line.replace(w3m_sub(line, 31, 38).padStart(8, ' '), b_x.padStart(8, ' '));
+                //                     line = line.replace(w3m_sub(line, 39, 46).padStart(8, ' '), b_y.padStart(8, ' '));
+                //                     line = line.replace(w3m_sub(line, 47, 54).padStart(8, ' '), b_z.padStart(8, ' '));
+                //                 } else if (Object.keys(resDict).some(key => key.includes(subkeys))) {
+                //                     const b_x = (resDict[keys].x / df.scale).toFixed(3);
+                //                     const b_y = (resDict[keys].y / df.scale).toFixed(3);
+                //                     const b_z = (resDict[keys].z / df.scale).toFixed(3);
+                //                     line = line.replace(w3m_sub(line, 31, 38).padStart(8, ' '), b_x.padStart(8, ' '));
+                //                     line = line.replace(w3m_sub(line, 39, 46).padStart(8, ' '), b_y.padStart(8, ' '));
+                //                     line = line.replace(w3m_sub(line, 47, 54).padStart(8, ' '), b_z.padStart(8, ' '));
+                //                 }
+                //                 // Object.keys(resDict).filter(key => key.includes(subkeys));
+                //
+                //                 PDBFormat = PDBFormat + line + "\n";
+                //                 break;
+                //             case 'hetatm':
+                //                 PDBFormat = PDBFormat + line + "\n";
+                //                 break;
+                //             default:
+                //                 PDBFormat = PDBFormat + line + "\n";
+                //                 break;
+                //         }
+                //         break;
+                //         break;
+                // }
+
             }
         }
         df.pdbText[pdbId] = PDBFormat;

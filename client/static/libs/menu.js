@@ -846,8 +846,6 @@ function createMenuButton(group) {
         df.actionManager.dockingToolsAction,
         dockingTools,
         4);
-
-
     docking.subMenu = new SubMenu({
         buttons: [
             dockingTools,

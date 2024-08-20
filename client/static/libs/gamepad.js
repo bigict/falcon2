@@ -11,10 +11,10 @@ function objectTransform(object, controller, tempMatrix) {
             df.tool.colorIntersectObjectRed(object, 1);
             if (object.type === df.MeshType) {
                 df.SELECTED_RESIDUE = object;
-                // df.SELECTED_RESIDUE.visible = false
+                df.SELECTED_RESIDUE.visible = false
                 df.SELECTED_RESIDUE_POS = new THREE.Vector3();
                 df.SELECTED_RESIDUE.controller = controller;
-                object.getWorldPosition(df.SELECTED_RESIDUE_POS);
+                // object.getWorldPosition(df.SELECTED_RESIDUE_POS);
                 controller.attach(object);
             } else {
                 object.matrix.premultiply(tempMatrix);
