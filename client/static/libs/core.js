@@ -6,6 +6,8 @@ var df;
 df = {
     // w3m
     PathList: [],
+    GROUP_VISIBLE: {},
+
     t: false,
 
     // remoteUrl: ['https://www.rcsb.org/pdb/files/'],
@@ -33,7 +35,7 @@ df = {
 
     // gamepad
     // selection: 0,
-    selection: 103,
+    selection: 101,
     select_all: 100,
     select_main: 101,
     select_chain: 102,
@@ -43,6 +45,9 @@ df = {
     select_multi_chain: 106,
     select_region: 200,
     SELECT_RESIDUE_MESH: [],
+
+    // ring
+    ringDistance: 20,
 
     // scuba
     scubaState: false,

@@ -1,48 +1,10 @@
 import * as THREE from '../js/three.module.js';
 
 import {df} from './core.js';
-import {camera, scene} from "./render.js";
+import {camera, canon, scene} from "./render.js";
 
 
 df.drawer = {
-    // drawSphere: function (pdbId, type, chain, point, color, radius, atom, w) {
-    //     let alpha = 0.5;
-    //     let beta = 0.5;
-    //     let bumpScale = 1;
-    //     let specularShininess = Math.pow(2, alpha * 10);
-    //     let specularColor = new THREE.Color(beta * 0.2, beta * 0.2, beta * 0.2);
-    //
-    //     // 创建不同细节级别的几何体
-    //     let highDetailGeometry = new THREE.SphereGeometry(radius, w, w);
-    //     let mediumDetailGeometry = new THREE.SphereGeometry(radius, w / 2, w / 2);
-    //     let lowDetailGeometry = new THREE.SphereGeometry(radius, w / 4, w / 4);
-    //
-    //     let material = new THREE.MeshPhongMaterial({
-    //         bumpScale: bumpScale,
-    //         color: color,
-    //         specular: specularColor,
-    //         reflectivity: beta,
-    //         shininess: specularShininess
-    //     });
-    //
-    //     // 创建 LOD 对象
-    //     let lod = new THREE.LOD();
-    //
-    //     // 添加不同细节级别的网格到 LOD 对象
-    //     lod.addLevel(new THREE.Mesh(highDetailGeometry, material), 0); // 最高细节，距离为0
-    //     lod.addLevel(new THREE.Mesh(mediumDetailGeometry, material), 5); // 中等细节，距离为50
-    //     lod.addLevel(new THREE.Mesh(lowDetailGeometry, material), 10); // 最低细节，距离为100
-    //
-    //     lod.position.copy(point);
-    //     lod.name = df.tool.atomCaId(atom);
-    //     lod.userData = {
-    //         presentAtom: atom
-    //     };
-    //
-    //     // 添加 LOD 对象到场景
-    //     df.GROUP[pdbId][type][chain].add(lod);
-    // },
-
     drawSphere: function (pdbId, type, chain, point, color, radius, atom, w) {
         let alpha = 0.5;
         // 物体表面的反射率，控制镜面反射的强度，值范围一般在0到1之间
@@ -64,6 +26,7 @@ df.drawer = {
 
         let mesh = new THREE.Mesh(geometry, material);
         mesh.name = df.tool.atomCaId(atom);
+        mesh.danfeng = 1;
         mesh.position.copy(point);
         mesh.userData = {
             presentAtom: atom
@@ -89,6 +52,7 @@ df.drawer = {
         let mesh = new THREE.Mesh(geometry, material);
         mesh.name = df.tool.atomCaId(atom);
         mesh.position.copy(start);
+        mesh.danfeng = 1;
         mesh.lookAt(end);
         mesh.userData = {
             presentAtom: atom
@@ -106,6 +70,7 @@ df.drawer = {
         materials.side = THREE.FrontSide;
         let mesh = new THREE.Mesh(geometry, materials);
         mesh.name = atom.id;
+        mesh.danfeng = 1;
         mesh.userData = {
             presentAtom: atom,
             repType: "tube"
@@ -142,6 +107,7 @@ df.drawer = {
         let mesh = new THREE.Mesh(geometry, material);
         let atom = df.tool.getMainAtom(pdbId, resId);
         mesh.name = atom.id;
+        mesh.danfeng = 1;
         mesh.userData = {
             presentAtom: atom,
             repType: "tube"
@@ -201,6 +167,7 @@ df.drawer = {
 
         let mesh = new THREE.Mesh(geometry, materials);
         mesh.name = atomId;
+        mesh.danfeng = 1;
         let atom = df.tool.getMainAtom(pdbId, atomId);
         mesh.userData = {
             presentAtom: atom,
@@ -217,6 +184,7 @@ df.drawer = {
             opacity: 0.8 // 设置透明度
         });
         let mesh = new THREE.Mesh(geometry, material);
+        mesh.danfeng = 1;
         mesh.position.set(0, -1, -4);
         if (df.GROUP['menu'] !== undefined) {
             df.GROUP['menu'].add(mesh);
@@ -237,6 +205,7 @@ df.drawer = {
         let offset = new THREE.Vector3(-0.8, 0.8, -4);
         mesh.position.copy(offset);
         mesh.name = 'menu-button';
+        mesh.danfeng = 1;
         camera.add(mesh);
         return mesh;
     },
@@ -270,13 +239,14 @@ df.drawer = {
         let material = new THREE.MeshBasicMaterial({
             map: texture,
             // transparent: true, // 使材质透明
-            // opacity: 0.9 // 调整不透明度
+            // opacity: 0.8 // 调整不透明度
         });
         let mesh = new THREE.Mesh(geometry, material);
         mesh.name = text;
         mesh.title = label;
         // mesh.position.set(0, -1, -4);
         mesh.position.copy(position);
+        mesh.danfeng = 1;
         if (df.GROUP['menu'] !== undefined) {
             df.GROUP['menu'].add(mesh);
         }
@@ -308,6 +278,25 @@ df.drawer = {
             mesh.visible = true;
         }
     },
-
+    Ring: function () {
+        // 加载自定义的 PNG 纹理
+        const textureLoader = new THREE.TextureLoader();
+        const circleTexture = textureLoader.load('static/imgs/ring.svg');
+        // 创建Sprite材质
+        const spriteMaterial = new THREE.SpriteMaterial({
+            map: circleTexture, // 使用自定义纹理
+            color: 0xffffff   // 可根据需要调整颜色
+        });
+        // 创建Sprite
+        const circleSprite = new THREE.Sprite(spriteMaterial);
+        // 设置固定大小
+        // circleSprite.scale.set(0.25, 0.25, 1); // 根据需要调整大小
+        // circleSprite.position.set(-0, 0, -1)
+        // 添加到场景中，但最初设置为不可见
+        // circleSprite.visible = false;
+        circleSprite.name = 'ring'
+        scene.add(circleSprite);
+        return circleSprite;
+    },
 }
 

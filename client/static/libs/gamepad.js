@@ -73,11 +73,10 @@ function objectDeTrans(controller) {
     }
 }
 
-function onTriggerDown(event, raster, tempMatrix) {
-
+function onTriggerDown(event, raster, tempMatrix, objects) {
     let controller = event.target;
     // open menu
-    let menuList = getIntersections(controller, raster, tempMatrix, true);
+    let menuList = getIntersections(objects, raster, tempMatrix, true);
     let menuObject = menuList[0]
     if (menuObject.length > 0) {
         df.showMenu = !df.showMenu;
@@ -87,14 +86,14 @@ function onTriggerDown(event, raster, tempMatrix) {
     }
     // 操作 Menu 模块
     if (df.showMenu) {
-        let menuList = getIntersections(controller, raster, tempMatrix);
+        let menuList = getIntersections(objects, raster, tempMatrix);
         if (menuList) {
             let menuObject = menuList[1]
             dealWithMenu(menuObject);
         }
     } else {
         // 拖拽蛋白功能
-        let interList = getIntersections(controller, raster, tempMatrix);
+        let interList = getIntersections(objects, raster, tempMatrix);
         let intersections = interList[0];
         let controllerTempMatrix = interList[1];
         if (intersections && intersections.length <= 0) {
@@ -157,6 +156,24 @@ function rayCasterIntersect(raster) {
         }
     }
     return [];
+}
+
+
+function getIntersectionsRing(controller, raster, tempMatrix) {
+    tempMatrix.identity().extractRotation(controller.matrixWorld);
+    raster.ray.origin.setFromMatrixPosition(controller.matrixWorld);
+    raster.ray.direction.set(0, 0, -1).applyMatrix4(tempMatrix);
+    let selected = raster.intersectObjects(scene.children, true);
+    if (selected.length > 0) {
+        for (let j in selected) {
+            let obj = selected[j].object
+            if (obj.danfeng) {
+                if (df.tool.isVisible(obj)) {
+                    return selected[j];
+                }
+            }
+        }
+    }
 }
 
 
@@ -231,9 +248,9 @@ function getIntersections(controller, raster, tempMatrix, onMenuButton = false) 
                 break;
             case df.select_multi_chain:
                 if (df.tool.isDictEmpty(df.GROUP[selectedPDBId][selectedType])) return;
-                if (selectedChain === "h" || selectedChain === "l") {
-                    let select_obj_h = df.GROUP[selectedPDBId][selectedType]["h"];
-                    let select_obj_l = df.GROUP[selectedPDBId][selectedType]["l"];
+                if (selectedChain === "C" || selectedChain === "D") {
+                    let select_obj_h = df.GROUP[selectedPDBId][selectedType]["C"];
+                    let select_obj_l = df.GROUP[selectedPDBId][selectedType]["D"];
                     select_obj_h.group = select_obj_h.parent;
                     select_obj_l.group = select_obj_l.parent;
                     inters.push(select_obj_h);
@@ -309,4 +326,4 @@ function scubaCommit() {
 }
 
 
-export {onTriggerDown, onTriggerUp}
+export {onTriggerDown, onTriggerUp, getIntersectionsRing}

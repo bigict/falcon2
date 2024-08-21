@@ -176,6 +176,7 @@ df.painter = {
             let residueData = w3m.mol[pdbId].residueData;
 
             for (let chain in residueData) {
+                console.log(chain)
                 for (let resId in residueData[chain]) {
                     df.painter.showResidue(pdbId, chain, resId, type);
                 }

@@ -5,12 +5,13 @@ import {OrbitControls} from '../js/controls/OrbitControls.js';
 import {OculusHandModel} from '../js/webxr/OculusHandModel.js';
 import {XRControllerModelFactory} from '../js/webxr/XRControllerModelFactory.js';
 import {df} from './core.js';
-import {onTriggerDown, onTriggerUp} from './gamepad.js';
+import {onTriggerDown, onTriggerUp, getIntersectionsRing} from './gamepad.js';
 import {OculusHandPointerModel} from "../js/webxr/OculusHandPointerModel.js";
 
 var container;
-var camera, scene, renderer, rayCaster;
+var camera, scene, renderer, leftRayCaster, rightRayCaster;
 var canon = new THREE.Object3D();
+canon.name = 'canon'
 var lightType = 0;
 // initVR -- controls
 var controls, leftController, leftControllerGrip, rightController, rightControllerGrip, leftHand, rightHand;
@@ -74,6 +75,7 @@ df.dfRender = {
         for (let idx in df.GROUP_INDEX) {
             let gName = df.GROUP_INDEX[idx];
             df.GROUP[gName] = new THREE.Group();
+            df.GROUP[gName].danfeng = 1
             df.GROUP[gName].name = gName;
             if (gName === 'menu') {
                 camera.add(df.GROUP[gName]);
@@ -123,7 +125,6 @@ df.dfRender = {
     createHandController: function (renderer, camera, num) {
         let hand = renderer.xr.getHand(num);
         let handModel = new OculusHandModel(hand);
-
         hand.add(handModel);
         camera.add(hand);
         return hand;
@@ -157,7 +158,7 @@ df.dfRender = {
         // 监听 vr
         let isImmersive = false;
         renderer.xr.addEventListener('sessionstart', () => {
-            df.scale = 1;
+            df.scale = 0.015;
             // df.scale = 1
             for (let argumentsKey in df.pdbText) {
                 for (let i in df.GROUP[argumentsKey]['main']) {
@@ -166,6 +167,7 @@ df.dfRender = {
                     // df.tool.vrCameraCenter(canon, camera, aaa);
                 }
             }
+
             isImmersive = true;
         });
         renderer.xr.addEventListener('sessionend', () => {
@@ -175,34 +177,60 @@ df.dfRender = {
         // xr
         leftController = this.createController(renderer, canon, 1);
         rightController = this.createController(renderer, canon, 0);
-        rayCaster = new THREE.Raycaster();
+        leftRayCaster = new THREE.Raycaster();
+        leftRayCaster.camera = camera;
+        rightRayCaster = new THREE.Raycaster();
+        rightRayCaster.camera = camera;
 
         // Hand
         leftHand = this.createHandController(renderer, canon, 1);
         rightHand = this.createHandController(renderer, canon, 0);
 
         let controllerModelFactory = new XRControllerModelFactory();
-        leftControllerGrip = this.createControllerGrip(renderer, canon, controllerModelFactory, 1);
-        rightControllerGrip = this.createControllerGrip(renderer, canon, controllerModelFactory, 0);
+        leftControllerGrip = this.createControllerGrip(renderer, canon, controllerModelFactory, 0);
+        rightControllerGrip = this.createControllerGrip(renderer, canon, controllerModelFactory, 1);
         const leftControllerPointer = new OculusHandPointerModel(leftHand, leftController);
         const rightControllerPointer = new OculusHandPointerModel(rightHand, rightController);
         leftHand.add(leftControllerPointer);
         rightHand.add(rightControllerPointer);
+
         // 射线
         let leftLine = this.createControllerLine();
         let rightLine = this.createControllerLine();
         leftController.add(leftLine);
         rightController.add(rightLine);
 
+        // leftHand.add(leftLine);
+        // rightHand.add(rightLine);
+
         leftController.addEventListener('selectstart', function (event) {
             let leftTempMatrix = new THREE.Matrix4();
-            df.tool.initPDBView(df.SelectedPDBId);
+            // df.tool.initPDBView(df.SelectedPDBId);
+            const inputSources = renderer.xr.getSession().inputSources;
+            if (inputSources && inputSources[0]) {
+                if (inputSources[0].hand) {
+                    onTriggerDown(event, leftRayCaster, leftTempMatrix, leftControllerPointer.pointerObject);
+                } else if (inputSources[0].gamepad) {
+                    onTriggerDown(event, rightRayCaster, leftTempMatrix, event.target);
+                }
+            }
             // df.tool.vrCameraCenter(canon, df.GROUP['1cbs']['main']['a'].children[10]);
-            onTriggerDown(event, rayCaster, leftTempMatrix);
         });
         rightController.addEventListener('selectstart', function (event) {
             let rightTempMatrix = new THREE.Matrix4();
-            onTriggerDown(event, rayCaster, rightTempMatrix)
+            const inputSources = renderer.xr.getSession().inputSources;
+            console.log(inputSources)
+            if (inputSources && inputSources[0]) {
+                if (inputSources[0].hand) {
+                    leftLine.visible = false;
+                    rightLine.visible = false;
+                    onTriggerDown(event, leftRayCaster, rightTempMatrix, rightControllerPointer.pointerObject);
+                } else if (inputSources[0].gamepad) {
+                    leftLine.visible = true;
+                    rightLine.visible = true;
+                    onTriggerDown(event, rightRayCaster, rightTempMatrix, event.target);
+                }
+            }
         });
         leftController.addEventListener('selectend', function (event) {
             onTriggerUp(event);
@@ -258,6 +286,56 @@ df.dfRender = {
                     }
                 }
             }
+            // // raycaster
+            if (isImmersive) {
+                const inputSources = renderer.xr.getSession().inputSources;
+                let leftintersect = undefined
+                let rightintersect = undefined
+                if (inputSources && inputSources[0]) {
+                    if (inputSources[0].hand) {
+                        let tempMatrix = new THREE.Matrix4();
+                        leftintersect = getIntersectionsRing(leftControllerPointer.pointerObject, leftRayCaster, tempMatrix);
+                    } else if (inputSources[0].gamepad) {
+                        let tempMatrix = new THREE.Matrix4();
+                        leftintersect = getIntersectionsRing(leftController, leftRayCaster, tempMatrix);
+                    }
+                    if (leftintersect) {
+                        // const intersect = leftintersect[0];
+                        // 将Sprite移动到交点处
+                        df.leftRing.position.copy(leftintersect.point);
+                        const distance = camera.position.distanceTo(leftintersect.point);
+
+                        // 计算比例因子，保持大小不变
+                        const scaleFactor = distance / df.ringDistance;
+                        df.leftRing.scale.set(scaleFactor, scaleFactor, scaleFactor);
+                        df.leftRing.visible = true;
+                    } else {
+                        df.leftRing.visible = false;
+                    }
+                }
+                if (inputSources && inputSources[1]) {
+                    if (inputSources[1].hand) {
+                        let tempMatrix = new THREE.Matrix4();
+                        rightintersect = getIntersectionsRing(rightControllerPointer.pointerObject, rightRayCaster, tempMatrix);
+                    } else if (inputSources[1].gamepad) {
+                        let tempMatrix = new THREE.Matrix4();
+                        rightintersect = getIntersectionsRing(rightController, rightRayCaster, tempMatrix);
+                    }
+                    if (rightintersect) {
+                        // const intersect = rightintersect[0];
+                        // 将Sprite移动到交点处
+                        df.rightRing.position.copy(rightintersect.point);
+                        const distance = camera.position.distanceTo(rightintersect.point);
+
+                        // 计算比例因子，保持大小不变
+                        const scaleFactor = distance / df.ringDistance;
+                        df.rightRing.scale.set(scaleFactor, scaleFactor, scaleFactor);
+                        df.rightRing.visible = true;
+                    } else {
+                        df.rightRing.visible = false;
+                    }
+                }
+            }
             camera.updateProjectionMatrix();
             renderer.render(scene, camera);
         }
@@ -287,7 +365,6 @@ df.dfRender = {
     },
     changePDBData: function (resDict) {
         let key = Object.keys(resDict)
-        console.log("resDict", resDict)
         if (!key || key.length === 0) {
             return ''
         }
@@ -321,48 +398,6 @@ df.dfRender = {
                         PDBFormat = PDBFormat + line + "\n";
                         break;
                 }
-                // switch (df.config.mainMode) {
-                //     case df.BALL_AND_ROD:
-                //
-                //         break;
-                //     case df.CARTOON_SSE:
-                //         switch (line_atom) {
-                //             case 'atom':
-                //                 const residue_id = w3m_sub(line, 23, 27);
-                //                 const atom_name = w3m_sub(line, 13, 16).toLowerCase();
-                //                 const atom_chain = w3m_sub(line, 22) || 'x';
-                //                 let keys = pdbId + "_" + atom_chain + "_" + residue_id + "_" + atom_name;
-                //                 let subkeys = pdbId + "_" + atom_chain + "_" + residue_id;
-                //                 if (resDict.hasOwnProperty(keys)) {
-                //                     const b_x = (resDict[keys].x / df.scale).toFixed(3);
-                //                     const b_y = (resDict[keys].y / df.scale).toFixed(3);
-                //                     const b_z = (resDict[keys].z / df.scale).toFixed(3);
-                //                     line = line.replace(w3m_sub(line, 31, 38).padStart(8, ' '), b_x.padStart(8, ' '));
-                //                     line = line.replace(w3m_sub(line, 39, 46).padStart(8, ' '), b_y.padStart(8, ' '));
-                //                     line = line.replace(w3m_sub(line, 47, 54).padStart(8, ' '), b_z.padStart(8, ' '));
-                //                 } else if (Object.keys(resDict).some(key => key.includes(subkeys))) {
-                //                     const b_x = (resDict[keys].x / df.scale).toFixed(3);
-                //                     const b_y = (resDict[keys].y / df.scale).toFixed(3);
-                //                     const b_z = (resDict[keys].z / df.scale).toFixed(3);
-                //                     line = line.replace(w3m_sub(line, 31, 38).padStart(8, ' '), b_x.padStart(8, ' '));
-                //                     line = line.replace(w3m_sub(line, 39, 46).padStart(8, ' '), b_y.padStart(8, ' '));
-                //                     line = line.replace(w3m_sub(line, 47, 54).padStart(8, ' '), b_z.padStart(8, ' '));
-                //                 }
-                //                 // Object.keys(resDict).filter(key => key.includes(subkeys));
-                //
-                //                 PDBFormat = PDBFormat + line + "\n";
-                //                 break;
-                //             case 'hetatm':
-                //                 PDBFormat = PDBFormat + line + "\n";
-                //                 break;
-                //             default:
-                //                 PDBFormat = PDBFormat + line + "\n";
-                //                 break;
-                //         }
-                //         break;
-                //         break;
-                // }
-
             }
         }
         df.pdbText[pdbId] = PDBFormat;
@@ -377,7 +412,8 @@ export {
     camera,
     scene,
     renderer,
-    rayCaster,
+    leftRayCaster,
+    rightRayCaster,
     canon,
     controls,
     leftController,

@@ -145,6 +145,9 @@ df.actionManager = {
         df.actionManager.closeMenu();
     },
     // drag Action
+    zoomAction: function () {
+        df.tool.initPDBView(df.SelectedPDBId);
+    },
     dragAction: function (select_type) {
         // 切换为 drag mode
         df.selection = select_type;
@@ -259,7 +262,7 @@ df.actionManager = {
     // Export pdb
     exportPDBAction: function (param) {
         let text = df.pdbText[param]
-        df.tool.savePDB(text, df.SelectedPDBId + '.pdb');
+        df.tool.savePDB(text, param + '.pdb');
     },
 }
 
@@ -446,6 +449,13 @@ function createMenuButton(group) {
     // general button
     // drag sub-button
     // x = x + df.lineSpacing;
+    let zoom = buttonFactory.createButton(df.DEFBUTTON, {
+        text: "zoom",
+        position: new THREE.Vector3(x, y, z),
+        label: "zoom",
+        action: df.actionManager.zoomAction,
+        length: 2,
+    });
     let dragInit = buttonFactory.createButton(df.DEFBUTTON, {
         text: "Init PDB",
         position: new THREE.Vector3(x, y, z),
@@ -504,6 +514,7 @@ function createMenuButton(group) {
     });
     drag.subMenu = new SubMenu({
         buttons: [
+            zoom,
             dragInit,
             dragMain,
             dragChain,

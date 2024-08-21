@@ -22,6 +22,8 @@ function switchMenu(obj) {
 }
 
 df.controller.init();
+df.leftRing = df.drawer.Ring();
+df.rightRing = df.drawer.Ring();
 
 
 // 初始化menu菜单
@@ -38,9 +40,13 @@ df.drawer.createMenuButton();
 df.GROUP['menu'].visible = df.showMenu;
 createMenuButton();
 
-df.loader.load('1cbs', 'name', function () {
-    df.controller.drawGeometry(df.config.mainMode, '1cbs');
-    df.SelectedPDBId = '1cbs';
+df.loader.load('aaaa', 'name', function () {
+    df.controller.drawGeometry(df.config.mainMode, 'aaaa');
+    df.SelectedPDBId = 'aaaa';
+});
+df.loader.load('bbbb', 'name', function () {
+    df.controller.drawGeometry(df.config.mainMode, 'bbbb');
+    df.SelectedPDBId = 'bbbb';
 });
 
 // df.loader.load('7fjc', 'name', function () {
