@@ -48,6 +48,7 @@ w3m = {
     COLOR_BY_CHAIN_SPECTRUM: 608,
     COLOR_BY_HYDROPHOBICITY: 609,
     COLOR_BY_USER: 610,
+    COLOR_BY_PDB: 611,
     // SS
     HELIX: 150,
     HELIX_HEAD: 1500,
@@ -646,10 +647,16 @@ w3m.tool = {
                     return array[atom[3]];
                 });
                 break;
+            case w3m.COLOR_BY_PDB:
+                array = 101 + Object.keys(w3m.mol).indexOf(mol_id)
+                mol.color.main = mol.atom.main.map(function () {
+                    return array;
+                });
+                break;
             default:
-                array = w3m.color.element;
-                mol.color.main = mol.atom.main.map(function (atom) {
-                    return array[atom[9]];
+                array = 100 + Object.keys(df.w3m.mol).length
+                mol.color.main = mol.atom.main.map(function () {
+                    return array;
                 });
                 break;
         }
@@ -708,6 +715,11 @@ w3m.tool = {
                         return 1050;
                     });
                 }
+                break;
+            case w3m.COLOR_BY_PDB:
+                mol.color.main = mol.atom.main.map(function (atom) {
+                    return array[atom[9]];
+                });
                 break;
             default:
                 array = w3m.color.element;
@@ -1576,7 +1588,7 @@ w3m.config = {
     rep_mode_het: w3m.TUBE,
     // color
     // color_mode_main: w3m.COLOR_BY_SPECTRUM,
-    color_mode_main: w3m.COLOR_BY_CHAIN,
+    color_mode_main: w3m.COLOR_BY_PDB,
     color_mode_het: w3m.COLOR_BY_ELEMENT,
 
     // smooth

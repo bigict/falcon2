@@ -66,6 +66,10 @@ w3m.structure = {
 
 /* color */
 w3m.color = {
+    // By PDB
+    pdb: {
+
+    },
     // By Atom
     element: {
         c: 101, o: 102, n: 103, s: 104, h: 105, p: 106,

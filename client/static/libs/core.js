@@ -125,6 +125,9 @@ df = {
     //Mode
     MODE_THREE: 0,
     MODE_VR: 1,
+    // text
+    lfpt: "",
+    rtpt: "",
 
     // representation Mode
     HIDE: 0,
@@ -179,7 +182,7 @@ df = {
 
 // config
 df.config = {
-    mainMode: df.CARTOON_SSE,
+    mainMode: df.BALL_AND_ROD,
     hetMode: df.HET_STICK,
     water_sphere_w: 8,
     surface: df.SURFACE,

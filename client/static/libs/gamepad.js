@@ -56,14 +56,17 @@ function objectTransform(object, controller, tempMatrix) {
 function objectDeTrans(controller) {
     for (let i = controller.children.length - 1; i >= 0; i--) {
         let child = controller.children[i];
+        console.log(child)
         switch (child.type) {
             case df.GroupType:
                 child.matrix.premultiply(controller.matrixWorld);
                 child.matrix.decompose(child.position, child.quaternion, child.scale);
                 df.tool.colorIntersectObjectRed(child, 0);
                 scene.add(child);
-                let posDict = df.tool.forAllAtom(child);
-                df.dfRender.changePDBData(posDict);
+                if (child.name !== "surface") {
+                    let posDict = df.tool.forAllAtom(child);
+                    df.dfRender.changePDBData(posDict);
+                }
                 break;
             case df.MeshType:
                 df.tool.colorIntersectObjectRed(child, 0);
@@ -226,6 +229,9 @@ function getIntersections(controller, raster, tempMatrix, onMenuButton = false) 
                             let objects = df.GROUP[pdbId][name][chain];
                             if (objects.length === 0) continue;
                             inters.push(objects);
+                            if (objects.surface) {
+                                inters.push(objects.surface);
+                            }
                         }
                     }
                 }
@@ -237,6 +243,9 @@ function getIntersections(controller, raster, tempMatrix, onMenuButton = false) 
                         let objects = df.GROUP[selectedPDBId][name][chain];
                         if (objects.length === 0) continue;
                         inters.push(objects);
+                        if (objects.surface) {
+                            inters.push(objects.surface);
+                        }
                     }
                 }
                 break;
@@ -245,6 +254,9 @@ function getIntersections(controller, raster, tempMatrix, onMenuButton = false) 
                 let objects = df.GROUP[selectedPDBId][selectedType][selectedChain];
                 objects.group = objects.parent;
                 inters.push(objects);
+                if (objects.surface) {
+                    inters.push(objects.surface);
+                }
                 break;
             case df.select_multi_chain:
                 if (df.tool.isDictEmpty(df.GROUP[selectedPDBId][selectedType])) return;
@@ -262,15 +274,22 @@ function getIntersections(controller, raster, tempMatrix, onMenuButton = false) 
                 }
                 break;
             case df.select_residue:
-                console.log(inters);
-                if (selectedObject.userData.repType === "tube") {
-                    let objects = getChildrenByName(df.GROUP[selectedPDBId][selectedType][selectedChain], selectedObject.name);
-                    for (var a = 0; a < objects.length; a++) {
-                        // 更改坐标
-                        // objects[a].group = df.GROUP[selectedPDBId][selectedType][selectedChain];
-                        objects[a].group = objects[a].parent;
-                        inters.push(objects[a]);
-                    }
+                switch (df.config.mainMode) {
+                    case df.BALL_AND_ROD:
+                        let objects = getChildrenByName(df.GROUP[selectedPDBId][selectedType][selectedChain], selectedObject.name);
+
+                        break
+                    case df.CARTOON_SSE:
+                        if (selectedObject.userData.repType === "tube") {
+                            let objects = getChildrenByName(df.GROUP[selectedPDBId][selectedType][selectedChain], selectedObject.name);
+                            for (var a = 0; a < objects.length; a++) {
+                                // 更改坐标
+                                // objects[a].group = df.GROUP[selectedPDBId][selectedType][selectedChain];
+                                objects[a].group = objects[a].parent;
+                                inters.push(objects[a]);
+                            }
+                        }
+                        break
                 }
                 break;
             case df.select_region:

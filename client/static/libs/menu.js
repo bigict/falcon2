@@ -677,6 +677,8 @@ function createMenuButton(group) {
         ],
         parent: ligand,
     });
+    // move camera
+
     // surface
     let surfaceHide = buttonFactory.createButton(df.DEFBUTTON, {
         text: "Hide",

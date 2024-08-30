@@ -46,6 +46,7 @@ df.loader = {
             df.pdbInfoList.forEach(function (name) {
                 df.GROUP[pdbId][name][chain] = new THREE.Group();
                 df.GROUP[pdbId][name][chain].surface = new THREE.Group();
+                df.GROUP[pdbId][name][chain].surface.name = 'surface';
                 scene.add(df.GROUP[pdbId][name][chain].surface);
                 df.GROUP[pdbId][name][chain].name = pdbId + '_' + name + '_' + chain;
             });
@@ -67,7 +68,6 @@ df.loader = {
         df.pdbText[pdbId] = content;
         df.loader.loadSaveCoord(pdbId, content);
         w3m.pdb(content, pdbId);
-        console.log(2)
         w3m.api.switchRepModeMain(w3m.LINE);
         w3m.api.switchRepModeMain(w3m.BACKBONE);
         w3m.api.switchRepModeMain(w3m.CUBE);
@@ -84,6 +84,7 @@ df.loader = {
             df.pdbInfoList.forEach(function (name) {
                 df.GROUP[pdbId][name][chain] = new THREE.Group();
                 df.GROUP[pdbId][name][chain].surface = new THREE.Group();
+                df.GROUP[pdbId][name][chain].surface.name = 'surface';
                 scene.add(df.GROUP[pdbId][name][chain].surface);
                 df.GROUP[pdbId][name][chain].name = pdbId + '_' + name + '_' + chain;
             });

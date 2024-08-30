@@ -15,7 +15,8 @@ canon.name = 'canon'
 var lightType = 0;
 // initVR -- controls
 var controls, leftController, leftControllerGrip, rightController, rightControllerGrip, leftHand, rightHand;
-
+var leftObject = null;
+var rightObject = null;
 
 const createGrid = (size, divisions, position, rotation, grids, scene) => {
     const gridHelper = new THREE.GridHelper(size, divisions);
@@ -158,13 +159,15 @@ df.dfRender = {
         // 监听 vr
         let isImmersive = false;
         renderer.xr.addEventListener('sessionstart', () => {
-            df.scale = 0.015;
+            df.scale = 0.15;
             // df.scale = 1
             for (let argumentsKey in df.pdbText) {
-                for (let i in df.GROUP[argumentsKey]['main']) {
-                    let aaa = df.GROUP[argumentsKey]['main'][i];
-                    aaa.scale.set(df.scale, df.scale, df.scale);
-                    // df.tool.vrCameraCenter(canon, camera, aaa);
+                for (let index in df.GROUP[argumentsKey]) {
+                    for (let i in df.GROUP[argumentsKey][index]) {
+                        let aaa = df.GROUP[argumentsKey][index][i];
+                        aaa.scale.set(df.scale, df.scale, df.scale);
+                        // df.tool.vrCameraCenter(canon, camera, aaa);
+                    }
                 }
             }
 
@@ -200,18 +203,15 @@ df.dfRender = {
         leftController.add(leftLine);
         rightController.add(rightLine);
 
-        // leftHand.add(leftLine);
-        // rightHand.add(rightLine);
-
         leftController.addEventListener('selectstart', function (event) {
             let leftTempMatrix = new THREE.Matrix4();
             // df.tool.initPDBView(df.SelectedPDBId);
             const inputSources = renderer.xr.getSession().inputSources;
-            if (inputSources && inputSources[0]) {
-                if (inputSources[0].hand) {
+            if (inputSources && inputSources[1]) {
+                if (inputSources[1].hand && (inputSources[1].handedness === 'left')) {
                     onTriggerDown(event, leftRayCaster, leftTempMatrix, leftControllerPointer.pointerObject);
-                } else if (inputSources[0].gamepad) {
-                    onTriggerDown(event, rightRayCaster, leftTempMatrix, event.target);
+                } else if (inputSources[1].gamepad) {
+                    onTriggerDown(event, leftRayCaster, leftTempMatrix, event.target);
                 }
             }
             // df.tool.vrCameraCenter(canon, df.GROUP['1cbs']['main']['a'].children[10]);
@@ -219,15 +219,14 @@ df.dfRender = {
         rightController.addEventListener('selectstart', function (event) {
             let rightTempMatrix = new THREE.Matrix4();
             const inputSources = renderer.xr.getSession().inputSources;
-            console.log(inputSources)
-            if (inputSources && inputSources[0]) {
+            if (inputSources && inputSources[0] && (inputSources[0].handedness === 'right')) {
                 if (inputSources[0].hand) {
-                    leftLine.visible = false;
-                    rightLine.visible = false;
-                    onTriggerDown(event, leftRayCaster, rightTempMatrix, rightControllerPointer.pointerObject);
+                    // leftLine.visible = false;
+                    // rightLine.visible = false;
+                    onTriggerDown(event, rightRayCaster, rightTempMatrix, rightControllerPointer.pointerObject);
                 } else if (inputSources[0].gamepad) {
-                    leftLine.visible = true;
-                    rightLine.visible = true;
+                    // leftLine.visible = true;
+                    // rightLine.visible = true;
                     onTriggerDown(event, rightRayCaster, rightTempMatrix, event.target);
                 }
             }
@@ -286,54 +285,81 @@ df.dfRender = {
                     }
                 }
             }
-            // // raycaster
+            // raycaster
             if (isImmersive) {
-                const inputSources = renderer.xr.getSession().inputSources;
-                let leftintersect = undefined
-                let rightintersect = undefined
-                if (inputSources && inputSources[0]) {
-                    if (inputSources[0].hand) {
-                        let tempMatrix = new THREE.Matrix4();
-                        leftintersect = getIntersectionsRing(leftControllerPointer.pointerObject, leftRayCaster, tempMatrix);
-                    } else if (inputSources[0].gamepad) {
-                        let tempMatrix = new THREE.Matrix4();
-                        leftintersect = getIntersectionsRing(leftController, leftRayCaster, tempMatrix);
-                    }
-                    if (leftintersect) {
-                        // const intersect = leftintersect[0];
-                        // 将Sprite移动到交点处
-                        df.leftRing.position.copy(leftintersect.point);
-                        const distance = camera.position.distanceTo(leftintersect.point);
-
-                        // 计算比例因子，保持大小不变
-                        const scaleFactor = distance / df.ringDistance;
-                        df.leftRing.scale.set(scaleFactor, scaleFactor, scaleFactor);
-                        df.leftRing.visible = true;
-                    } else {
-                        df.leftRing.visible = false;
-                    }
+                const xrSession = renderer.xr.getSession();
+                if (!leftObject) {
+                    leftObject = leftController;
                 }
-                if (inputSources && inputSources[1]) {
-                    if (inputSources[1].hand) {
-                        let tempMatrix = new THREE.Matrix4();
-                        rightintersect = getIntersectionsRing(rightControllerPointer.pointerObject, rightRayCaster, tempMatrix);
-                    } else if (inputSources[1].gamepad) {
-                        let tempMatrix = new THREE.Matrix4();
-                        rightintersect = getIntersectionsRing(rightController, rightRayCaster, tempMatrix);
+                if (!rightObject) {
+                    rightObject = leftController;
+                }
+                xrSession.addEventListener('inputsourceschange', (event) => {
+                    xrSession.inputSources.forEach((inputSource) => {
+                        if (inputSource.hand) {
+                            switch (inputSource.handedness) {
+                                case 'left':
+                                    leftObject = leftControllerPointer.pointerObject
+                                    break
+                                case 'right':
+                                    rightObject = rightControllerPointer.pointerObject
+                                    break
+                            }
+                        } else if (inputSource.gamepad) {
+                            switch (inputSource.handedness) {
+                                case 'left':
+                                    leftObject = leftController
+                                    break
+                                case 'right':
+                                    rightObject = rightController
+                                    break
+                            }
+                        }
+                    });
+                });
+                let leftTempMatrix = new THREE.Matrix4();
+                let leftintersect = getIntersectionsRing(leftObject, leftRayCaster, leftTempMatrix);
+                let rightTempMatrix = new THREE.Matrix4();
+                let rightintersect = getIntersectionsRing(rightObject, rightRayCaster, rightTempMatrix);
+                if (leftintersect) {
+                    let obj = leftintersect.object;
+                    if (obj.userData && obj.userData.presentAtom) {
+                        let tsAtom = obj.userData.presentAtom;
+                        let text = tsAtom.pdbId + '/' + tsAtom.chainName + '/' + tsAtom.resId + '/' + tsAtom.resName + '/' + tsAtom.name
+                        df.lfpt.position.copy(leftintersect.point)
+                        df.lfpt.position.z = leftintersect.point.z - 0.01
+                        df.drawer.updateText(text, df.lfpt)
                     }
-                    if (rightintersect) {
-                        // const intersect = rightintersect[0];
-                        // 将Sprite移动到交点处
-                        df.rightRing.position.copy(rightintersect.point);
-                        const distance = camera.position.distanceTo(rightintersect.point);
+                    // 将Sprite移动到交点处
+                    df.leftRing.position.copy(leftintersect.point);
+                    const distance = camera.position.distanceTo(leftintersect.point);
+                    // 计算比例因子，保持大小不变
+                    const scaleFactor = distance / df.ringDistance;
+                    df.leftRing.scale.set(scaleFactor, scaleFactor, scaleFactor);
+                    df.leftRing.visible = true;
+                } else {
+                    df.leftRing.visible = false;
+                }
+                if (rightintersect) {
+                    let obj = rightintersect.object;
+                    if (obj.userData && obj.userData.presentAtom) {
+                        let tsAtom = obj.userData.presentAtom;
+                        let text = tsAtom.pdbId + '/' + tsAtom.chainName + '/' + tsAtom.resId + '/' + tsAtom.resName + '/' + tsAtom.name
+                        df.lfpt.position.copy(rightintersect.point)
+                        df.lfpt.position.z = rightintersect.point.z - 0.01
+                        df.drawer.updateText(text, df.lfpt)
+                    }
+                    // const intersect = rightintersect[0];
+                    // 将Sprite移动到交点处
+                    df.rightRing.position.copy(rightintersect.point);
+                    const distance = camera.position.distanceTo(rightintersect.point);
 
-                        // 计算比例因子，保持大小不变
-                        const scaleFactor = distance / df.ringDistance;
-                        df.rightRing.scale.set(scaleFactor, scaleFactor, scaleFactor);
-                        df.rightRing.visible = true;
-                    } else {
-                        df.rightRing.visible = false;
-                    }
+                    // 计算比例因子，保持大小不变
+                    const scaleFactor = distance / df.ringDistance;
+                    df.rightRing.scale.set(scaleFactor, scaleFactor, scaleFactor);
+                    df.rightRing.visible = true;
+                } else {
+                    df.rightRing.visible = false;
                 }
             }
             camera.updateProjectionMatrix();

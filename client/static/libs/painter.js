@@ -171,12 +171,11 @@ df.painter = {
     },
     showAllResidues: function (type, pdbId) {
         if (type === df.config.surface) {
-            df.painter.showSurface(pdbId, 'a',1, w3m.mol[pdbId].atom.main.length, true);
+            df.painter.showSurface(pdbId, 'a', 1, w3m.mol[pdbId].atom.main.length, true);
         } else {
             let residueData = w3m.mol[pdbId].residueData;
 
             for (let chain in residueData) {
-                console.log(chain)
                 for (let resId in residueData[chain]) {
                     df.painter.showResidue(pdbId, chain, resId, type);
                 }
@@ -408,7 +407,7 @@ df.painter = {
                            startId = 1,
                            endId = false,
                            isSelected = true,
-                           ) {
+    ) {
         let mainAtom = w3m.mol[pdbId].atom.main;
         let atoms = {};
         let limit = w3m.global.limit;
@@ -423,6 +422,9 @@ df.painter = {
                 if (index > endId) break;
             }
             let atom = df.tool.getMainAtom(pdbId, i);
+            if ([65, 66, 67].includes(parseInt(atom.resid))) {
+                continue
+            }
             let xyz = atom.posCentered;
             let color;
             if (isSelected) {
@@ -573,6 +575,7 @@ df.painter = {
         if (type < df.HET) {
             df.dfRender.clear(0);
             df.controller.drawGeometry(type, df.SelectedPDBId);
+            df.controller.drawGeometry(df.config.hetMode, df.SelectedPDBId);
         } else {
             df.dfRender.clear(1);
             df.controller.drawGeometry(type, df.SelectedPDBId);
@@ -591,7 +594,7 @@ df.painter = {
             }
         } else {
             for (const opacityKey in df.GROUP[df.SelectedPDBId]['main']) {
-                df.painter.showSurface(df.SelectedPDBId, opacityKey, 1 );
+                df.painter.showSurface(df.SelectedPDBId, opacityKey, 1);
             }
         }
     }

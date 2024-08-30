@@ -92,7 +92,6 @@ df.tool = {
     },
     getColorByIndex: function (pdbId, id, structure) {
         let rId = w3m.mol[pdbId].color[structure][id];
-        console.log(pdbId, rId)
         if (rId) {
             let C_color = w3m.rgb[rId][0];
             let N_color = w3m.rgb[rId][1];

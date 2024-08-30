@@ -255,9 +255,9 @@ df.drawer = {
     createSprite: function () {
         const spriteMaterial = new THREE.SpriteMaterial({color: 0xffffff});
         const sprite = new THREE.Sprite(spriteMaterial);
-        let offset = new THREE.Vector3(-camera.position.x, -camera.position.y + 0.5, -2);
+        let offset = new THREE.Vector3(-0.5, -0.5, -1);
         sprite.position.copy(offset);
-        sprite.visible = false;
+        // sprite.visible = false;
         if (df.GROUP["score"] !== undefined) {
             df.GROUP["score"].add(sprite);
         }
@@ -267,10 +267,9 @@ df.drawer = {
     updateText: function (text, mesh) {
         const canvas = document.createElement('canvas');
         const context = canvas.getContext('2d');
-        context.font = 'Bold 40px Arial';
+        context.font = 'Bold 10px Arial';
         context.fillStyle = 'white';
-        context.fillText(text, 0, 40);
-
+        context.fillText(text, 0, 10);
         const texture = new THREE.CanvasTexture(canvas);
         mesh.material.map = texture;
         texture.needsUpdate = true;
@@ -290,10 +289,8 @@ df.drawer = {
         // 创建Sprite
         const circleSprite = new THREE.Sprite(spriteMaterial);
         // 设置固定大小
-        // circleSprite.scale.set(0.25, 0.25, 1); // 根据需要调整大小
-        // circleSprite.position.set(-0, 0, -1)
         // 添加到场景中，但最初设置为不可见
-        // circleSprite.visible = false;
+        circleSprite.visible = false;
         circleSprite.name = 'ring'
         scene.add(circleSprite);
         return circleSprite;
