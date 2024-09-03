@@ -411,5 +411,13 @@ df.tool = {
             return df.tool.isVisible(object.parent); // 递归检查父级
         }
         return true;
+    },
+    addIndex: function (group) {
+        let addIndex = 0;
+        group.children.forEach(child => {
+            child.userData.idx = addIndex;
+            addIndex++;
+        });
+
     }
 }

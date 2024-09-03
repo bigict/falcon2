@@ -306,7 +306,8 @@ function getIntersections(controller, raster, tempMatrix, onMenuButton = false) 
             case df.select_residue:
                 switch (df.config.mainMode) {
                     case df.BALL_AND_ROD:
-                        let objects = getChildrenByName(df.GROUP[selectedPDBId][selectedType][selectedChain], selectedObject.name);
+                        df.GROUP[selectedPDBId][selectedType][selectedChain].children.sort((a, b) => a.userData.idx - b.userData.idx);
+                        let objects = getChildrenByName(df.GROUP[selectedPDBId][selectedType][selectedChain], selectedObject);
                         let obj_min = 999999;
                         let obj_max = 0;
                         for (var a = 0; a < objects.length; a++) {

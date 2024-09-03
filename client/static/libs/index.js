@@ -26,7 +26,6 @@ df.leftRing = df.drawer.Ring();
 df.rightRing = df.drawer.Ring();
 
 
-
 // 初始化menu菜单
 let menuOpen = false;
 df.drawer.createMenuButton();
@@ -48,6 +47,12 @@ df.loader.load('aaaa', 'name', function () {
     df.controller.drawGeometry(df.config.mainMode, 'aaaa');
     // df.painter.showSurface('aaaa', 'A', 1);
     df.SelectedPDBId = 'aaaa';
+    for (let index in df.GROUP['aaaa']) {
+        for (let i in df.GROUP['aaaa'][index]) {
+            let aaa = df.GROUP['aaaa'][index][i];
+            df.tool.addIndex(aaa);
+        }
+    }
 });
 
 
