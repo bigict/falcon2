@@ -53,7 +53,7 @@ df.loader.load('aaaa', 'name', function () {
 df.loader.load('4eu2', 'name', function () {
     df.controller.drawGeometry(df.config.mainMode, '4eu2');
     df.controller.drawGeometry(df.config.hetMode, '4eu2');
-    df.painter.showSurface('4eu2', 'A', 1);
+    // df.painter.showSurface('4eu2', 'A', 1);
     // df.SelectedPDBId = '1qy3';
 });
 
