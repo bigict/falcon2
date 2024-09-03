@@ -151,25 +151,26 @@ df.dfRender = {
         // init VR render
         renderer = this.initRender();
 
-        const sessionInit = {
-            requiredFeatures: ['hand-tracking']
-        };
+        // const sessionInit = {
+        //     requiredFeatures: ['hand-tracking']
+        // };
 
-        document.body.appendChild(VRButton.createButton(renderer, sessionInit));
+        // document.body.appendChild(VRButton.createButton(renderer, sessionInit));
+        document.body.appendChild(VRButton.createButton(renderer));
         // 监听 vr
         let isImmersive = false;
         renderer.xr.addEventListener('sessionstart', () => {
-            df.scale = 0.15;
-            // df.scale = 1
-            for (let argumentsKey in df.pdbText) {
-                for (let index in df.GROUP[argumentsKey]) {
-                    for (let i in df.GROUP[argumentsKey][index]) {
-                        let aaa = df.GROUP[argumentsKey][index][i];
-                        aaa.scale.set(df.scale, df.scale, df.scale);
-                        // df.tool.vrCameraCenter(canon, camera, aaa);
-                    }
-                }
-            }
+            // df.scale = 0.1;
+            df.scale = 1
+            // for (let argumentsKey in df.pdbText) {
+            //     for (let index in df.GROUP[argumentsKey]) {
+            //         for (let i in df.GROUP[argumentsKey][index]) {
+            //             let aaa = df.GROUP[argumentsKey][index][i];
+            //             aaa.scale.set(df.scale, df.scale, df.scale);
+            //             // df.tool.vrCameraCenter(canon, camera, aaa);
+            //         }
+            //     }
+            // }
 
             isImmersive = true;
         });
@@ -325,10 +326,13 @@ df.dfRender = {
                     let obj = leftintersect.object;
                     if (obj.userData && obj.userData.presentAtom) {
                         let tsAtom = obj.userData.presentAtom;
-                        let text = tsAtom.pdbId + '/' + tsAtom.chainName + '/' + tsAtom.resId + '/' + tsAtom.resName + '/' + tsAtom.name
-                        df.lfpt.position.copy(leftintersect.point)
-                        df.lfpt.position.z = leftintersect.point.z - 0.01
-                        df.drawer.updateText(text, df.lfpt)
+                        let index = obj.parent.children.indexOf(obj)
+                        if (index) {
+                            let text = tsAtom.pdbId + '/' + tsAtom.chainName + '/' + tsAtom.resId + '/' + tsAtom.resName + '/' + tsAtom.name + '/' + index
+                            df.lfpt.position.copy(leftintersect.point)
+                            df.lfpt.position.z = leftintersect.point.z - 0.01
+                            df.drawer.updateText(text, df.lfpt)
+                        }
                     }
                     // 将Sprite移动到交点处
                     df.leftRing.position.copy(leftintersect.point);
@@ -344,7 +348,8 @@ df.dfRender = {
                     let obj = rightintersect.object;
                     if (obj.userData && obj.userData.presentAtom) {
                         let tsAtom = obj.userData.presentAtom;
-                        let text = tsAtom.pdbId + '/' + tsAtom.chainName + '/' + tsAtom.resId + '/' + tsAtom.resName + '/' + tsAtom.name
+                        let index = obj.parent.children.indexOf(obj)
+                        let text = tsAtom.pdbId + '/' + tsAtom.chainName + '/' + tsAtom.resId + '/' + tsAtom.resName + '/' + tsAtom.name + '/' + index
                         df.lfpt.position.copy(rightintersect.point)
                         df.lfpt.position.z = rightintersect.point.z - 0.01
                         df.drawer.updateText(text, df.lfpt)

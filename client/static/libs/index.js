@@ -44,25 +44,18 @@ createMenuButton();
 df.lfpt = df.drawer.createSprite()
 df.drawer.updateText('1', df.lfpt)
 
-df.loader.load('4eu4', 'name', function () {
-
-    df.controller.drawGeometry(df.config.mainMode, '4eu4');
-    df.SelectedPDBId = '4eu4';
-    for (let i = 0; i < df.GROUP['4eu4']['main']['A'].children.length; i++) {
-        let mesh = df.GROUP['4eu4']['main']['A'].children[i]
-        if (mesh.name !== 951) {
-            mesh.visible = false
-        }
-    }
-
+df.loader.load('aaaa', 'name', function () {
+    df.controller.drawGeometry(df.config.mainMode, 'aaaa');
+    df.SelectedPDBId = 'aaaa';
 });
 
 
-// df.loader.load('4eu1', 'name', function () {
-//     df.controller.drawGeometry(df.config.mainMode, '4eu1');
-//     // df.controller.drawGeometry(df.config.hetMode, '4eu4');
-//     df.SelectedPDBId = '4eu1';
-// });
+df.loader.load('4eu2', 'name', function () {
+    df.controller.drawGeometry(df.config.mainMode, '4eu2');
+    df.controller.drawGeometry(df.config.hetMode, '4eu2');
+    df.painter.showSurface('4eu2', 'A', 1);
+    // df.SelectedPDBId = '1qy3';
+});
 
 // df.loader.load('7fjc', 'name', function () {
 //     df.controller.drawGeometry(df.config.mainMode, '7fjc');

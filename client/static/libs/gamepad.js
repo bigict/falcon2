@@ -7,15 +7,24 @@ import * as THREE from '../js/three.module.js';
 
 function objectTransform(object, controller, tempMatrix) {
     switch (df.selection) {
+        case df.drag_residues:
+            df.tool.colorIntersectObjectRed(object, 1);
+            controller.attach(object);
+            break;
         default:
             df.tool.colorIntersectObjectRed(object, 1);
             if (object.type === df.MeshType) {
-                df.SELECTED_RESIDUE = object;
-                df.SELECTED_RESIDUE.visible = false
-                df.SELECTED_RESIDUE_POS = new THREE.Vector3();
-                df.SELECTED_RESIDUE.controller = controller;
-                // object.getWorldPosition(df.SELECTED_RESIDUE_POS);
-                controller.attach(object);
+                if (df.config.mainMode === df.BALL_AND_ROD) {
+                    controller.attach(object);
+                } else {
+                    df.SELECTED_RESIDUE = object;
+                    df.SELECTED_RESIDUE.visible = false
+                    df.SELECTED_RESIDUE_POS = new THREE.Vector3();
+                    df.SELECTED_RESIDUE.controller = controller;
+                    // object.getWorldPosition(df.SELECTED_RESIDUE_POS);
+                    controller.attach(object);
+                }
+
             } else {
                 object.matrix.premultiply(tempMatrix);
                 object.matrix.decompose(object.position, object.quaternion, object.scale);
@@ -54,9 +63,9 @@ function objectTransform(object, controller, tempMatrix) {
 }
 
 function objectDeTrans(controller) {
+    let obj = '';
     for (let i = controller.children.length - 1; i >= 0; i--) {
         let child = controller.children[i];
-        console.log(child)
         switch (child.type) {
             case df.GroupType:
                 child.matrix.premultiply(controller.matrixWorld);
@@ -69,11 +78,16 @@ function objectDeTrans(controller) {
                 }
                 break;
             case df.MeshType:
+                obj = child;
                 df.tool.colorIntersectObjectRed(child, 0);
                 child.group.attach(child);
                 break;
         }
     }
+    // if ((df.config.mainMode === df.BALL_AND_ROD) && (obj.type === df.MeshType)) {
+    //     let posDict = df.tool.forAllAtom(obj.group);
+    //     df.dfRender.changePDBData(posDict);
+    // }
 }
 
 function onTriggerDown(event, raster, tempMatrix, objects) {
@@ -95,17 +109,29 @@ function onTriggerDown(event, raster, tempMatrix, objects) {
             dealWithMenu(menuObject);
         }
     } else {
-        // 拖拽蛋白功能
-        let interList = getIntersections(objects, raster, tempMatrix);
-        let intersections = interList[0];
-        let controllerTempMatrix = interList[1];
-        if (intersections && intersections.length <= 0) {
-            return;
+        if (df.selection === df.select_residues) {
+
+            let interList = getIntersections(objects, raster, tempMatrix);
         }
-        controllerTempMatrix.copy(controller.matrixWorld).invert();
-        // 说明：intersections = [group, group, group...]
-        for (let per in intersections) {
-            objectTransform(intersections[per], controller, controllerTempMatrix);
+        if (df.selection === df.drag_residues) {
+            for (let per in df.SELECT_RESIDUE_MESH) {
+                let controllerTempMatrix = tempMatrix
+                controllerTempMatrix.copy(controller.matrixWorld).invert();
+                objectTransform(df.SELECT_RESIDUE_MESH[per], controller, controllerTempMatrix);
+            }
+        } else {
+            // 拖拽蛋白功能
+            let interList = getIntersections(objects, raster, tempMatrix);
+            let intersections = interList[0];
+            let controllerTempMatrix = interList[1];
+            if (intersections && intersections.length <= 0) {
+                return;
+            }
+            controllerTempMatrix.copy(controller.matrixWorld).invert();
+            // 说明：intersections = [group, group, group...]
+            for (let per in intersections) {
+                objectTransform(intersections[per], controller, controllerTempMatrix);
+            }
         }
     }
 }
@@ -130,6 +156,10 @@ function onTriggerUp(event) {
             objectDeTrans(controller);
             df.SELECTED_RESIDUE = '';
             df.SELECTED_RESIDUE_POS = new THREE.Vector3();
+            break;
+        case df.drag_residues:
+            objectDeTrans(controller);
+
             break;
     }
 }
@@ -277,7 +307,32 @@ function getIntersections(controller, raster, tempMatrix, onMenuButton = false) 
                 switch (df.config.mainMode) {
                     case df.BALL_AND_ROD:
                         let objects = getChildrenByName(df.GROUP[selectedPDBId][selectedType][selectedChain], selectedObject.name);
-
+                        let obj_min = 999999;
+                        let obj_max = 0;
+                        for (var a = 0; a < objects.length; a++) {
+                            let index = objects[a].parent.children.indexOf(objects[a])
+                            objects[a].group = objects[a].parent;
+                            if (index >= obj_max) {
+                                obj_max = index
+                            }
+                            if (index <= obj_min) {
+                                obj_min = index
+                            }
+                            inters.push(objects[a]);
+                            if (a === objects.length - 1) {
+                                let min = objects[a].parent.children[obj_min + 1];
+                                let max = objects[a].parent.children[obj_max + 1];
+                                if (min) {
+                                    min.group = objects[a].parent;
+                                    inters.push(min);
+                                }
+                                if (max) {
+                                    max.group = objects[a].parent;
+                                    inters.push(max);
+                                }
+                            }
+                        }
+                        console.log(inters)
                         break
                     case df.CARTOON_SSE:
                         if (selectedObject.userData.repType === "tube") {
@@ -296,6 +351,11 @@ function getIntersections(controller, raster, tempMatrix, onMenuButton = false) 
                 if (df.tool.isDictEmpty(df.GROUP[selectedPDBId][selectedType])) return;
                 let region_object = selected[0].object;
                 inters.push(region_object);
+                break;
+            case df.select_residues:
+                if (df.tool.isDictEmpty(df.GROUP[selectedPDBId][selectedType])) return;
+                let residue = selected[0].object;
+                df.SELECT_RESIDUE_MESH.push(residue);
                 break;
         }
         return [inters, tempMatrix];

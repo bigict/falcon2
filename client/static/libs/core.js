@@ -35,7 +35,7 @@ df = {
 
     // gamepad
     // selection: 0,
-    selection: 101,
+    selection: 103,
     select_all: 100,
     select_main: 101,
     select_chain: 102,
@@ -44,6 +44,8 @@ df = {
     select_ligand: 105,
     select_multi_chain: 106,
     select_region: 200,
+    select_residues: 107,
+    drag_residues: 108,
     SELECT_RESIDUE_MESH: [],
 
     // ring
@@ -183,7 +185,7 @@ df = {
 // config
 df.config = {
     mainMode: df.BALL_AND_ROD,
-    hetMode: df.HET_STICK,
+    hetMode: df.HET_BALL_ROD,
     water_sphere_w: 8,
     surface: df.SURFACE,
     stick_sphere_w: 12,

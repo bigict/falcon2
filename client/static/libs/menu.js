@@ -150,6 +150,9 @@ df.actionManager = {
     },
     dragAction: function (select_type) {
         // 切换为 drag mode
+        if (select_type === df.select_residues) {
+            df.SELECT_RESIDUE_MESH = [];
+        }
         df.selection = select_type;
         df.actionManager.closeMenu();
     },
@@ -496,20 +499,20 @@ function createMenuButton(group) {
         params: df.select_residue,
         length: 2,
     });
-    let dragAtom = buttonFactory.createButton(df.DEFBUTTON, {
-        text: "Drag Atom",
+    let selectResidues = buttonFactory.createButton(df.DEFBUTTON, {
+        text: "select Residues",
         position: new THREE.Vector3(x, y, z),
         label: "dragAtom",
         action: df.actionManager.dragAction,
-        params: df.select_atom,
+        params: df.select_residues,
         length: 2,
     });
-    let dragLigand = buttonFactory.createButton(df.DEFBUTTON, {
-        text: "Drag Ligand",
+    let dragResidues = buttonFactory.createButton(df.DEFBUTTON, {
+        text: "drag Residues",
         position: new THREE.Vector3(x, y, z),
         label: "dragLigand",
         action: df.actionManager.dragAction,
-        params: df.select_ligand,
+        params: df.drag_residues,
         length: 2,
     });
     drag.subMenu = new SubMenu({
@@ -520,8 +523,8 @@ function createMenuButton(group) {
             dragChain,
             dragMultiChain,
             dragResidue,
-            dragAtom,
-            dragLigand
+            selectResidues,
+            dragResidues,
         ],
         parent: drag,
     });
