@@ -323,12 +323,17 @@ function getIntersections(controller, raster, tempMatrix, onMenuButton = false) 
                                 let min = objects[a].parent.children[obj_min + 1];
                                 let max = objects[a].parent.children[obj_max + 1];
                                 if (min) {
-                                    min.group = objects[a].parent;
-                                    inters.push(min);
+                                    if (min.userData.presentAtom.resId !== objects[a].userData.presentAtom.resId) {
+                                        min.group = objects[a].parent;
+                                        inters.push(min);
+                                    }
                                 }
                                 if (max) {
-                                    max.group = objects[a].parent;
-                                    inters.push(max);
+                                    if (max.geometry.type === 'CylinderGeometry') {
+                                        max.group = objects[a].parent;
+                                        inters.push(max);
+                                    }
+
                                 }
                             }
                         }
@@ -362,13 +367,21 @@ function getIntersections(controller, raster, tempMatrix, onMenuButton = false) 
     }
 }
 
-function getChildrenByName(group, name) {
+function getChildrenByName(group, mesh) {
     let result = [];
     for (let i = 0, l = group.children.length; i < l; i++) {
-        let child = group.children[i];
-        if (child.name === name) {
-            result.push(child);
+        if (df.config.mainMode === df.CARTOON_SSE) {
+            let child = group.children[i];
+            if (child.name === mesh.name) {
+                result.push(child);
+            }
+        } else if (df.config.mainMode === df.BALL_AND_ROD) {
+            let child = group.children[i];
+            if (child.userData.presentAtom.resId === mesh.userData.presentAtom.resId) {
+                result.push(child);
+            }
         }
+
     }
     return result;
 }

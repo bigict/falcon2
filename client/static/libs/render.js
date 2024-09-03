@@ -161,16 +161,21 @@ df.dfRender = {
         let isImmersive = false;
         renderer.xr.addEventListener('sessionstart', () => {
             // df.scale = 0.1;
-            df.scale = 1
-            // for (let argumentsKey in df.pdbText) {
-            //     for (let index in df.GROUP[argumentsKey]) {
-            //         for (let i in df.GROUP[argumentsKey][index]) {
-            //             let aaa = df.GROUP[argumentsKey][index][i];
-            //             aaa.scale.set(df.scale, df.scale, df.scale);
-            //             // df.tool.vrCameraCenter(canon, camera, aaa);
-            //         }
-            //     }
-            // }
+            df.scale = 0.25
+            for (let argumentsKey in df.pdbText) {
+                for (let index in df.GROUP[argumentsKey]) {
+                    for (let i in df.GROUP[argumentsKey][index]) {
+                        let aaa = df.GROUP[argumentsKey][index][i];
+                        aaa.scale.set(df.scale, df.scale, df.scale);
+                        if (aaa.surface) {
+                            let bbb = aaa.surface;
+                            bbb.scale.set(df.scale, df.scale, df.scale);
+                        }
+                        // df.tool.vrCameraCenter(canon, camera, aaa);
+                    }
+
+                }
+            }
 
             isImmersive = true;
         });

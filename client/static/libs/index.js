@@ -46,16 +46,17 @@ df.drawer.updateText('1', df.lfpt)
 
 df.loader.load('aaaa', 'name', function () {
     df.controller.drawGeometry(df.config.mainMode, 'aaaa');
+    // df.painter.showSurface('aaaa', 'A', 1);
     df.SelectedPDBId = 'aaaa';
 });
 
 
-df.loader.load('4eu2', 'name', function () {
-    df.controller.drawGeometry(df.config.mainMode, '4eu2');
-    df.controller.drawGeometry(df.config.hetMode, '4eu2');
-    // df.painter.showSurface('4eu2', 'A', 1);
-    // df.SelectedPDBId = '1qy3';
-});
+// df.loader.load('4eu2', 'name', function () {
+//     df.controller.drawGeometry(df.config.mainMode, '4eu2');
+//     df.controller.drawGeometry(df.config.hetMode, '4eu2');
+//     // df.painter.showSurface('4eu2', 'A', 1);
+//     // df.SelectedPDBId = '1qy3';
+// });
 
 // df.loader.load('7fjc', 'name', function () {
 //     df.controller.drawGeometry(df.config.mainMode, '7fjc');
