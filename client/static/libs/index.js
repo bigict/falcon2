@@ -4,6 +4,7 @@ import {w3m} from "./web3D/w3m.js";
 import {camera, canon, scene} from "./render.js";
 import {createMenuButton} from "./menu.js";
 
+
 // hide submenu
 function switchMenu(obj) {
     if (document.getElementById) {
@@ -43,29 +44,28 @@ createMenuButton();
 df.lfpt = df.drawer.createSprite()
 df.drawer.updateText('1', df.lfpt)
 
-df.loader.load('aaaa', 'name', function () {
-    df.controller.drawGeometry(df.config.mainMode, 'aaaa');
+
+// load config
+
+
+df.loader.load('4eu2', 'name', function () {
+    df.controller.drawGeometry(df.config.mainMode, '4eu2');
     // df.painter.showSurface('aaaa', 'A', 1);
-    df.SelectedPDBId = 'aaaa';
-    for (let index in df.GROUP['aaaa']) {
-        for (let i in df.GROUP['aaaa'][index]) {
-            let aaa = df.GROUP['aaaa'][index][i];
+    df.SelectedPDBId = '4eu2';
+    for (let index in df.GROUP['4eu2']) {
+        for (let i in df.GROUP['4eu2'][index]) {
+            let aaa = df.GROUP['4eu2'][index][i];
             df.tool.addIndex(aaa);
         }
     }
 });
 
 
-// df.loader.load('4eu2', 'name', function () {
-//     df.controller.drawGeometry(df.config.mainMode, '4eu2');
-//     df.controller.drawGeometry(df.config.hetMode, '4eu2');
-//     // df.painter.showSurface('4eu2', 'A', 1);
-//     // df.SelectedPDBId = '1qy3';
-// });
+df.loader.load('4eul', 'name', function () {
+    df.controller.drawGeometry(df.config.mainMode, '4eul');
+    df.controller.drawGeometry(df.config.hetMode, '4eul');
+    df.painter.showSurface('4eul', 'A', 1);
+});
 
-// df.loader.load('7fjc', 'name', function () {
-//     df.controller.drawGeometry(df.config.mainMode, '7fjc');
-//     df.SelectedPDBId = '7fjc';
-// });
 
 

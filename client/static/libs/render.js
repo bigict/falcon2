@@ -161,7 +161,7 @@ df.dfRender = {
         let isImmersive = false;
         renderer.xr.addEventListener('sessionstart', () => {
             // df.scale = 0.1;
-            df.scale = 0.25
+            df.scale = 0.1;
             for (let argumentsKey in df.pdbText) {
                 for (let index in df.GROUP[argumentsKey]) {
                     for (let i in df.GROUP[argumentsKey][index]) {

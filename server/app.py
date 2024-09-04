@@ -7,9 +7,12 @@ from items import HDock, Design, Energy
 from alignment import pymol_align_global
 from dssp import get_ss_from_pymol
 from dfire.calene import DFIRE
+from tools.df_times import load_config
+from pathlib import Path
 import subprocess
 import tempfile
 import config
+
 import os
 
 
@@ -20,6 +23,9 @@ app.mount("/static", StaticFiles(directory="../client/static"), name="static")
 
 # dfire
 dfire_model = DFIRE()
+
+
+# load config.json
 
 
 @app.post("/dfire")
@@ -121,3 +127,8 @@ async def align(response: HDock):
     print(result)
     return JSONResponse(content={"rotation": result})
 
+
+@app.post("/pdb_path")
+async def pdb_path(request: Request):
+    config = load_config()
+    files = [f for f in Path(config[]).iterdir() if f.is_file()]

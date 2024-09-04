@@ -3,5 +3,5 @@
   <component name="Black">
     <option name="sdkName" value="dfvr" />
   </component>
-  <component name="ProjectRootManager" version="2" project-jdk-name="danfeng" project-jdk-type="Python SDK" />
+  <component name="ProjectRootManager" version="2" project-jdk-name="dfvr" project-jdk-type="Python SDK" />
 </project>
