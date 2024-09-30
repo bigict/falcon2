@@ -171,7 +171,7 @@ df.dfRender = {
                             let bbb = aaa.surface;
                             bbb.scale.set(df.scale, df.scale, df.scale);
                         }
-                        // df.tool.vrCameraCenter(canon, camera, aaa);
+                        df.tool.vrCameraCenter(canon, camera, aaa);
                     }
 
                 }

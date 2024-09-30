@@ -128,7 +128,7 @@ async def align(response: HDock):
     return JSONResponse(content={"rotation": result})
 
 
-@app.post("/pdb_path")
-async def pdb_path(request: Request):
-    config = load_config()
-    files = [f for f in Path(config[]).iterdir() if f.is_file()]
+# @app.post("/pdb_path")
+# async def pdb_path(request: Request):
+#     config = load_config()
+#     files = [f for f in Path(config[]).iterdir() if f.is_file()]

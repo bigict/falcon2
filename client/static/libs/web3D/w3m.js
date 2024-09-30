@@ -411,10 +411,18 @@ w3m.pdb = function (text, pdbId) {
             let atom_id_1;
             let atom_id_2;
             if (o.tree.main[bond[0]]) {
-                atom_id_1 = o.atom.main[o.tree.main[bond[0]][bond[1]]["sg"]][1];
+                if (o.tree.main[bond[0]][bond[1]]) {
+                    if (o.tree.main[bond[0]][bond[1]]["sg"]) {
+                        atom_id_1 = o.atom.main[o.tree.main[bond[0]][bond[1]]["sg"]][1];
+                    }
+                }
             }
             if (o.tree.main[bond[2]]) {
-                atom_id_2 = o.atom.main[o.tree.main[bond[2]][bond[3]]["sg"]][1];
+                if (o.tree.main[bond[2]][bond[3]]) {
+                    if (o.tree.main[bond[2]][bond[3]]["sg"]) {
+                        atom_id_2 = o.atom.main[o.tree.main[bond[2]][bond[3]]["sg"]][1];
+                    }
+                }
             }
             let index_1 = 0;
             let index_2 = 0;
