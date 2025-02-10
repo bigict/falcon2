@@ -12,3 +12,9 @@ class Design(BaseModel):
 
 class Energy(BaseModel):
     pdb_string: str
+
+
+class FilePath(BaseModel):
+    filePath: str
+
+

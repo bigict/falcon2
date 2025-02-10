@@ -6,6 +6,9 @@ import * as THREE from '../js/three.module.js';
 // var tempMatrix = new THREE.Matrix4();
 
 function objectTransform(object, controller, tempMatrix) {
+    df.SelectedPDBId = object.type === "Group" && object.pdbId
+        ? object.pdbId
+        : object?.userData?.presentAtom?.pdbId ?? df.SelectedPDBId;
     switch (df.selection) {
         case df.drag_residues:
             df.tool.colorIntersectObjectRed(object, 1);
@@ -24,7 +27,6 @@ function objectTransform(object, controller, tempMatrix) {
                     // object.getWorldPosition(df.SELECTED_RESIDUE_POS);
                     controller.attach(object);
                 }
-
             } else {
                 object.matrix.premultiply(tempMatrix);
                 object.matrix.decompose(object.position, object.quaternion, object.scale);
@@ -110,11 +112,11 @@ function onTriggerDown(event, raster, tempMatrix, objects) {
         }
     } else {
         if (df.selection === df.select_residues) {
-
             let interList = getIntersections(objects, raster, tempMatrix);
         }
         if (df.selection === df.drag_residues) {
             for (let per in df.SELECT_RESIDUE_MESH) {
+                df.SelectedPDBId = df.SELECT_RESIDUE_MESH[per];
                 let controllerTempMatrix = tempMatrix
                 controllerTempMatrix.copy(controller.matrixWorld).invert();
                 objectTransform(df.SELECT_RESIDUE_MESH[per], controller, controllerTempMatrix);
@@ -159,7 +161,6 @@ function onTriggerUp(event) {
             break;
         case df.drag_residues:
             objectDeTrans(controller);
-
             break;
     }
 }

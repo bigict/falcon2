@@ -18,6 +18,9 @@ var controls, leftController, leftControllerGrip, rightController, rightControll
 var leftObject = null;
 var rightObject = null;
 
+// Design Mode
+var DesignScene, DesignCamera;
+
 const createGrid = (size, divisions, position, rotation, grids, scene) => {
     const gridHelper = new THREE.GridHelper(size, divisions);
     gridHelper.position.copy(position);
@@ -161,7 +164,7 @@ df.dfRender = {
         let isImmersive = false;
         renderer.xr.addEventListener('sessionstart', () => {
             // df.scale = 0.1;
-            df.scale = 0.1;
+            df.scale = 0.02;
             for (let argumentsKey in df.pdbText) {
                 for (let index in df.GROUP[argumentsKey]) {
                     for (let i in df.GROUP[argumentsKey][index]) {
@@ -173,7 +176,6 @@ df.dfRender = {
                         }
                         df.tool.vrCameraCenter(canon, camera, aaa);
                     }
-
                 }
             }
 
@@ -244,6 +246,13 @@ df.dfRender = {
             onTriggerUp(event);
         });
         window.addEventListener('resize', onWindowResize, false);
+
+        // Desgin Mode
+        // Scene
+        DesignScene = this.vrScene();
+        // Camera
+        DesignCamera = this.vrCamera();
+
 
         // camera.updateProjectionMatrix();
         function animate() {
@@ -457,5 +466,7 @@ export {
     rightController,
     rightControllerGrip,
     leftHand,
-    rightHand
+    rightHand,
+    DesignScene,
+    DesignCamera
 }

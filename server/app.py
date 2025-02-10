@@ -3,12 +3,11 @@ from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import JSONResponse
 from fastapi import FastAPI, Request
-from items import HDock, Design, Energy
+from items import HDock, Design, Energy, FilePath
 from alignment import pymol_align_global
 from dssp import get_ss_from_pymol
 from dfire.calene import DFIRE
-from tools.df_times import load_config
-from pathlib import Path
+
 import subprocess
 import tempfile
 import config
@@ -128,7 +127,16 @@ async def align(response: HDock):
     return JSONResponse(content={"rotation": result})
 
 
-# @app.post("/pdb_path")
-# async def pdb_path(request: Request):
-#     config = load_config()
-#     files = [f for f in Path(config[]).iterdir() if f.is_file()]
+@app.post("/load_file_path")
+async def load_file_path(response: FilePath):
+    try:
+        data_path = response.filePath
+        # 获取文件列表
+        files = os.listdir(data_path)
+        # 过滤掉不需要的隐藏文件或文件夹（可选）
+        files = [f.split('.')[0] for f in files if '.pdb' in f]
+        return JSONResponse(content={"files": files})
+    except FileNotFoundError:
+        return JSONResponse(status_code=404, content={"error": "Directory not found"})
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": str(e)})

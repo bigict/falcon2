@@ -24,6 +24,7 @@ df.loader = {
                 this.loadTextFromRequest(pdbId, file, this.callBackLoading, callback);
                 break;
         }
+        df.SelectedPDBId = pdbId;
     },
     loadFromString: function (pdbId, content, callback) {
         df.pdbContent[pdbId] = content;
@@ -49,6 +50,8 @@ df.loader = {
                 df.GROUP[pdbId][name][chain].surface.name = 'surface';
                 scene.add(df.GROUP[pdbId][name][chain].surface);
                 df.GROUP[pdbId][name][chain].name = pdbId + '_' + name + '_' + chain;
+                df.GROUP[pdbId][name][chain].pdbId = pdbId;
+                df.GROUP[pdbId][name][chain].chainId = chain;
             });
             df.GROUP[pdbId]['main'][chain].userData["presentAtom"] = df.tool.getMainAtom(pdbId, firstAtomId);
             if (!df.pptShow) {
@@ -87,6 +90,8 @@ df.loader = {
                 df.GROUP[pdbId][name][chain].surface.name = 'surface';
                 scene.add(df.GROUP[pdbId][name][chain].surface);
                 df.GROUP[pdbId][name][chain].name = pdbId + '_' + name + '_' + chain;
+                df.GROUP[pdbId][name][chain].pdbId = pdbId;
+                df.GROUP[pdbId][name][chain].chainId = chain;
             });
             df.GROUP[pdbId]['main'][chain].userData["presentAtom"] = df.tool.getMainAtom(pdbId, firstAtomId);
             if (!df.pptShow) {

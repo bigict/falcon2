@@ -365,8 +365,10 @@ df.tool = {
                     }
                     break
                 case df.BALL_AND_ROD:
+                    let dt = chain + "_" + resId + "_" + atomName;
+                    let pos = df.PDBPOS[pdbId][dt];
                     let newkeys = pdbId + "_" + chain + "_" + resId + "_" + atomName;
-                    let newVec = new THREE.Vector3(0, 0, 0);
+                    let newVec = new THREE.Vector3(pos[0], pos[1], pos[2]);
                     newVec.applyMatrix4(mesh.matrixWorld);
                     posDict[newkeys] = newVec;
                     break
@@ -418,6 +420,56 @@ df.tool = {
             child.userData.idx = addIndex;
             addIndex++;
         });
+    },
+    // clear: function (mode, pdbId) {
+    //     THREE.Cache.clear();
+    //     switch (mode) {
+    //         case 0:
+    //             for (let modeKey in df.GROUP[df.SelectedPDBId]) {
+    //                 df.tool.clearGroupIndex(df.GROUP[df.SelectedPDBId][modeKey]);
+    //             }
+    //             break;
+    //         case 1:
+    //             df.tool.clearGroupIndex(df.GROUP_HET);
+    //             break;
+    //     }
+    // },
+    clearTools: function (mode) {
+        THREE.Cache.clear();
+        switch (mode) {
+            case 2:
+                // clear all group data
+                for (let idx in df.pdbId) {
+                    let pdbId = df.pdbId[idx];
+                    delete df.w3m.mol[pdbId];
+                    for (let modeKey in df.GROUP[pdbId]) {
+                        df.tool.clearGroupIndex(df.GROUP[pdbId][modeKey]);
+                    }
+                    delete df.GROUP[pdbId];
+                    delete df.PDBPOS[pdbId];
+                }
+                df.tool.initTools();
+                break;
+            case 3:
+                let pdbId = df.SelectedPDBId;
+                delete df.w3m.mol[pdbId];
+                for (let modeKey in df.GROUP[pdbId]) {
+                    df.tool.clearGroupIndex(df.GROUP[pdbId][modeKey]);
+                }
+                delete df.GROUP[pdbId];
+                delete df.PDBPOS[pdbId];
+                df.pdbId = df.pdbId.filter(item => item !== pdbId);
+                delete df.pdbText[pdbId];
+                delete df.pdbContent[pdbId];
+                break;
+        }
+    },
+    initTools: function () {
+        df.PathList = [];
+        df.SelectedPDBId = null;
+        df.pdbId = [];
+        df.pdbText = {}
+        df.pdbContent = {}
+    },
 
-    }
 }

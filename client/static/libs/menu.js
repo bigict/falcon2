@@ -1,7 +1,7 @@
 import * as THREE from '../js/three.module.js';
 import {df} from "./core.js";
 import {w3m} from "./web3D/w3m.js";
-import {camera} from "./render.js";
+import {camera, canon} from "./render.js";
 
 
 class ButtonFactory {
@@ -109,6 +109,7 @@ function submitAPI(data, url, ligand) {
         df.pdbText[ligand] = response['rotation'];
         df.loader.loadFromString(ligand, response['rotation'], function () {
             df.controller.drawGeometry(df.config.mainMode, ligand);
+            df.SelectedPDBId = ligand;
         });
     });
 }
@@ -267,6 +268,35 @@ df.actionManager = {
         let text = df.pdbText[param]
         df.tool.savePDB(text, param + '.pdb');
     },
+
+    loadFileAction: function (param) {
+        df.loader.load(param, 'name', function () {
+            df.controller.drawGeometry(df.config.mainMode, param);
+        });
+        df.actionManager.closeMenu();
+    },
+    // clear
+    clearPDBAction: function () {
+        df.tool.clearTools(2);
+        df.actionManager.closeMenu();
+    },
+    // scale
+    scaleAction: function (param) {
+        df.scale = param;
+        console.log(df.scale)
+        for (let index in df.GROUP[df.SelectedPDBId]) {
+            for (let i in df.GROUP[df.SelectedPDBId][index]) {
+                let aaa = df.GROUP[df.SelectedPDBId][index][i];
+                aaa.scale.set(df.scale, df.scale, df.scale);
+                if (aaa.surface) {
+                    let bbb = aaa.surface;
+                    bbb.scale.set(df.scale, df.scale, df.scale);
+                }
+                df.tool.vrCameraCenter(canon, camera, aaa);
+            }
+        }
+        df.actionManager.closeMenu();
+    }
 }
 
 function createThirdButton(dicts, position, action, parentButton, length) {
@@ -285,9 +315,10 @@ function createThirdButton(dicts, position, action, parentButton, length) {
         parentButton.subMenu = new SubMenu({buttons: [], parent: parentButton});
     }
     let number = 0
+    let y = position.y
     // position.x = position.x + (length - 2) * df.lineSpacing;
     for (let dkt in dicts) {
-        position.y = position.y - number * (df.textMenuHeight + df.letterSpacing);
+        position.y = y - number * (df.textMenuHeight + df.letterSpacing);
         let button = buttonFactory.createButton(df.DEFBUTTON, {
             text: dkt,
             position: position,
@@ -305,6 +336,77 @@ function createThirdButton(dicts, position, action, parentButton, length) {
 }
 
 
+function createLoadPDBButton(x, y, z, parentButton) {
+    if (parentButton.subMenu) {
+        parentButton.subMenu.buttons.forEach(button => {
+            if (button && button.mesh) {
+                df.GROUP['menu'].remove(button.mesh);
+                button.mesh.geometry.dispose();
+                button.mesh.material.dispose();
+                // 清除引用
+                button.mesh = null;
+            }
+        });
+        parentButton.subMenu.buttons = [];
+    } else {
+        parentButton.subMenu = new SubMenu({buttons: [], parent: parentButton});
+    }
+    if (df.FILE_PATH.length > 0) {
+        let number = 0;
+        for (let idx in df.FILE_PATH) {
+            let text = df.FILE_PATH[idx];
+            // x = x + df.lineSpacing;
+            let button = buttonFactory.createButton(df.DEFBUTTON, {
+                text: text,
+                position: new THREE.Vector3(x, y + (-number * (df.textMenuHeight + df.letterSpacing)), z),
+                label: text,
+                length: 2,
+                params: text,
+                action: df.actionManager.loadFileAction,
+                parentButton: parentButton
+            });
+            number += 1
+            parentButton.subMenu.addButton(button);
+        }
+    }
+    return parentButton.subMenu
+}
+
+
+function createScaleButton(x, y, z, parentButton) {
+    if (parentButton.subMenu) {
+        parentButton.subMenu.buttons.forEach(button => {
+            if (button && button.mesh) {
+                df.GROUP['menu'].remove(button.mesh);
+                button.mesh.geometry.dispose();
+                button.mesh.material.dispose();
+                // 清除引用
+                button.mesh = null;
+            }
+        });
+        parentButton.subMenu.buttons = [];
+    } else {
+        parentButton.subMenu = new SubMenu({buttons: [], parent: parentButton});
+    }
+    let number = 0;
+    let listDir = [0.01, 0.015, 0.02, 0.05, 0.1, 0.2, 0.5, 1, 2]
+    for (let idx in listDir) {
+        let text = listDir[idx];
+        let button = buttonFactory.createButton(df.DEFBUTTON, {
+            text: text,
+            position: new THREE.Vector3(x, y + (-number * (df.textMenuHeight + df.letterSpacing)), z),
+            label: text,
+            length: 3,
+            params: text,
+            action: df.actionManager.scaleAction,
+            parentButton: parentButton
+        });
+        number += 1
+        parentButton.subMenu.addButton(button);
+    }
+    return parentButton.subMenu
+}
+
 function createMenuButton(group) {
     // 创建初始化 button
     let x = -0.5,
@@ -319,7 +421,18 @@ function createMenuButton(group) {
         position: new THREE.Vector3(x, y, z),
         label: "",
         length: 1,
-        action: ""
+        updateSubMenu: function () {
+            let path = {'filePath': df.DATA_PATH};
+            path = JSON.stringify(path);
+            let url = df.LOAD_URL;
+            df.api.apiRequest(url, path, function (responseData) {
+                console.log(responseData)
+                df.FILE_PATH = responseData["files"];
+                if (df.FILE_PATH) {
+                    let buttons = createLoadPDBButton(x, y, z, loadPDB);
+                }
+            });
+        },
     });
     // Drag
     number += 1;
@@ -376,6 +489,15 @@ function createMenuButton(group) {
         action: ""
     });
     number += 1;
+    let Design = buttonFactory.createButton(df.DEFBUTTON, {
+        text: "Design",
+        position: new THREE.Vector3(x, y + (-number * (df.textMenuHeight + df.letterSpacing)), z),
+        label: "Design",
+        length: 1,
+        state: 1,
+        action: df.actionManager.clearPDBAction,
+    });
+    number += 1;
     let exportPDB = buttonFactory.createButton(df.DEFBUTTON, {
         text: "Export PDB",
         position: new THREE.Vector3(x, y + (-number * (df.textMenuHeight + df.letterSpacing)), z),
@@ -391,6 +513,15 @@ function createMenuButton(group) {
                 exportPDB,
                 2);
         }
+    });
+    number += 1;
+    let clearPDB = buttonFactory.createButton(df.DEFBUTTON, {
+        text: "CLEAR",
+        position: new THREE.Vector3(x, y + (-number * (df.textMenuHeight + df.letterSpacing)), z),
+        label: "CLEAR",
+        length: 1,
+        state: 1,
+        action: df.actionManager.clearPDBAction,
     });
     number += 1;
     let exit = buttonFactory.createButton(df.DEFBUTTON, {
@@ -436,16 +567,27 @@ function createMenuButton(group) {
         label: "refineStructure",
         length: 2,
     });
+    let scale = buttonFactory.createButton(df.DEFBUTTON, {
+        text: "Scale",
+        position: new THREE.Vector3(x, y + (-number * (df.textMenuHeight + df.letterSpacing)), z),
+        label: "Scale",
+        length: 2,
+    });
 
     toolkits.subMenu = new SubMenu({
         buttons: [
             align,
             docking,
             energy,
-            refineStructure
+            refineStructure,
+            scale,
         ],
-        parent: structure
+        parent: toolkits
     });
+    loadPDB.subMenu = new SubMenu({
+        buttons: df.FILE_PATH,
+        parent: loadPDB
+    })
 
 
     // init sub-button
@@ -782,7 +924,6 @@ function createMenuButton(group) {
         action: df.actionManager.colorAction,
         params: 607,
         length: 2,
-
     });
     let colorByHYDROPHOBICITY = buttonFactory.createButton(df.DEFBUTTON, {
         text: "By Hydrophobicity",
@@ -968,6 +1109,8 @@ function createMenuButton(group) {
         ],
         parent: align,
     });
+    createScaleButton(x, y, z, scale);
+
     // Energy
     let energyTools = buttonFactory.createButton(df.DEFBUTTON, {
         text: "Tools",

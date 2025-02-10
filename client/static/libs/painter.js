@@ -190,6 +190,9 @@ df.painter = {
             case df.CARTOON_SSE:
                 df.painter.showCartoonSSEByResidue(pdbId, chainId, resId);
                 break;
+            case df.CARTOON_SSE:
+                df.painter.showCartoonSSEByResidue(pdbId, chainId, resId);
+                break;
         }
     },
     // show Ball & Rod

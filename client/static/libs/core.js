@@ -17,6 +17,13 @@ df = {
     // transfer rotate scale
     PDBPOS: {},
 
+    // context load button
+    FILE_PATH: [],
+    DATA_PATH: '../client/static/data',
+    LOAD_URL: window.location.href + 'load_file_path',
+
+    // delete pdb mesh
+
 
     // SURFACE
     SURFACE_STORE: {},
@@ -184,7 +191,7 @@ df = {
 
 // config
 df.config = {
-    mainMode: df.BALL_AND_ROD,
+    mainMode: df.CARTOON_SSE,
     hetMode: df.HET_BALL_ROD,
     water_sphere_w: 8,
     surface: df.SURFACE,
