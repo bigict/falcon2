@@ -3,9 +3,34 @@ import * as THREE from '../js/three.module.js';
 import {df} from './core.js';
 import {camera, canon, scene} from "./render.js";
 
+const geometryCache = new Map();
+const materialCache = new Map();
 
 df.drawer = {
     drawSphere: function (pdbId, type, chain, point, color, radius, atom, w) {
+
+        // // 使用更低的细分程度（建议8-16）
+        // // const simplifiedW = Math.max(8, Math.min(w, 16));
+        // const simplifiedW = w
+        // // 创建几何体缓存键
+        // const geoKey = `sphere_${radius}_${simplifiedW}`;
+        // // 重复使用几何体
+        // if (!geometryCache.has(geoKey)) {
+        //     geometryCache.set(geoKey, new THREE.SphereGeometry(radius, simplifiedW, simplifiedW));
+        // }
+        // // 创建材质缓存键
+        // const matKey = `lambert_${color.getHex()}`;
+        //
+        // // 重复使用材质
+        // if (!materialCache.has(matKey)) {
+        //     materialCache.set(matKey, new THREE.MeshLambertMaterial({
+        //         color: color,
+        //         specular: new THREE.Color(0x000000),
+        //         reflectivity: 0,
+        //         shininess: 0
+        //     }));
+        // }
+
         let alpha = 0.5;
         // 物体表面的反射率，控制镜面反射的强度，值范围一般在0到1之间
         let beta = 0.5;
@@ -16,14 +41,18 @@ df.drawer = {
         // 镜面高光颜色，即光照射到物体表面产生的高光部分的颜色
         let specularColor = new THREE.Color(beta * 0.2, beta * 0.2, beta * 0.2);
         let geometry = new THREE.SphereGeometry(radius, w, w);
-        let material = new THREE.MeshPhongMaterial({
+        let material = new THREE.MeshLambertMaterial({
             bumpScale: bumpScale,
             color: color,
-            specular: specularColor,
-            reflectivity: beta,
-            shininess: specularShininess
+            // specular: specularColor,
+            // reflectivity: beta,
+            // shininess: specularShininess
+            specular: new THREE.Color(0x000000), // 取消高光
+            reflectivity: 0, // 取消反射
+            shininess: 0 // 取消光泽
         });
 
+        // let mesh = new THREE.Mesh(geometryCache.get(geoKey), materialCache.get(matKey));
         let mesh = new THREE.Mesh(geometry, material);
         mesh.name = df.tool.atomCaId(atom);
         mesh.danfeng = 1;
@@ -34,6 +63,52 @@ df.drawer = {
         // het
         df.GROUP[pdbId][type][chain].add(mesh);
     },
+    // drawStick: function (pdbId, type, chain, start, end, radius, color, atom) {
+    //     // 1. 几何体预处理
+    //     const segments = df.config.stick_radius;
+    //     const geoKey = `cylinder_${radius}_${segments}`;
+    //     // 创建预旋转和平移的几何体（仅在首次创建时执行）
+    //     if (!geometryCache.has(geoKey)) {
+    //         // 创建标准化高度为1的圆柱体
+    //         const geometry = new THREE.CylinderGeometry(
+    //             radius,
+    //             radius,
+    //             1,  // 标准化高度
+    //             segments,
+    //             1,
+    //             false
+    //         );
+    //         // 应用预变换矩阵（关键修改点）
+    //         geometry.applyMatrix4(new THREE.Matrix4()
+    //             .makeRotationX(Math.PI / 2)  // 先旋转再平移
+    //             .multiply(new THREE.Matrix4()
+    //                 .makeTranslation(0, 0.5, 0))  // 沿Z轴移动半个高度
+    //             );
+    //         geometryCache.set(geoKey, geometry);
+    //     }
+    //     // 2. 材质复用
+    //     const matKey = `lambert_${color.getHex()}`;
+    //     if (!materialCache.has(matKey)) {
+    //         materialCache.set(matKey, new THREE.MeshLambertMaterial({color}));
+    //     }
+    //     // 3. 创建实例化对象
+    //     const distance = start.distanceTo(end);
+    //     const mesh = new THREE.Mesh(geometryCache.get(geoKey), materialCache.get(matKey));
+    //     // 4. 矩阵变换优化（比直接使用lookAt性能更好）
+    //     const direction = new THREE.Vector3().subVectors(end, start);
+    //     // 组合变换矩阵
+    //     const matrix = new THREE.Matrix4()
+    //         .makeScale(1, 1, distance) // 缩放
+    //         // .premultiply(rotation) // 应用旋转
+    //         .setPosition(start); // 应用平移
+    //     mesh.applyMatrix4(matrix);
+    //     // 5. 添加场景
+    //     mesh.name = df.tool.atomCaId(atom);
+    //     mesh.danfeng = 1;
+    //     mesh.lookAt(end);
+    //     mesh.userData = {presentAtom: atom};
+    //     df.GROUP[pdbId][type][chain].add(mesh);
+    // },
     drawStick: function (pdbId, type, chain, start, end, radius, color, atom) {
         let distance = start.distanceTo(end);
         let geometry = new THREE.CylinderGeometry(
@@ -43,13 +118,14 @@ df.drawer = {
             df.config.stick_radius,
             1,
             false);
-        let material = new THREE.MeshPhongMaterial({
+        let material = new THREE.MeshLambertMaterial({
             color: color,
             // wireframe: false
         });
         geometry.applyMatrix4(new THREE.Matrix4().makeTranslation(0, distance / 2, 0));
         geometry.applyMatrix4(new THREE.Matrix4().makeRotationX(THREE.MathUtils.degToRad(90)));
         let mesh = new THREE.Mesh(geometry, material);
+
         mesh.name = df.tool.atomCaId(atom);
         mesh.position.copy(start);
         mesh.danfeng = 1;

@@ -334,6 +334,7 @@ w3m.pdb = function (text, pdbId) {
             math.limit(b_factor, w3m.global.limit.b_factor);
         }
         // o.tree.het
+        w3m_isset(o.chain[chain_id]) ? void (0) : o.chain[chain_id] = w3m.CHAIN_UNK;
         w3m_isset(o.tree.het[chain_id]) ? void (0) : o.tree.het[chain_id] = {};
         w3m_isset(o.tree.het[chain_id][residue_id]) ? void (0) : o.tree.het[chain_id][residue_id] = {};
         o.tree.het[chain_id][residue_id][atom_name] = atom_id;
@@ -656,13 +657,13 @@ w3m.tool = {
                 });
                 break;
             case w3m.COLOR_BY_PDB:
-                array = 101 + Object.keys(w3m.mol).indexOf(mol_id)
+                array = 401 + Object.keys(w3m.mol).indexOf(mol_id)
                 mol.color.main = mol.atom.main.map(function () {
                     return array;
                 });
                 break;
             default:
-                array = 100 + Object.keys(df.w3m.mol).length
+                array = 400 + Object.keys(df.w3m.mol).length
                 mol.color.main = mol.atom.main.map(function () {
                     return array;
                 });
@@ -725,8 +726,10 @@ w3m.tool = {
                 }
                 break;
             case w3m.COLOR_BY_PDB:
-                mol.color.main = mol.atom.main.map(function (atom) {
-                    return array[atom[9]];
+                array = 101 + Object.keys(w3m.mol).indexOf(mol_id)
+                console.log("array", array)
+                mol.color.het = mol.atom.het.map(function (atom) {
+                    return array
                 });
                 break;
             default:
@@ -1596,8 +1599,8 @@ w3m.config = {
     rep_mode_het: w3m.TUBE,
     // color
     // color_mode_main: w3m.COLOR_BY_SPECTRUM,
-    color_mode_main: w3m.COLOR_BY_ELEMENT,
-    color_mode_het: w3m.COLOR_BY_ELEMENT,
+    color_mode_main: w3m.COLOR_BY_PDB,
+    color_mode_het: w3m.COLOR_BY_PDB,
 
     // smooth
     smooth_segment: 19,

@@ -1,4 +1,5 @@
 import * as THREE from '../js/three.module.js';
+import {OBJLoader} from '../js/loaders/OBJLoader.js';
 import {df} from './core.js';
 import {w3m} from "./web3D/w3m.js";
 import {camera, canon, scene} from "./render.js";
@@ -46,6 +47,9 @@ df.lfpt = df.drawer.createSprite()
 df.drawer.updateText('1', df.lfpt)
 
 
+const loader = new OBJLoader();
+
+
 // load config
 
 
@@ -63,45 +67,53 @@ df.drawer.updateText('1', df.lfpt)
 //
 //
 
-// df.loader.load('l111', 'name', function () {
-//     df.controller.drawGeometry(df.config.mainMode, 'l111');
-//     df.controller.drawGeometry(df.config.hetMode, 'l111');
-//     // df.painter.showSurface('7bwj', 'A', 1);
-//     // df.SelectedPDBId = '7bwj';
-// });
 //
-// df.loader.load('l222', 'name', function () {
-//     df.controller.drawGeometry(df.config.mainMode, 'l222');
-//     df.controller.drawGeometry(df.config.hetMode, 'l222');
-//     // df.painter.showSurface('7bwj', 'A', 1);
-//     // df.SelectedPDBId = '7bwj';
-// });
-// df.loader.load('4jr1', 'name', function () {
-//     df.controller.drawGeometry(df.config.mainMode, '4jr1');
-//     df.controller.drawGeometry(df.config.hetMode, '4jr1');
-//     // df.painter.showSurface('7bwj', 'A', 1);
-//     // df.SelectedPDBId = '7bwj';
-// });
 
-df.loader.load('fin2', 'name', function () {
-    df.controller.drawGeometry(df.config.mainMode, 'fin2');
-    df.controller.drawGeometry(df.config.hetMode, 'fin2');
+
+df.loader.load('fab1', 'name', function () {
+    df.controller.drawGeometry(df.config.mainMode, 'fab1');
+    df.controller.drawGeometry(df.config.hetMode, 'fab1');
 });
-df.loader.load('fin3', 'name', function () {
-    df.controller.drawGeometry(df.config.mainMode, 'fin3');
-    df.controller.drawGeometry(df.config.hetMode, 'fin3');
+df.loader.load('fab2', 'name', function () {
+    df.controller.drawGeometry(df.config.mainMode, 'fab2');
+    df.controller.drawGeometry(df.config.hetMode, 'fab2');
 });
-df.loader.load('bttt', 'name', function () {
-    df.controller.drawGeometry(df.config.mainMode, 'bttt');
-    df.controller.drawGeometry(df.config.hetMode, 'bttt');
+df.loader.load('fab3', 'name', function () {
+    df.controller.drawGeometry(df.config.mainMode, 'fab3');
+    df.controller.drawGeometry(df.config.hetMode, 'fab3');
+});
+//
+df.loader.load('fab4', 'name', function () {
+    df.controller.drawGeometry(df.config.mainMode, 'fab4');
+    // df.controller.drawGeometry(df.config.hetMode, 'par5');
+    loader.load(
+        'static/css/model.obj',
+        (object) => {
+            df.GROUP['fab4']['main'].A.add(object);
+            console.log('pos', object.position)
+            const worldBox = new THREE.Box3().setFromObject(object);
+            const worldBox1 = new THREE.Box3().setFromObject(df.GROUP['fab4']['main'].A.children[0]);
+            const sourceWorldCenter1 = new THREE.Vector3();
+            worldBox.getCenter(sourceWorldCenter1);
+            const sourceWorldCenter2 = new THREE.Vector3();
+            worldBox1.getCenter(sourceWorldCenter2);
+            console.log('cen1', sourceWorldCenter1, "cen2", sourceWorldCenter2)
+            const pos1 = sourceWorldCenter2.sub(sourceWorldCenter1)
+            object.position.copy(pos1);
+            object.updateWorldMatrix(true, true);
+            console.log(object.position)
+            // object.scale.set(0.02, 0.02, 0.02);
+        },
+        (xhr) => {
+            console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+        },
+        (error) => {
+            console.error(error);
+        }
+    );
+
 });
 
-
-
-// df.loader.load('fin1', 'name', function () {
-//     df.controller.drawGeometry(df.config.mainMode, 'fin1');
-//     df.controller.drawGeometry(df.config.hetMode, 'fin1');
-// });
 
 // df.loader.load('4eul', 'name', function () {
 //     df.controller.drawGeometry(df.config.mainMode, '4eul');

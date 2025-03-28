@@ -366,10 +366,17 @@ df.tool = {
                     break
                 case df.BALL_AND_ROD:
                     let dt = chain + "_" + resId + "_" + atomName;
-                    let pos = df.PDBPOS[pdbId][dt];
+                    // let pos = df.PDBPOS[pdbId][dt];
                     let newkeys = pdbId + "_" + chain + "_" + resId + "_" + atomName;
-                    let newVec = new THREE.Vector3(pos[0], pos[1], pos[2]);
-                    newVec.applyMatrix4(mesh.matrixWorld);
+                    // let newVec = new THREE.Vector3(pos[0], pos[1], pos[2]);
+                    // newVec.applyMatrix4(mesh.matrixWorld);
+                    const worldBox = new THREE.Box3().setFromObject(mesh);
+                    console.log(mesh)
+                    const pos = new THREE.Vector3();
+                    worldBox.getCenter(pos);
+                    console.log(pos)
+                    let newVec = new THREE.Vector3(pos.x/mesh.scale.x, pos.y/mesh.scale.y, pos.z/mesh.scale.z);
+                    console.log(newVec)
                     posDict[newkeys] = newVec;
                     break
             }

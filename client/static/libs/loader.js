@@ -43,7 +43,7 @@ df.loader = {
         });
 
         for (let chain in w3m.mol[pdbId].chain) {
-            let firstAtomId = df.tool.getFirstAtomIdByChain(pdbId, chain);
+            // let firstAtomId = df.tool.getFirstAtomIdByChain(pdbId, chain);
             df.pdbInfoList.forEach(function (name) {
                 df.GROUP[pdbId][name][chain] = new THREE.Group();
                 df.GROUP[pdbId][name][chain].surface = new THREE.Group();
@@ -53,7 +53,7 @@ df.loader = {
                 df.GROUP[pdbId][name][chain].pdbId = pdbId;
                 df.GROUP[pdbId][name][chain].chainId = chain;
             });
-            df.GROUP[pdbId]['main'][chain].userData["presentAtom"] = df.tool.getMainAtom(pdbId, firstAtomId);
+            // df.GROUP[pdbId]['main'][chain].userData["presentAtom"] = df.tool.getMainAtom(pdbId, firstAtomId);
             if (!df.pptShow) {
                 df.pdbInfoList.forEach(function (name) {
                     scene.add(df.GROUP[pdbId][name][chain]);
@@ -83,7 +83,7 @@ df.loader = {
         });
 
         for (let chain in w3m.mol[pdbId].chain) {
-            let firstAtomId = df.tool.getFirstAtomIdByChain(pdbId, chain);
+            // let firstAtomId = df.tool.getFirstAtomIdByChain(pdbId, chain);
             df.pdbInfoList.forEach(function (name) {
                 df.GROUP[pdbId][name][chain] = new THREE.Group();
                 df.GROUP[pdbId][name][chain].surface = new THREE.Group();
@@ -93,7 +93,7 @@ df.loader = {
                 df.GROUP[pdbId][name][chain].pdbId = pdbId;
                 df.GROUP[pdbId][name][chain].chainId = chain;
             });
-            df.GROUP[pdbId]['main'][chain].userData["presentAtom"] = df.tool.getMainAtom(pdbId, firstAtomId);
+            // df.GROUP[pdbId]['main'][chain].userData["presentAtom"] = df.tool.getMainAtom(pdbId, firstAtomId);
             if (!df.pptShow) {
                 df.pdbInfoList.forEach(function (name) {
                     scene.add(df.GROUP[pdbId][name][chain]);

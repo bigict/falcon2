@@ -117,12 +117,13 @@ df.dfRender = {
         geometry.setAttribute('color', new THREE.Float32BufferAttribute([0.5, 0.5, 0.5, 0, 0, 0], 3));
         let material = new THREE.LineBasicMaterial({
             vertexColors: true,
-            linewidth: 100,
+            // linewidth: 100,
             blending: THREE.AdditiveBlending
         });
         let line = new THREE.Line(geometry, material);
         line.name = 'line';
         line.scale.z = 5;
+
         line.visible = true;
         return line;
     },
@@ -153,6 +154,11 @@ df.dfRender = {
         this.addLightsByType(lightType);
         // init VR render
         renderer = this.initRender();
+        renderer.extensions.get('ANGLE_instanced_arrays');
+        renderer.extensions.get('OES_element_index_uint');
+
+        // renderer.setPixelRatio(window.devicePixelRatio * 0.5); // 降低像素比率
+        // renderer.shadowMap.enabled = false;
 
         // const sessionInit = {
         //     requiredFeatures: ['hand-tracking']
@@ -186,65 +192,65 @@ df.dfRender = {
         });
 
         // xr
-        leftController = this.createController(renderer, canon, 1);
-        rightController = this.createController(renderer, canon, 0);
+        leftController = this.createController(renderer, canon, 0);
+        // rightController = this.createController(renderer, canon, 1);
         leftRayCaster = new THREE.Raycaster();
         leftRayCaster.camera = camera;
-        rightRayCaster = new THREE.Raycaster();
-        rightRayCaster.camera = camera;
+        // rightRayCaster = new THREE.Raycaster();
+        // rightRayCaster.camera = camera;
 
         // Hand
-        leftHand = this.createHandController(renderer, canon, 1);
-        rightHand = this.createHandController(renderer, canon, 0);
+        leftHand = this.createHandController(renderer, canon, 0);
+        // rightHand = this.createHandController(renderer, canon, 1);
 
         let controllerModelFactory = new XRControllerModelFactory();
         leftControllerGrip = this.createControllerGrip(renderer, canon, controllerModelFactory, 0);
-        rightControllerGrip = this.createControllerGrip(renderer, canon, controllerModelFactory, 1);
+        // rightControllerGrip = this.createControllerGrip(renderer, canon, controllerModelFactory, 1);
         const leftControllerPointer = new OculusHandPointerModel(leftHand, leftController);
-        const rightControllerPointer = new OculusHandPointerModel(rightHand, rightController);
+        // const rightControllerPointer = new OculusHandPointerModel(rightHand, rightController);
         leftHand.add(leftControllerPointer);
-        rightHand.add(rightControllerPointer);
+        // rightHand.add(rightControllerPointer);
 
         // 射线
         let leftLine = this.createControllerLine();
-        let rightLine = this.createControllerLine();
+        // let rightLine = this.createControllerLine();
         leftController.add(leftLine);
-        rightController.add(rightLine);
+        // rightController.add(rightLine);
 
         leftController.addEventListener('selectstart', function (event) {
             let leftTempMatrix = new THREE.Matrix4();
             // df.tool.initPDBView(df.SelectedPDBId);
             const inputSources = renderer.xr.getSession().inputSources;
-            if (inputSources && inputSources[1]) {
-                if (inputSources[1].hand && (inputSources[1].handedness === 'left')) {
+            if (inputSources && inputSources[0]) {
+                if (inputSources[0].hand && (inputSources[0].handedness === 'left')) {
                     onTriggerDown(event, leftRayCaster, leftTempMatrix, leftControllerPointer.pointerObject);
-                } else if (inputSources[1].gamepad) {
+                } else if (inputSources[0].gamepad) {
                     onTriggerDown(event, leftRayCaster, leftTempMatrix, event.target);
                 }
             }
             // df.tool.vrCameraCenter(canon, df.GROUP['1cbs']['main']['a'].children[10]);
         });
-        rightController.addEventListener('selectstart', function (event) {
-            let rightTempMatrix = new THREE.Matrix4();
-            const inputSources = renderer.xr.getSession().inputSources;
-            if (inputSources && inputSources[0] && (inputSources[0].handedness === 'right')) {
-                if (inputSources[0].hand) {
-                    // leftLine.visible = false;
-                    // rightLine.visible = false;
-                    onTriggerDown(event, rightRayCaster, rightTempMatrix, rightControllerPointer.pointerObject);
-                } else if (inputSources[0].gamepad) {
-                    // leftLine.visible = true;
-                    // rightLine.visible = true;
-                    onTriggerDown(event, rightRayCaster, rightTempMatrix, event.target);
-                }
-            }
-        });
+        // rightController.addEventListener('selectstart', function (event) {
+        //     let rightTempMatrix = new THREE.Matrix4();
+        //     const inputSources = renderer.xr.getSession().inputSources;
+        //     if (inputSources && inputSources[0] && (inputSources[0].handedness === 'right')) {
+        //         if (inputSources[0].hand) {
+        //             // leftLine.visible = false;
+        //             // rightLine.visible = false;
+        //             onTriggerDown(event, rightRayCaster, rightTempMatrix, rightControllerPointer.pointerObject);
+        //         } else if (inputSources[0].gamepad) {
+        //             // leftLine.visible = true;
+        //             // rightLine.visible = true;
+        //             onTriggerDown(event, rightRayCaster, rightTempMatrix, event.target);
+        //         }
+        //     }
+        // });
         leftController.addEventListener('selectend', function (event) {
             onTriggerUp(event);
         });
-        rightController.addEventListener('selectend', function (event) {
-            onTriggerUp(event);
-        });
+        // rightController.addEventListener('selectend', function (event) {
+        //     onTriggerUp(event);
+        // });
         window.addEventListener('resize', onWindowResize, false);
 
         // Desgin Mode
@@ -306,9 +312,9 @@ df.dfRender = {
                 if (!leftObject) {
                     leftObject = leftController;
                 }
-                if (!rightObject) {
-                    rightObject = leftController;
-                }
+                // if (!rightObject) {
+                //     rightObject = leftController;
+                // }
                 xrSession.addEventListener('inputsourceschange', (event) => {
                     xrSession.inputSources.forEach((inputSource) => {
                         if (inputSource.hand) {
@@ -316,26 +322,26 @@ df.dfRender = {
                                 case 'left':
                                     leftObject = leftControllerPointer.pointerObject
                                     break
-                                case 'right':
-                                    rightObject = rightControllerPointer.pointerObject
-                                    break
+                                // case 'right':
+                                //     rightObject = rightControllerPointer.pointerObject
+                                //     break
                             }
                         } else if (inputSource.gamepad) {
                             switch (inputSource.handedness) {
                                 case 'left':
                                     leftObject = leftController
                                     break
-                                case 'right':
-                                    rightObject = rightController
-                                    break
+                                // case 'right':
+                                //     rightObject = rightController
+                                //     break
                             }
                         }
                     });
                 });
                 let leftTempMatrix = new THREE.Matrix4();
                 let leftintersect = getIntersectionsRing(leftObject, leftRayCaster, leftTempMatrix);
-                let rightTempMatrix = new THREE.Matrix4();
-                let rightintersect = getIntersectionsRing(rightObject, rightRayCaster, rightTempMatrix);
+                // let rightTempMatrix = new THREE.Matrix4();
+                // let rightintersect = getIntersectionsRing(rightObject, rightRayCaster, rightTempMatrix);
                 if (leftintersect) {
                     let obj = leftintersect.object;
                     if (obj.userData && obj.userData.presentAtom) {
@@ -358,28 +364,28 @@ df.dfRender = {
                 } else {
                     df.leftRing.visible = false;
                 }
-                if (rightintersect) {
-                    let obj = rightintersect.object;
-                    if (obj.userData && obj.userData.presentAtom) {
-                        let tsAtom = obj.userData.presentAtom;
-                        let index = obj.parent.children.indexOf(obj)
-                        let text = tsAtom.pdbId + '/' + tsAtom.chainName + '/' + tsAtom.resId + '/' + tsAtom.resName + '/' + tsAtom.name + '/' + index
-                        df.lfpt.position.copy(rightintersect.point)
-                        df.lfpt.position.z = rightintersect.point.z - 0.01
-                        df.drawer.updateText(text, df.lfpt)
-                    }
-                    // const intersect = rightintersect[0];
-                    // 将Sprite移动到交点处
-                    df.rightRing.position.copy(rightintersect.point);
-                    const distance = camera.position.distanceTo(rightintersect.point);
-
-                    // 计算比例因子，保持大小不变
-                    const scaleFactor = distance / df.ringDistance;
-                    df.rightRing.scale.set(scaleFactor, scaleFactor, scaleFactor);
-                    df.rightRing.visible = true;
-                } else {
-                    df.rightRing.visible = false;
-                }
+                // if (rightintersect) {
+                //     let obj = rightintersect.object;
+                //     if (obj.userData && obj.userData.presentAtom) {
+                //         let tsAtom = obj.userData.presentAtom;
+                //         let index = obj.parent.children.indexOf(obj)
+                //         let text = tsAtom.pdbId + '/' + tsAtom.chainName + '/' + tsAtom.resId + '/' + tsAtom.resName + '/' + tsAtom.name + '/' + index
+                //         df.lfpt.position.copy(rightintersect.point)
+                //         df.lfpt.position.z = rightintersect.point.z - 0.01
+                //         df.drawer.updateText(text, df.lfpt)
+                //     }
+                //     // const intersect = rightintersect[0];
+                //     // 将Sprite移动到交点处
+                //     df.rightRing.position.copy(rightintersect.point);
+                //     const distance = camera.position.distanceTo(rightintersect.point);
+                //
+                //     // 计算比例因子，保持大小不变
+                //     const scaleFactor = distance / df.ringDistance;
+                //     df.rightRing.scale.set(scaleFactor, scaleFactor, scaleFactor);
+                //     df.rightRing.visible = true;
+                // } else {
+                //     df.rightRing.visible = false;
+                // }
             }
             camera.updateProjectionMatrix();
             renderer.render(scene, camera);

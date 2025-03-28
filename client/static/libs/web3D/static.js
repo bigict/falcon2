@@ -216,7 +216,7 @@ w3m.color = {
         96: 596,
         97: 597,
         98: 598,
-        99: 599
+        99: 599,
     },
     // By Hydrophobicity
     hydrophobicity: {

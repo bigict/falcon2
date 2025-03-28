@@ -93,3 +93,4 @@ class DFIRE(object):
                 eall += self.edfire[atom_id[i]][atom_id[j]][b]
 
         return eall
+
